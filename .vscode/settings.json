@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.ts": "typescript",
+    "*.tsx": "typescriptreact",
+    "*.prisma": "prisma"
+  }
+}

@@ -4,27 +4,25 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 
-model User {
-  id        String   @id @default(cuid())
-  name      String
+model Users {
+  id        String   @id @default(uuid())
+  full_name String   @db.VarChar()
   email     String   @unique
   password  String
-  posts     Post[]
+  role      Roles[]
+  referral_code String  @unique  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum Roles {
+  CUSTOMERS
+  ORGANIZER
 }
-

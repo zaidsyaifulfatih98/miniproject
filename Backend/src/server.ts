@@ -1,7 +1,5 @@
 import express from "express";
-import authRouter from "./routers/auth.router";
 import userRouter from "./routers/user.router";
-import postRouter from "./routers/post.router";
 import cors from 'cors';
 
 const app = express();
@@ -14,9 +12,8 @@ app.use(cors({
     credentials: true,
 }))
 
-app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
-app.use("/api/posts", postRouter);
+
 
 // Global error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
