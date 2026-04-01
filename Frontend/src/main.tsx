@@ -2,20 +2,22 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Page from './page/Page'
 import RootLayout from './components/RootLayout'
 import Event from './page/Event'
 import Ticket from './page/Ticket'
-import Users from './page/Users'
+import Customers from './page/Customers'
 import Transactions from './page/Transactions'
+import Report from './page/Report'
+import Dashboard from './page/Dashboard'
+import Users from './page/Users'
 
 const router = createBrowserRouter([
   {
     element : <RootLayout/>,
     children: [
       {
-        path: '/',
-        Component: Page,
+        path: '/dashboard',
+        Component: Dashboard,
 
       }, 
       {
@@ -27,12 +29,20 @@ const router = createBrowserRouter([
         Component: Ticket,
       },
       {
-        path: '/users',
-        Component: Users,
+        path: '/customers',
+        Component: Customers,
       },
       {
         path: '/transactions',
         Component: Transactions,
+      },
+      {
+        path: '/report',
+        Component: Report,
+      },
+      {
+        path: '/users',
+        Component: Users,
       }
     ]
   },
