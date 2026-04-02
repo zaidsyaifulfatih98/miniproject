@@ -1,14 +1,6 @@
 
 import { useState } from "react";
-
-// ── Shared data (mirrored from Ticket.tsx) ───────────────────────────────────
-const EVENTS = [
-  { id: 1, name: "Konser Malam Minggu", date: "2026-04-20" },
-  { id: 2, name: "Workshop UI/UX Design", date: "2026-05-10" },
-  { id: 3, name: "Seminar Kewirausahaan", date: "2026-03-15" },
-  { id: 4, name: "Festival Kuliner Nusantara", date: "2026-06-01" },
-  { id: 5, name: "Lari Maraton Kota", date: "2026-07-17" },
-];
+import { useEventStore } from "../store/eventStore";
 
 type TicketType = "Early Bird" | "Reguler" | "VIP" | "VVIP";
 const TICKET_TYPES: TicketType[] = ["Early Bird", "Reguler", "VIP", "VVIP"];
@@ -82,8 +74,8 @@ const statusColor: Record<TxStatus, string> = {
   Gagal:    "bg-red-100 text-red-600",
 };
 
-function getEventName(id: number) {
-  return EVENTS.find((e) => e.id === id)?.name ?? "-";
+function getEventName(id: number, evList: { id: number; name: string }[]) {
+  return evList.find((e) => e.id === id)?.name ?? "-";
 }
 
 function formatDate(d: string) {
@@ -91,6 +83,7 @@ function formatDate(d: string) {
 }
 
 export default function Transactions() {
+  const events = useEventStore((s) => s.events);
   const [tab, setTab]               = useState<"transaksi" | "statistik">("transaksi");
   const [filterEvent, setFilterEvent] = useState<number | "Semua">("Semua");
   const [filterStatus, setFilterStatus] = useState<TxStatus | "Semua">("Semua");
@@ -116,7 +109,7 @@ export default function Transactions() {
   const totalRevenue  = scopedTickets.reduce((s, t) => s + t.price * t.sold, 0);
   const activePromos  = scopedPromos.filter((p) => new Date(p.expiry) >= new Date()).length;
 
-  const eventScope = filterEvent === "Semua" ? EVENTS : EVENTS.filter((e) => e.id === filterEvent);
+  const eventScope = filterEvent === "Semua" ? events : events.filter((e) => e.id === filterEvent);
   const byEvent = eventScope.map((ev) => {
     const evTickets = ticketPools.filter((t) => t.eventId === ev.id);
     const evSold    = evTickets.reduce((s, t) => s + t.sold, 0);
@@ -174,7 +167,7 @@ export default function Transactions() {
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
           <option value="Semua">Semua Event</option>
-          {EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+          {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
         </select>
       </div>
 
@@ -255,7 +248,7 @@ export default function Transactions() {
                       <p className="font-medium text-gray-800">{t.buyer}</p>
                       <p className="text-xs text-gray-400">{t.email}</p>
                     </td>
-                    <td className="px-5 py-4 text-gray-600 text-xs max-w-[140px] truncate">{getEventName(t.eventId)}</td>
+                    <td className="px-5 py-4 text-gray-600 text-xs max-w-[140px] truncate">{getEventName(t.eventId, events)}</td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[t.ticketType]}`}>
                         {t.ticketType}

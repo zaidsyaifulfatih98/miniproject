@@ -31,7 +31,7 @@ const pointHistory = [
   { date: "2026-02-10", desc: "Referral berhasil — Doni Setiawan", pts: +500 },
 ];
 
-export default function Users() {
+export default function Admin() {
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<UserProfile>(initialProfile);

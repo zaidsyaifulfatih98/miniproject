@@ -1,14 +1,6 @@
 
 import { useState } from "react";
-
-// ── Shared event data (mirrored from Event.tsx) ─────────────────────────────
-const EVENTS = [
-  { id: 1, name: "Konser Malam Minggu", date: "2026-04-20" },
-  { id: 2, name: "Workshop UI/UX Design", date: "2026-05-10" },
-  { id: 3, name: "Seminar Kewirausahaan", date: "2026-03-15" },
-  { id: 4, name: "Festival Kuliner Nusantara", date: "2026-06-01" },
-  { id: 5, name: "Lari Maraton Kota", date: "2026-07-17" },
-];
+import { useEventStore } from "../store/eventStore";
 
 type TicketType = "Early Bird" | "Reguler" | "VIP" | "VVIP";
 const TICKET_TYPES: TicketType[] = ["Early Bird", "Reguler", "VIP", "VVIP"];
@@ -55,7 +47,7 @@ const initialPromos: PromoItem[] = [
 ];
 
 const emptyTicketForm = {
-  eventId: EVENTS[0].id,
+  eventId: 1,
   type: "Reguler" as TicketType,
   price: "",
   quota: "",
@@ -63,32 +55,35 @@ const emptyTicketForm = {
 };
 
 const emptyPromoForm = {
-  eventId: EVENTS[0].id,
+  eventId: 1,
   code: "",
   discount: "",
   maxUse: "",
   expiry: "",
 };
 
-function generateCode(eventId: number): string {
-  const ev = EVENTS.find((e) => e.id === eventId);
+function generateCode(eventId: number, events: { id: number; name: string }[]): string {
+  const ev = events.find((e) => e.id === eventId);
   const prefix = (ev?.name ?? "EVENT").substring(0, 4).toUpperCase().replace(/\s/g, "");
   const suffix = Math.floor(1000 + Math.random() * 9000);
   return `${prefix}${suffix}`;
 }
 
 export default function Ticket() {
+  const events = useEventStore((s) => s.events);
   const [tab, setTab] = useState<"tiket" | "promo">("tiket");
   const [tickets, setTickets] = useState<TicketItem[]>(initialTickets);
   const [promos, setPromos] = useState<PromoItem[]>(initialPromos);
 
   // Ticket form state
   const [showTicketForm, setShowTicketForm] = useState(false);
+  const [editTicketId, setEditTicketId] = useState<number | null>(null);
   const [ticketForm, setTicketForm] = useState(emptyTicketForm);
   const [ticketErrors, setTicketErrors] = useState<Partial<Record<string, string>>>({});
 
   // Promo form state
   const [showPromoForm, setShowPromoForm] = useState(false);
+  const [editPromoId, setEditPromoId] = useState<number | null>(null);
   const [promoForm, setPromoForm] = useState(emptyPromoForm);
   const [promoErrors, setPromoErrors] = useState<Partial<Record<string, string>>>({});
 
@@ -108,21 +103,40 @@ export default function Ticket() {
     e.preventDefault();
     const errs = validateTicket();
     if (Object.keys(errs).length > 0) { setTicketErrors(errs); return; }
-    setTickets((prev) => [
-      ...prev,
-      {
-        id: prev.length ? Math.max(...prev.map((t) => t.id)) + 1 : 1,
-        eventId: Number(ticketForm.eventId),
-        type: ticketForm.type,
-        price: Number(ticketForm.price),
-        quota: Number(ticketForm.quota),
-        sold: 0,
-        description: ticketForm.description,
-      },
-    ]);
+    const ticketData = {
+      eventId: Number(ticketForm.eventId),
+      type: ticketForm.type,
+      price: Number(ticketForm.price),
+      quota: Number(ticketForm.quota),
+      description: ticketForm.description,
+    };
+    if (editTicketId !== null) {
+      setTickets((prev) => prev.map((t) => t.id === editTicketId ? { ...t, ...ticketData } : t));
+    } else {
+      setTickets((prev) => [
+        ...prev,
+        { id: prev.length ? Math.max(...prev.map((t) => t.id)) + 1 : 1, sold: 0, ...ticketData },
+      ]);
+    }
     setTicketForm(emptyTicketForm);
     setTicketErrors({});
     setShowTicketForm(false);
+    setEditTicketId(null);
+  }
+
+  function handleEditTicket(id: number) {
+    const t = tickets.find((x) => x.id === id);
+    if (!t) return;
+    setTicketForm({
+      eventId: t.eventId,
+      type: t.type,
+      price: String(t.price),
+      quota: String(t.quota),
+      description: t.description,
+    });
+    setEditTicketId(id);
+    setTicketErrors({});
+    setShowTicketForm(true);
   }
 
   function handleTicketChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
@@ -149,21 +163,40 @@ export default function Ticket() {
     e.preventDefault();
     const errs = validatePromo();
     if (Object.keys(errs).length > 0) { setPromoErrors(errs); return; }
-    setPromos((prev) => [
-      ...prev,
-      {
-        id: prev.length ? Math.max(...prev.map((p) => p.id)) + 1 : 1,
-        eventId: Number(promoForm.eventId),
-        code: promoForm.code.toUpperCase(),
-        discount: Number(promoForm.discount),
-        maxUse: Number(promoForm.maxUse),
-        used: 0,
-        expiry: promoForm.expiry,
-      },
-    ]);
+    const promoData = {
+      eventId: Number(promoForm.eventId),
+      code: promoForm.code.toUpperCase(),
+      discount: Number(promoForm.discount),
+      maxUse: Number(promoForm.maxUse),
+      expiry: promoForm.expiry,
+    };
+    if (editPromoId !== null) {
+      setPromos((prev) => prev.map((p) => p.id === editPromoId ? { ...p, ...promoData } : p));
+    } else {
+      setPromos((prev) => [
+        ...prev,
+        { id: prev.length ? Math.max(...prev.map((p) => p.id)) + 1 : 1, used: 0, ...promoData },
+      ]);
+    }
     setPromoForm(emptyPromoForm);
     setPromoErrors({});
     setShowPromoForm(false);
+    setEditPromoId(null);
+  }
+
+  function handleEditPromo(id: number) {
+    const p = promos.find((x) => x.id === id);
+    if (!p) return;
+    setPromoForm({
+      eventId: p.eventId,
+      code: p.code,
+      discount: String(p.discount),
+      maxUse: String(p.maxUse),
+      expiry: p.expiry,
+    });
+    setEditPromoId(id);
+    setPromoErrors({});
+    setShowPromoForm(true);
   }
 
   function handlePromoChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
@@ -180,7 +213,7 @@ export default function Ticket() {
   const filteredPromos = filterEvent === "Semua" ? promos : promos.filter((p) => p.eventId === filterEvent);
 
   function getEventName(id: number) {
-    return EVENTS.find((e) => e.id === id)?.name ?? "-";
+    return events.find((e) => e.id === id)?.name ?? "-";
   }
 
   return (
@@ -193,8 +226,8 @@ export default function Ticket() {
         </div>
         <button
           onClick={() => {
-            if (tab === "tiket") { setShowTicketForm(true); setTicketForm(emptyTicketForm); setTicketErrors({}); }
-            else if (tab === "promo") { setShowPromoForm(true); setPromoForm(emptyPromoForm); setPromoErrors({}); }
+            if (tab === "tiket") { setEditTicketId(null); setTicketForm(emptyTicketForm); setTicketErrors({}); setShowTicketForm(true); }
+            else if (tab === "promo") { setEditPromoId(null); setPromoForm(emptyPromoForm); setPromoErrors({}); setShowPromoForm(true); }
           }}
           className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
         >
@@ -227,7 +260,7 @@ export default function Ticket() {
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
           <option value="Semua">Semua Event</option>
-          {EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+          {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
         </select>
       </div>
 
@@ -280,12 +313,19 @@ export default function Ticket() {
                       </div>
                     </td>
                     <td className="px-5 py-4 text-gray-500 text-xs max-w-[160px] truncate">{t.description}</td>
-                    <td className="px-5 py-4 text-right">
-                      <button onClick={() => handleDeleteTicket(t.id)} className="text-gray-400 hover:text-red-500 transition-colors" title="Hapus tiket">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => handleEditTicket(t.id)} className="text-gray-400 hover:text-orange-500 transition-colors" title="Edit tiket">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button onClick={() => handleDeleteTicket(t.id)} className="text-gray-400 hover:text-red-500 transition-colors" title="Hapus tiket">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -338,12 +378,19 @@ export default function Ticket() {
                         {expired ? "Kedaluwarsa" : new Date(p.expiry).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-right">
-                      <button onClick={() => handleDeletePromo(p.id)} className="text-gray-400 hover:text-red-500 transition-colors" title="Hapus promo">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => handleEditPromo(p.id)} className="text-gray-400 hover:text-orange-500 transition-colors" title="Edit promo">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button onClick={() => handleDeletePromo(p.id)} className="text-gray-400 hover:text-red-500 transition-colors" title="Hapus promo">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -358,8 +405,8 @@ export default function Ticket() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-gray-800">Tambah Tiket Baru</h2>
-              <button onClick={() => setShowTicketForm(false)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-base font-bold text-gray-800">{editTicketId !== null ? "Edit Tiket" : "Tambah Tiket Baru"}</h2>
+              <button onClick={() => { setShowTicketForm(false); setEditTicketId(null); }} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -370,7 +417,7 @@ export default function Ticket() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Event</label>
                 <select name="eventId" value={ticketForm.eventId} onChange={handleTicketChange}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                  {EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+                  {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -404,10 +451,10 @@ export default function Ticket() {
                 {ticketErrors.description && <p className="text-xs text-red-500 mt-1">{ticketErrors.description}</p>}
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowTicketForm(false)}
+                <button type="button" onClick={() => { setShowTicketForm(false); setEditTicketId(null); }}
                   className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
                 <button type="submit"
-                  className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">Simpan Tiket</button>
+                  className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">{editTicketId !== null ? "Simpan Perubahan" : "Simpan Tiket"}</button>
               </div>
             </form>
           </div>
@@ -419,8 +466,8 @@ export default function Ticket() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-bold text-gray-800">Tambah Promo & Diskon</h2>
-              <button onClick={() => setShowPromoForm(false)} className="text-gray-400 hover:text-gray-600">
+              <h2 className="text-base font-bold text-gray-800">{editPromoId !== null ? "Edit Promo" : "Tambah Promo & Diskon"}</h2>
+              <button onClick={() => { setShowPromoForm(false); setEditPromoId(null); }} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -431,7 +478,7 @@ export default function Ticket() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">Event</label>
                 <select name="eventId" value={promoForm.eventId} onChange={handlePromoChange}
                   className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                  {EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+                  {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
                 </select>
               </div>
               <div>
@@ -441,7 +488,7 @@ export default function Ticket() {
                     placeholder="cth. DISC2026"
                     className={`flex-1 border rounded-lg px-3 py-2 text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.code ? "border-red-400" : "border-gray-200"}`} />
                   <button type="button"
-                    onClick={() => setPromoForm((prev) => ({ ...prev, code: generateCode(Number(prev.eventId)) }))}
+                    onClick={() => setPromoForm((prev) => ({ ...prev, code: generateCode(Number(prev.eventId), events) }))}
                     className="px-3 py-2 text-xs border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
                     Auto-generate
                   </button>
@@ -471,10 +518,10 @@ export default function Ticket() {
                 {promoErrors.expiry && <p className="text-xs text-red-500 mt-1">{promoErrors.expiry}</p>}
               </div>
               <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setShowPromoForm(false)}
+                <button type="button" onClick={() => { setShowPromoForm(false); setEditPromoId(null); }}
                   className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
                 <button type="submit"
-                  className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">Simpan Promo</button>
+                  className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">{editPromoId !== null ? "Simpan Perubahan" : "Simpan Promo"}</button>
               </div>
             </form>
           </div>

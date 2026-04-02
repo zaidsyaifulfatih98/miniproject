@@ -9,7 +9,7 @@ import Customers from './page/Customers'
 import Transactions from './page/Transactions'
 import Report from './page/Report'
 import Dashboard from './page/Dashboard'
-import Users from './page/Users'
+import Admin from './page/Admin'
 
 const router = createBrowserRouter([
   {
@@ -41,8 +41,8 @@ const router = createBrowserRouter([
         Component: Report,
       },
       {
-        path: '/users',
-        Component: Users,
+        path: '/admin',
+        Component: Admin,
       }
     ]
   },
