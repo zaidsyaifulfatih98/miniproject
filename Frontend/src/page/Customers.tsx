@@ -9,7 +9,7 @@ interface Transaction {
   ticketType: string;
   date: string;
   amount: number;
-  status: "Berhasil" | "Menunggu" | "Gagal";
+  status: "Berhasil" | "Menunggu" | "Expired" | "Gagal";
 }
 
 interface Customer {
@@ -51,6 +51,7 @@ const initialCustomers: Customer[] = [
     transactions: [
       { id: "TRX-003", event: "Workshop UI/UX Design", ticketType: "Early Bird", date: "2026-04-01", amount: 80000, status: "Berhasil" },
       { id: "TRX-004", event: "Konser Malam Minggu", ticketType: "Reguler", date: "2026-03-28", amount: 250000, status: "Menunggu" },
+      { id: "TRX-E01", event: "Seminar Kewirausahaan", ticketType: "Reguler", date: "2026-01-05", amount: 150000, status: "Expired" },
     ],
   },
   {
@@ -78,6 +79,7 @@ const initialCustomers: Customer[] = [
     transactions: [
       { id: "TRX-006", event: "Lari Maraton Kota", ticketType: "Reguler", date: "2026-03-15", amount: 150000, status: "Gagal" },
       { id: "TRX-007", event: "Workshop UI/UX Design", ticketType: "VIP", date: "2026-04-02", amount: 200000, status: "Menunggu" },
+      { id: "TRX-E02", event: "Festival Kuliner Nusantara", ticketType: "Early Bird", date: "2025-12-20", amount: 75000, status: "Expired" },
     ],
   },
   {
@@ -98,7 +100,8 @@ const initialCustomers: Customer[] = [
 const statusColor: Record<Transaction["status"], string> = {
   Berhasil: "bg-green-100 text-green-700",
   Menunggu: "bg-yellow-100 text-yellow-700",
-  Gagal: "bg-red-100 text-red-600",
+  Expired:  "bg-gray-100 text-gray-500",
+  Gagal:    "bg-red-100 text-red-600",
 };
 
 function age(birthDate: string) {
@@ -209,6 +212,7 @@ export default function Customers() {
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Jenis Kelamin</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kode Referral</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Poin</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Belanja</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Transaksi</th>
               <th className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide text-center">Riwayat</th>
             </tr>
@@ -216,7 +220,7 @@ export default function Customers() {
           <tbody className="divide-y divide-gray-50">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={9} className="text-center py-12 text-gray-400 text-sm">
                   Tidak ada pelanggan ditemukan.
                 </td>
               </tr>
@@ -226,7 +230,7 @@ export default function Customers() {
                   {/* ID */}
                   <td className="px-5 py-4 text-xs font-mono text-gray-400">#{String(c.id).padStart(4, "0")}</td>
 
-                  {/* Name + Email */}
+                  {/* Name + Email + Join date */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-full ${AVATAR_COLORS[idx % AVATAR_COLORS.length]} flex items-center justify-center text-white text-xs font-bold flex-none`}>
@@ -235,6 +239,7 @@ export default function Customers() {
                       <div>
                         <p className="font-medium text-gray-800">{c.name}</p>
                         <p className="text-xs text-gray-400">{c.email}</p>
+                        <p className="text-xs text-gray-300 mt-0.5">Bergabung {formatDate(c.joinDate)}</p>
                       </div>
                     </div>
                   </td>
@@ -271,6 +276,17 @@ export default function Customers() {
                     </div>
                   </td>
 
+                  {/* Total spending (successful transactions only) */}
+                  <td className="px-5 py-4">
+                    <p className="font-semibold text-gray-700">
+                      Rp {c.transactions
+                        .filter((t) => t.status === "Berhasil")
+                        .reduce((s, t) => s + t.amount, 0)
+                        .toLocaleString("id-ID")}
+                    </p>
+                    <p className="text-xs text-gray-400">transaksi berhasil</p>
+                  </td>
+
                   {/* Transaction count */}
                   <td className="px-5 py-4">
                     <span className="text-gray-600 font-medium">{c.transactions.length}</span>
@@ -301,7 +317,7 @@ export default function Customers() {
                 {/* Expanded Transaction Row */}
                 {expandedId === c.id && (
                   <tr key={`trx-${c.id}`} className="bg-gray-50">
-                    <td colSpan={8} className="px-5 py-4">
+                    <td colSpan={9} className="px-5 py-4">
                       <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
                         <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                           <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide">

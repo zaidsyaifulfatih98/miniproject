@@ -1,14 +1,15 @@
 
 import { useState, useRef } from "react";
 
-type EventStatus = "Aktif" | "Selesai" | "Draft";
+type EventStatus = "Draft" | "Pending" | "Active" | "Rejected" | "Completed" | "Cancelled";
 type EventCategory = "Konser" | "Workshop" | "Seminar" | "Festival" | "Olahraga" | "Lainnya";
 
 interface EventItem {
   id: number;
   name: string;
   location: string;
-  date: string;
+  dateStart: string;
+  dateEnd: string;
   timeStart: string;
   timeEnd: string;
   capacity: number;
@@ -19,20 +20,23 @@ interface EventItem {
 }
 
 const CATEGORIES: EventCategory[] = ["Konser", "Workshop", "Seminar", "Festival", "Olahraga", "Lainnya"];
-const STATUSES: EventStatus[] = ["Aktif", "Selesai", "Draft"];
+const STATUSES: EventStatus[] = ["Draft", "Pending", "Active", "Rejected", "Completed", "Cancelled"];
 
 const initialEvents: EventItem[] = [
-  { id: 1, name: "Konser Malam Minggu", location: "Jakarta Convention Center", date: "2026-04-20", timeStart: "19:00", timeEnd: "23:00", capacity: 5000, banner: "", description: "Konser musik pop bersama artis ternama.", category: "Konser", status: "Aktif" },
-  { id: 2, name: "Workshop UI/UX Design", location: "Bandung Creative Hub", date: "2026-05-10", timeStart: "09:00", timeEnd: "17:00", capacity: 150, banner: "", description: "Workshop desain antarmuka untuk pemula hingga menengah.", category: "Workshop", status: "Aktif" },
-  { id: 3, name: "Seminar Kewirausahaan", location: "Surabaya Grand Ballroom", date: "2026-03-15", timeStart: "08:00", timeEnd: "16:00", capacity: 300, banner: "", description: "Seminar membangun bisnis dari nol bersama pakar ekonomi.", category: "Seminar", status: "Selesai" },
-  { id: 4, name: "Festival Kuliner Nusantara", location: "Lapangan Monas, Jakarta", date: "2026-06-01", timeStart: "10:00", timeEnd: "22:00", capacity: 10000, banner: "", description: "Festival makanan dari berbagai penjuru Indonesia.", category: "Festival", status: "Draft" },
-  { id: 5, name: "Lari Maraton Kota", location: "Bundaran HI, Jakarta", date: "2026-07-17", timeStart: "05:00", timeEnd: "12:00", capacity: 3000, banner: "", description: "Maraton tahunan tingkat nasional.", category: "Olahraga", status: "Draft" },
+  { id: 1, name: "Konser Malam Minggu", location: "Jakarta Convention Center", dateStart: "2026-04-20", dateEnd: "2026-04-20", timeStart: "19:00", timeEnd: "23:00", capacity: 5000, banner: "", description: "Konser musik pop bersama artis ternama.", category: "Konser", status: "Active" },
+  { id: 2, name: "Workshop UI/UX Design", location: "Bandung Creative Hub", dateStart: "2026-05-10", dateEnd: "2026-05-10", timeStart: "09:00", timeEnd: "17:00", capacity: 150, banner: "", description: "Workshop desain antarmuka untuk pemula hingga menengah.", category: "Workshop", status: "Active" },
+  { id: 3, name: "Seminar Kewirausahaan", location: "Surabaya Grand Ballroom", dateStart: "2026-03-15", dateEnd: "2026-03-15", timeStart: "08:00", timeEnd: "16:00", capacity: 300, banner: "", description: "Seminar membangun bisnis dari nol bersama pakar ekonomi.", category: "Seminar", status: "Completed" },
+  { id: 4, name: "Festival Kuliner Nusantara", location: "Lapangan Monas, Jakarta", dateStart: "2026-06-01", dateEnd: "2026-06-03", timeStart: "10:00", timeEnd: "22:00", capacity: 10000, banner: "", description: "Festival makanan dari berbagai penjuru Indonesia.", category: "Festival", status: "Pending" },
+  { id: 5, name: "Lari Maraton Kota", location: "Bundaran HI, Jakarta", dateStart: "2026-07-17", dateEnd: "2026-07-17", timeStart: "05:00", timeEnd: "12:00", capacity: 3000, banner: "", description: "Maraton tahunan tingkat nasional.", category: "Olahraga", status: "Draft" },
 ];
 
 const statusColor: Record<EventStatus, string> = {
-  Aktif: "bg-green-100 text-green-700",
-  Selesai: "bg-gray-100 text-gray-600",
-  Draft: "bg-yellow-100 text-yellow-700",
+  Draft:     "bg-yellow-100 text-yellow-700",
+  Pending:   "bg-orange-100 text-orange-700",
+  Active:    "bg-green-100 text-green-700",
+  Rejected:  "bg-red-100 text-red-600",
+  Completed: "bg-gray-100 text-gray-600",
+  Cancelled: "bg-red-50 text-red-400",
 };
 
 const categoryColor: Record<EventCategory, string> = {
@@ -47,7 +51,8 @@ const categoryColor: Record<EventCategory, string> = {
 const emptyForm = {
   name: "",
   location: "",
-  date: "",
+  dateStart: "",
+  dateEnd: "",
   timeStart: "",
   timeEnd: "",
   capacity: "",
@@ -72,7 +77,10 @@ export default function Event() {
     const e: Partial<Record<keyof typeof emptyForm, string>> = {};
     if (!form.name.trim()) e.name = "Nama event wajib diisi.";
     if (!form.location.trim()) e.location = "Lokasi wajib diisi.";
-    if (!form.date) e.date = "Tanggal wajib diisi.";
+    if (!form.dateStart) e.dateStart = "Tanggal mulai wajib diisi.";
+    if (!form.dateEnd) e.dateEnd = "Tanggal berakhir wajib diisi.";
+    if (form.dateStart && form.dateEnd && form.dateEnd < form.dateStart)
+      e.dateEnd = "Tanggal berakhir tidak boleh sebelum tanggal mulai.";
     if (!form.timeStart) e.timeStart = "Waktu mulai wajib diisi.";
     if (!form.timeEnd) e.timeEnd = "Waktu selesai wajib diisi.";
     if (form.timeStart && form.timeEnd && form.timeEnd <= form.timeStart)
@@ -122,7 +130,8 @@ export default function Event() {
     setForm({
       name: ev.name,
       location: ev.location,
-      date: ev.date,
+      dateStart: ev.dateStart,
+      dateEnd: ev.dateEnd,
       timeStart: ev.timeStart,
       timeEnd: ev.timeEnd,
       capacity: String(ev.capacity),
@@ -237,25 +246,36 @@ export default function Event() {
                 {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
               </div>
 
-              {/* Tanggal & Kapasitas */}
+              {/* Tanggal Mulai & Berakhir */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Mulai</label>
                   <input
-                    type="date" name="date" value={form.date} onChange={handleChange}
-                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.date ? "border-red-400" : "border-gray-200"}`}
+                    type="date" name="dateStart" value={form.dateStart} onChange={handleChange}
+                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.dateStart ? "border-red-400" : "border-gray-200"}`}
                   />
-                  {errors.date && <p className="text-xs text-red-500 mt-1">{errors.date}</p>}
+                  {errors.dateStart && <p className="text-xs text-red-500 mt-1">{errors.dateStart}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Kapasitas Venue</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Berakhir</label>
                   <input
-                    type="number" name="capacity" value={form.capacity} onChange={handleChange} min={1}
-                    placeholder="cth. 5000"
-                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.capacity ? "border-red-400" : "border-gray-200"}`}
+                    type="date" name="dateEnd" value={form.dateEnd} onChange={handleChange}
+                    min={form.dateStart || undefined}
+                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.dateEnd ? "border-red-400" : "border-gray-200"}`}
                   />
-                  {errors.capacity && <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>}
+                  {errors.dateEnd && <p className="text-xs text-red-500 mt-1">{errors.dateEnd}</p>}
                 </div>
+              </div>
+
+              {/* Kapasitas */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Kapasitas Venue</label>
+                <input
+                  type="number" name="capacity" value={form.capacity} onChange={handleChange} min={1}
+                  placeholder="cth. 5000"
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.capacity ? "border-red-400" : "border-gray-200"}`}
+                />
+                {errors.capacity && <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>}
               </div>
 
               {/* Waktu Mulai & Selesai */}
@@ -393,7 +413,12 @@ export default function Event() {
                   </td>
                   <td className="px-5 py-4 text-gray-600">{ev.location}</td>
                   <td className="px-5 py-4 text-gray-600">
-                    <p>{new Date(ev.date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p>
+                      {new Date(ev.dateStart).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                      {ev.dateEnd && ev.dateEnd !== ev.dateStart && (
+                        <> – {new Date(ev.dateEnd).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</>
+                      )}
+                    </p>
                     {ev.timeStart && ev.timeEnd && (
                       <p className="text-xs text-gray-400 mt-0.5">{ev.timeStart} – {ev.timeEnd}</p>
                     )}

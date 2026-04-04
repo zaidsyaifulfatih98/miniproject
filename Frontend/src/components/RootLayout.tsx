@@ -103,7 +103,7 @@ export default function RootLayout() {
             </div>
             <div className="min-w-0 flex-1 text-left">
               <p className="text-sm font-semibold text-gray-800 truncate">Budi Santoso</p>
-              <p className="text-xs text-gray-400 truncate">Admin</p>
+              <p className="text-xs text-gray-400 truncate">Organizer</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400 flex-none" />
           </Link>

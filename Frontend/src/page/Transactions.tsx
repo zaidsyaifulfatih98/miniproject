@@ -28,7 +28,7 @@ interface PromoPool {
   expiry: string;
 }
 
-type TxStatus = "Berhasil" | "Menunggu" | "Gagal";
+type TxStatus = "Berhasil" | "Menunggu" | "Expired" | "Gagal";
 
 interface Transaction {
   id: string;
@@ -66,16 +66,26 @@ const initialTransactions: Transaction[] = [
   { id: "TRX-2026-006", eventId: 2, buyer: "Maya Putri",     email: "maya@email.com",  ticketType: "Reguler",    qty: 2, amount: 200000,  status: "Gagal",    date: "2026-03-22" },
   { id: "TRX-2026-007", eventId: 1, buyer: "Tono Wijaya",    email: "tono@email.com",  ticketType: "VIP",        qty: 1, amount: 500000,  status: "Menunggu", date: "2026-03-28" },
   { id: "TRX-2026-008", eventId: 3, buyer: "Lina Susanti",   email: "lina@email.com",  ticketType: "VVIP",       qty: 1, amount: 750000,  status: "Berhasil", date: "2026-02-20" },
+  { id: "TRX-2026-009", eventId: 2, buyer: "Hendra Gunawan", email: "hendra@email.com", ticketType: "Reguler",    qty: 2, amount: 200000,  status: "Expired",  date: "2026-01-10", promoCode: "WORKSHOP15" },
+  { id: "TRX-2026-010", eventId: 1, buyer: "Fera Anggraini",  email: "fera@email.com",   ticketType: "Early Bird", qty: 1, amount: 150000,  status: "Expired",  date: "2026-01-25" },
 ];
 
 const statusColor: Record<TxStatus, string> = {
   Berhasil: "bg-green-100 text-green-700",
   Menunggu: "bg-yellow-100 text-yellow-700",
+  Expired:  "bg-gray-100 text-gray-500",
   Gagal:    "bg-red-100 text-red-600",
 };
 
 function getEventName(id: number, evList: { id: number; name: string }[]) {
   return evList.find((e) => e.id === id)?.name ?? "-";
+}
+
+function getDiscountedAmount(tx: Transaction): number {
+  if (!tx.promoCode) return tx.amount;
+  const promo = promoPools.find((p) => p.eventId === tx.eventId);
+  if (!promo) return tx.amount;
+  return Math.round(tx.amount * (1 - promo.discount / 100));
 }
 
 function formatDate(d: string) {
@@ -133,8 +143,9 @@ export default function Transactions() {
   // ── Summary card for transaksi tab ────────────────────────────────────────
   const successTx  = scopedTx.filter((t) => t.status === "Berhasil");
   const pendingTx  = scopedTx.filter((t) => t.status === "Menunggu");
+  const expiredTx  = scopedTx.filter((t) => t.status === "Expired");
   const failedTx   = scopedTx.filter((t) => t.status === "Gagal");
-  const txRevenue  = successTx.reduce((s, t) => s + t.amount, 0);
+  const txRevenue  = successTx.reduce((s, t) => s + getDiscountedAmount(t), 0);
 
   return (
     <div className="space-y-6">
@@ -175,12 +186,13 @@ export default function Transactions() {
       {tab === "transaksi" && (
         <div className="space-y-4">
           {/* Summary mini-cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             {[
               { label: "Total Pendapatan", value: `Rp ${(txRevenue / 1_000_000).toFixed(1)}jt`, color: "text-green-600", bg: "bg-green-50" },
-              { label: "Berhasil",  value: successTx.length, color: "text-green-600",  bg: "bg-green-50" },
-              { label: "Menunggu",  value: pendingTx.length, color: "text-yellow-600", bg: "bg-yellow-50" },
-              { label: "Gagal",     value: failedTx.length,  color: "text-red-500",    bg: "bg-red-50" },
+              { label: "Berhasil",  value: successTx.length,  color: "text-green-600",  bg: "bg-green-50" },
+              { label: "Menunggu",  value: pendingTx.length,  color: "text-yellow-600", bg: "bg-yellow-50" },
+              { label: "Expired",   value: expiredTx.length,  color: "text-gray-500",   bg: "bg-gray-100" },
+              { label: "Gagal",     value: failedTx.length,   color: "text-red-500",    bg: "bg-red-50" },
             ].map((c) => (
               <div key={c.label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center flex-none`}>
@@ -215,6 +227,7 @@ export default function Transactions() {
               <option value="Semua">Semua Status</option>
               <option value="Berhasil">Berhasil</option>
               <option value="Menunggu">Menunggu</option>
+              <option value="Expired">Expired</option>
               <option value="Gagal">Gagal</option>
             </select>
             <span className="text-xs text-gray-400 ml-auto">{filteredTx.length} transaksi</span>
@@ -231,6 +244,7 @@ export default function Transactions() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiket</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Qty</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Setelah Promo</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Promo</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
@@ -239,7 +253,7 @@ export default function Transactions() {
               <tbody className="divide-y divide-gray-50">
                 {filteredTx.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-12 text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td>
+                    <td colSpan={10} className="text-center py-12 text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td>
                   </tr>
                 ) : filteredTx.map((t) => (
                   <tr key={t.id} className="hover:bg-gray-50 transition-colors">
@@ -256,6 +270,12 @@ export default function Transactions() {
                     </td>
                     <td className="px-5 py-4 text-gray-600">{t.qty}</td>
                     <td className="px-5 py-4 font-semibold text-gray-700">Rp {t.amount.toLocaleString("id-ID")}</td>
+                    <td className="px-5 py-4">
+                      {t.promoCode
+                        ? <span className="font-semibold text-green-700">Rp {getDiscountedAmount(t).toLocaleString("id-ID")}</span>
+                        : <span className="font-semibold text-gray-700">Rp {t.amount.toLocaleString("id-ID")}</span>
+                      }
+                    </td>
                     <td className="px-5 py-4">
                       {t.promoCode
                         ? <span className="font-mono text-xs bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded tracking-widest">{t.promoCode}</span>

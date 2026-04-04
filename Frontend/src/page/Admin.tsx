@@ -12,24 +12,24 @@ interface UserProfile {
   joinDate: string;
 }
 
+const pointHistory = [
+  { date: "2026-03-28", desc: "Pembelian tiket Java Jazz Festival", pts: +20000 },
+  { date: "2026-03-20", desc: "Referral berhasil — Rina Kusuma", pts: +60000 },
+  { date: "2026-03-15", desc: "Pembelian tiket Tech Summit 2026", pts: +120000 },
+  { date: "2026-03-01", desc: "Pembelian tiket Startup Weekend", pts: +40000 },
+  { date: "2026-02-10", desc: "Referral berhasil — Doni Setiawan", pts: +20000 },
+];
+
 const initialProfile: UserProfile = {
   fullname: "Budi Santoso",
   email: "budi.santoso@email.com",
   phone: "0812-3456-7890",
   address: "Jl. Sudirman No. 12, Jakarta Pusat, DKI Jakarta 10220",
   referralCode: "BUDI-X9K2",
-  points: 3_750,
+  points: pointHistory.reduce((sum, item) => sum + item.pts, 0),
   avatar: "BS",
   joinDate: "15 Januari 2025",
 };
-
-const pointHistory = [
-  { date: "2026-03-28", desc: "Pembelian tiket Java Jazz Festival", pts: +250 },
-  { date: "2026-03-20", desc: "Referral berhasil — Rina Kusuma", pts: +500 },
-  { date: "2026-03-15", desc: "Pembelian tiket Tech Summit 2026", pts: +100 },
-  { date: "2026-03-01", desc: "Pembelian tiket Startup Weekend", pts: +150 },
-  { date: "2026-02-10", desc: "Referral berhasil — Doni Setiawan", pts: +500 },
-];
 
 export default function Admin() {
   const [profile, setProfile] = useState<UserProfile>(initialProfile);
