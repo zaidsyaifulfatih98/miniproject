@@ -10,8 +10,19 @@ import Transactions from './page/Transactions'
 import Report from './page/Report'
 import Dashboard from './page/Dashboard'
 import Admin from './page/Admin'
+import Register from './page/Register'
+import LoginOrganizer from './page/LoginOrganizer'
 
 const router = createBrowserRouter([
+  {
+    path : '/register',
+    Component : Register
+  },
+  {
+    path: '/login',
+    Component : LoginOrganizer
+  },
+
   {
     element : <RootLayout/>,
     children: [

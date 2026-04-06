@@ -51,8 +51,18 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  User: 'User',
-  Post: 'Post'
+  Users: 'Users',
+  Events: 'Events',
+  Tickets: 'Tickets',
+  Bookings: 'Bookings',
+  Payments: 'Payments',
+  Reviews: 'Reviews',
+  Promotions: 'Promotions',
+  Referrals: 'Referrals',
+  DailySalesSnapshots: 'DailySalesSnapshots',
+  EventPerformanceStats: 'EventPerformanceStats',
+  PointsHistory: 'PointsHistory',
+  TicketInventoryLogs: 'TicketInventoryLogs'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -71,28 +81,181 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const UserScalarFieldEnum = {
+export const UsersScalarFieldEnum = {
   id: 'id',
-  name: 'name',
   email: 'email',
   password: 'password',
+  full_name: 'full_name',
+  birth_date: 'birth_date',
+  gender: 'gender',
+  address: 'address',
+  role: 'role',
+  referral_code: 'referral_code',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
-export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
 
 
-export const PostScalarFieldEnum = {
+export const EventsScalarFieldEnum = {
   id: 'id',
+  organizer_id: 'organizer_id',
   title: 'title',
-  content: 'content',
-  authorId: 'authorId',
+  description: 'description',
+  category: 'category',
+  location: 'location',
+  price: 'price',
+  total_seats: 'total_seats',
+  available_seats: 'available_seats',
+  status: 'status',
+  start_time: 'start_time',
+  end_time: 'end_time',
+  start_event: 'start_event',
+  end_event: 'end_event',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type EventsScalarFieldEnum = (typeof EventsScalarFieldEnum)[keyof typeof EventsScalarFieldEnum]
+
+
+export const TicketsScalarFieldEnum = {
+  id: 'id',
+  event_id: 'event_id',
+  type: 'type',
+  description: 'description',
+  price: 'price',
+  quota: 'quota',
+  used_ticket: 'used_ticket',
+  deletedAt: 'deletedAt'
+} as const
+
+export type TicketsScalarFieldEnum = (typeof TicketsScalarFieldEnum)[keyof typeof TicketsScalarFieldEnum]
+
+
+export const BookingsScalarFieldEnum = {
+  id: 'id',
+  display_id: 'display_id',
+  user_id: 'user_id',
+  event_id: 'event_id',
+  ticket_id: 'ticket_id',
+  promotion_id: 'promotion_id',
+  quantity: 'quantity',
+  status: 'status',
+  total_price: 'total_price',
+  discount_amount: 'discount_amount',
+  points_used: 'points_used',
+  final_price: 'final_price',
+  expires_at: 'expires_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type BookingsScalarFieldEnum = (typeof BookingsScalarFieldEnum)[keyof typeof BookingsScalarFieldEnum]
+
+
+export const PaymentsScalarFieldEnum = {
+  id: 'id',
+  booking_id: 'booking_id',
+  amount: 'amount',
+  payment_proof_url: 'payment_proof_url',
+  status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
+export type PaymentsScalarFieldEnum = (typeof PaymentsScalarFieldEnum)[keyof typeof PaymentsScalarFieldEnum]
+
+
+export const ReviewsScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  event_id: 'event_id',
+  booking_id: 'booking_id',
+  rating: 'rating',
+  comment: 'comment',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type ReviewsScalarFieldEnum = (typeof ReviewsScalarFieldEnum)[keyof typeof ReviewsScalarFieldEnum]
+
+
+export const PromotionsScalarFieldEnum = {
+  id: 'id',
+  event_id: 'event_id',
+  type: 'type',
+  promotion_code: 'promotion_code',
+  discount_amount: 'discount_amount',
+  max_usage: 'max_usage',
+  used_count: 'used_count',
+  expires_at: 'expires_at',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PromotionsScalarFieldEnum = (typeof PromotionsScalarFieldEnum)[keyof typeof PromotionsScalarFieldEnum]
+
+
+export const ReferralsScalarFieldEnum = {
+  id: 'id',
+  referrer_user_id: 'referrer_user_id',
+  referred_user_id: 'referred_user_id',
+  points_earned: 'points_earned',
+  createdAt: 'createdAt'
+} as const
+
+export type ReferralsScalarFieldEnum = (typeof ReferralsScalarFieldEnum)[keyof typeof ReferralsScalarFieldEnum]
+
+
+export const DailySalesSnapshotsScalarFieldEnum = {
+  id: 'id',
+  event_id: 'event_id',
+  date: 'date',
+  daily_tickets: 'daily_tickets',
+  daily_revenue: 'daily_revenue'
+} as const
+
+export type DailySalesSnapshotsScalarFieldEnum = (typeof DailySalesSnapshotsScalarFieldEnum)[keyof typeof DailySalesSnapshotsScalarFieldEnum]
+
+
+export const EventPerformanceStatsScalarFieldEnum = {
+  id: 'id',
+  event_id: 'event_id',
+  total_views: 'total_views',
+  tickets_sold: 'tickets_sold',
+  revenue_gross: 'revenue_gross',
+  revenue_net: 'revenue_net',
+  referral_conversion: 'referral_conversion'
+} as const
+
+export type EventPerformanceStatsScalarFieldEnum = (typeof EventPerformanceStatsScalarFieldEnum)[keyof typeof EventPerformanceStatsScalarFieldEnum]
+
+
+export const PointsHistoryScalarFieldEnum = {
+  id: 'id',
+  user_id: 'user_id',
+  points: 'points',
+  expires_at: 'expires_at',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type PointsHistoryScalarFieldEnum = (typeof PointsHistoryScalarFieldEnum)[keyof typeof PointsHistoryScalarFieldEnum]
+
+
+export const TicketInventoryLogsScalarFieldEnum = {
+  id: 'id',
+  ticket_id: 'ticket_id',
+  sold_at: 'sold_at',
+  remaining_quota: 'remaining_quota'
+} as const
+
+export type TicketInventoryLogsScalarFieldEnum = (typeof TicketInventoryLogsScalarFieldEnum)[keyof typeof TicketInventoryLogsScalarFieldEnum]
 
 
 export const SortOrder = {

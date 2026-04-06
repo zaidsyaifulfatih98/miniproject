@@ -235,6 +235,7 @@ export default function Transactions() {
 
           {/* Table */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -291,8 +292,7 @@ export default function Transactions() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+            </table>            </div>          </div>
         </div>
       )}
 
@@ -418,6 +418,7 @@ export default function Transactions() {
             <div className="px-5 py-4 border-b border-gray-100">
               <h3 className="text-sm font-semibold text-gray-700">Performa per Event</h3>
             </div>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -455,8 +456,7 @@ export default function Transactions() {
                   );
                 })}
               </tbody>
-            </table>
-          </div>
+            </table>            </div>          </div>
 
           {/* Per-Type Breakdown Cards */}
           {byType.length > 0 && (

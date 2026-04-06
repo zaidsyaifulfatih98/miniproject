@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
+import { NavLink, Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -8,8 +8,7 @@ import {
   BarChart2,
   ChevronRight,
   Home,
-  Bell,
-  HelpCircle,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
@@ -57,7 +56,17 @@ const breadcrumbLabels: Record<string, string> = {
 
 export default function RootLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pageLabel = breadcrumbLabels[location.pathname] ?? "Beranda";
+
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans">
@@ -101,10 +110,13 @@ export default function RootLayout() {
             <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold text-gray-600 flex-none">
               BS
             </div>
-            <div className="min-w-0 flex-1 text-left">
-              <p className="text-sm font-semibold text-gray-800 truncate">Budi Santoso</p>
-              <p className="text-xs text-gray-400 truncate">Organizer</p>
-            </div>
+            {user && (
+              <div className="min-w-0 flex-1 text-left">
+                <p className="text-sm font-semibold text-gray-800 truncate">{user.full_name}</p>
+                <p className="text-xs text-gray-400 truncate">{user.role}</p>
+              </div>
+
+            )}
             <ChevronRight className="w-4 h-4 text-gray-400 flex-none" />
           </Link>
         </div>
@@ -121,11 +133,18 @@ export default function RootLayout() {
             <span className="text-gray-800 font-medium">{pageLabel}</span>
           </nav>
           <div className="flex items-center gap-3">
-            <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
-              <Bell className="w-5 h-5" />
-            </button>
-            <button className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
-              <HelpCircle className="w-5 h-5" />
+            {user && (
+              <span className="text-sm text-gray-600">
+                Hai, <span className="font-semibold text-gray-800">{user.full_name}</span>
+              </span>
+            )}
+            
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
             </button>
           </div>
         </header>
