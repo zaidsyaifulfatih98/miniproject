@@ -1,42 +1,47 @@
+﻿
+import { useState, useRef, useEffect, useCallback } from "react";
 
-import { useState, useRef } from "react";
+const API_BASE = "http://localhost:8000/api";
 
-type EventStatus = "Draft" | "Pending" | "Active" | "Rejected" | "Completed" | "Cancelled";
+type EventStatus = "DRAFT" | "PENDING" | "ACTIVE" | "REJECTED" | "COMPLETED" | "CANCELLED";
 type EventCategory = "Konser" | "Workshop" | "Seminar" | "Festival" | "Olahraga" | "Lainnya";
 
 interface EventItem {
-  id: number;
-  name: string;
-  location: string;
-  dateStart: string;
-  dateEnd: string;
-  timeStart: string;
-  timeEnd: string;
-  capacity: number;
+  id: string;
+  title: string;
+  location: string | null;
+  start_event: string | null;
+  end_event: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  total_seats: number;
+  available_seats: number;
   banner: string;
-  description: string;
-  category: EventCategory;
+  description: string | null;
+  category: string | null;
   status: EventStatus;
+  price: string;
 }
 
 const CATEGORIES: EventCategory[] = ["Konser", "Workshop", "Seminar", "Festival", "Olahraga", "Lainnya"];
-const STATUSES: EventStatus[] = ["Draft", "Pending", "Active", "Rejected", "Completed", "Cancelled"];
-
-const initialEvents: EventItem[] = [
-  { id: 1, name: "Konser Malam Minggu", location: "Jakarta Convention Center", dateStart: "2026-04-20", dateEnd: "2026-04-20", timeStart: "19:00", timeEnd: "23:00", capacity: 5000, banner: "", description: "Konser musik pop bersama artis ternama.", category: "Konser", status: "Active" },
-  { id: 2, name: "Workshop UI/UX Design", location: "Bandung Creative Hub", dateStart: "2026-05-10", dateEnd: "2026-05-10", timeStart: "09:00", timeEnd: "17:00", capacity: 150, banner: "", description: "Workshop desain antarmuka untuk pemula hingga menengah.", category: "Workshop", status: "Active" },
-  { id: 3, name: "Seminar Kewirausahaan", location: "Surabaya Grand Ballroom", dateStart: "2026-03-15", dateEnd: "2026-03-15", timeStart: "08:00", timeEnd: "16:00", capacity: 300, banner: "", description: "Seminar membangun bisnis dari nol bersama pakar ekonomi.", category: "Seminar", status: "Completed" },
-  { id: 4, name: "Festival Kuliner Nusantara", location: "Lapangan Monas, Jakarta", dateStart: "2026-06-01", dateEnd: "2026-06-03", timeStart: "10:00", timeEnd: "22:00", capacity: 10000, banner: "", description: "Festival makanan dari berbagai penjuru Indonesia.", category: "Festival", status: "Pending" },
-  { id: 5, name: "Lari Maraton Kota", location: "Bundaran HI, Jakarta", dateStart: "2026-07-17", dateEnd: "2026-07-17", timeStart: "05:00", timeEnd: "12:00", capacity: 3000, banner: "", description: "Maraton tahunan tingkat nasional.", category: "Olahraga", status: "Draft" },
-];
+const STATUSES: EventStatus[] = ["DRAFT", "PENDING", "ACTIVE", "REJECTED", "COMPLETED", "CANCELLED"];
 
 const statusColor: Record<EventStatus, string> = {
-  Draft:     "bg-yellow-100 text-yellow-700",
-  Pending:   "bg-orange-100 text-orange-700",
-  Active:    "bg-green-100 text-green-700",
-  Rejected:  "bg-red-100 text-red-600",
-  Completed: "bg-gray-100 text-gray-600",
-  Cancelled: "bg-red-50 text-red-400",
+  DRAFT:     "bg-yellow-100 text-yellow-700",
+  PENDING:   "bg-orange-100 text-orange-700",
+  ACTIVE:    "bg-green-100 text-green-700",
+  REJECTED:  "bg-red-100 text-red-600",
+  COMPLETED: "bg-gray-100 text-gray-600",
+  CANCELLED: "bg-red-50 text-red-400",
+};
+
+const statusLabel: Record<EventStatus, string> = {
+  DRAFT:     "Draft",
+  PENDING:   "Pending",
+  ACTIVE:    "Active",
+  REJECTED:  "Rejected",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 const categoryColor: Record<EventCategory, string> = {
@@ -49,23 +54,27 @@ const categoryColor: Record<EventCategory, string> = {
 };
 
 const emptyForm = {
-  name: "",
+  title: "",
   location: "",
   dateStart: "",
   dateEnd: "",
   timeStart: "",
   timeEnd: "",
-  capacity: "",
+  total_seats: "",
+  price: "",
   banner: "",
   description: "",
   category: "Konser" as EventCategory,
-  status: "Draft" as EventStatus,
+  status: "DRAFT" as EventStatus,
+  organizer_id: "",
 };
 
 export default function Event() {
-  const [events, setEvents] = useState<EventItem[]>(initialEvents);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof typeof emptyForm, string>>>({});
   const [filterCategory, setFilterCategory] = useState<EventCategory | "Semua">("Semua");
@@ -73,9 +82,33 @@ export default function Event() {
   const [search, setSearch] = useState("");
   const bannerInputRef = useRef<HTMLInputElement>(null);
 
+  const fetchEvents = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams();
+      if (filterCategory !== "Semua") params.set("category", filterCategory);
+      if (filterStatus !== "Semua") params.set("status", filterStatus);
+      if (search) params.set("search", search);
+      const res = await fetch(`${API_BASE}/events?${params.toString()}`);
+      if (!res.ok) throw new Error("Gagal memuat data event");
+      const json = await res.json();
+      setEvents(json.data ?? []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [filterCategory, filterStatus, search]);
+
+  useEffect(() => {
+    const debounce = setTimeout(() => fetchEvents(), 300);
+    return () => clearTimeout(debounce);
+  }, [fetchEvents]);
+
   function validate() {
     const e: Partial<Record<keyof typeof emptyForm, string>> = {};
-    if (!form.name.trim()) e.name = "Nama event wajib diisi.";
+    if (!form.title.trim()) e.title = "Nama event wajib diisi.";
     if (!form.location.trim()) e.location = "Lokasi wajib diisi.";
     if (!form.dateStart) e.dateStart = "Tanggal mulai wajib diisi.";
     if (!form.dateEnd) e.dateEnd = "Tanggal berakhir wajib diisi.";
@@ -85,30 +118,54 @@ export default function Event() {
     if (!form.timeEnd) e.timeEnd = "Waktu selesai wajib diisi.";
     if (form.timeStart && form.timeEnd && form.timeEnd <= form.timeStart)
       e.timeEnd = "Waktu selesai harus setelah waktu mulai.";
-    if (!form.capacity || isNaN(Number(form.capacity)) || Number(form.capacity) <= 0)
-      e.capacity = "Kapasitas venue harus lebih dari 0.";
+    if (!form.total_seats || isNaN(Number(form.total_seats)) || Number(form.total_seats) <= 0)
+      e.total_seats = "Kapasitas venue harus lebih dari 0.";
+    if (!form.price || isNaN(Number(form.price)) || Number(form.price) < 0)
+      e.price = "Harga tidak valid.";
     if (!form.description.trim()) e.description = "Deskripsi wajib diisi.";
+    if (!form.organizer_id.trim()) e.organizer_id = "Organizer ID wajib diisi.";
     return e;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    const eventData: EventItem = {
-      ...form,
-      id: editId ?? (events.length ? Math.max(...events.map((x) => x.id)) + 1 : 1),
-      capacity: Number(form.capacity),
+
+    const payload = {
+      organizer_id: form.organizer_id,
+      title: form.title,
+      location: form.location,
+      description: form.description,
+      category: form.category,
+      status: form.status,
+      price: Number(form.price),
+      total_seats: Number(form.total_seats),
+      available_seats: Number(form.total_seats),
+      start_event: form.dateStart ? `${form.dateStart}T${form.timeStart || "00:00"}:00` : undefined,
+      end_event: form.dateEnd ? `${form.dateEnd}T${form.timeEnd || "00:00"}:00` : undefined,
     };
-    if (editId !== null) {
-      setEvents((prev) => prev.map((ev) => (ev.id === editId ? eventData : ev)));
-    } else {
-      setEvents((prev) => [eventData, ...prev]);
+
+    try {
+      const url = editId ? `${API_BASE}/events/${editId}` : `${API_BASE}/events`;
+      const method = editId ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.message ?? "Terjadi kesalahan");
+      }
+      setForm(emptyForm);
+      setErrors({});
+      setShowForm(false);
+      setEditId(null);
+      fetchEvents();
+    } catch (err: any) {
+      setError(err.message);
     }
-    setForm(emptyForm);
-    setErrors({});
-    setShowForm(false);
-    setEditId(null);
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -124,29 +181,47 @@ export default function Event() {
     reader.readAsDataURL(file);
   }
 
-  function handleEdit(id: number) {
-    const ev = events.find((x) => x.id === id);
-    if (!ev) return;
+  function handleEdit(ev: EventItem) {
+    const startDate = ev.start_event ? ev.start_event.split("T")[0] : "";
+    const endDate = ev.end_event ? ev.end_event.split("T")[0] : "";
+    const startTime = ev.start_time
+      ? new Date(ev.start_time).toTimeString().slice(0, 5)
+      : ev.start_event
+      ? new Date(ev.start_event).toTimeString().slice(0, 5)
+      : "";
+    const endTime = ev.end_time
+      ? new Date(ev.end_time).toTimeString().slice(0, 5)
+      : ev.end_event
+      ? new Date(ev.end_event).toTimeString().slice(0, 5)
+      : "";
     setForm({
-      name: ev.name,
-      location: ev.location,
-      dateStart: ev.dateStart,
-      dateEnd: ev.dateEnd,
-      timeStart: ev.timeStart,
-      timeEnd: ev.timeEnd,
-      capacity: String(ev.capacity),
-      banner: ev.banner,
-      description: ev.description,
-      category: ev.category,
+      title: ev.title,
+      location: ev.location ?? "",
+      dateStart: startDate,
+      dateEnd: endDate,
+      timeStart: startTime,
+      timeEnd: endTime,
+      total_seats: String(ev.total_seats),
+      price: ev.price,
+      banner: ev.banner ?? "",
+      description: ev.description ?? "",
+      category: (ev.category as EventCategory) ?? "Konser",
       status: ev.status,
+      organizer_id: "",
     });
-    setEditId(id);
+    setEditId(ev.id);
     setErrors({});
     setShowForm(true);
   }
 
-  function handleDelete(id: number) {
-    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+  async function handleDelete(id: string) {
+    try {
+      const res = await fetch(`${API_BASE}/events/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Gagal menghapus event");
+      fetchEvents();
+    } catch (err: any) {
+      setError(err.message);
+    }
   }
 
   function handleCloseForm() {
@@ -155,14 +230,6 @@ export default function Event() {
     setForm(emptyForm);
     setErrors({});
   }
-
-  const filtered = events.filter((ev) => {
-    const matchCat = filterCategory === "Semua" || ev.category === filterCategory;
-    const matchStatus = filterStatus === "Semua" || ev.status === filterStatus;
-    const matchSearch = ev.name.toLowerCase().includes(search.toLowerCase()) ||
-      ev.location.toLowerCase().includes(search.toLowerCase());
-    return matchCat && matchStatus && matchSearch;
-  });
 
   return (
     <div className="space-y-6">
@@ -182,6 +249,13 @@ export default function Event() {
           Tambah Event
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg px-4 py-3 flex items-center justify-between">
+          {error}
+          <button onClick={() => setError(null)} className="ml-4 text-red-400 hover:text-red-600">✕</button>
+        </div>
+      )}
 
       {/* Modal Form */}
       {showForm && (
@@ -224,15 +298,16 @@ export default function Event() {
                 )}
               </div>
 
+              
               {/* Nama Event */}
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Nama Event</label>
                 <input
-                  name="name" value={form.name} onChange={handleChange}
+                  name="title" value={form.title} onChange={handleChange}
                   placeholder="cth. Konser Malam Minggu"
-                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.name ? "border-red-400" : "border-gray-200"}`}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.title ? "border-red-400" : "border-gray-200"}`}
                 />
-                {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+                {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
               </div>
 
               {/* Lokasi */}
@@ -267,17 +342,6 @@ export default function Event() {
                 </div>
               </div>
 
-              {/* Kapasitas */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Kapasitas Venue</label>
-                <input
-                  type="number" name="capacity" value={form.capacity} onChange={handleChange} min={1}
-                  placeholder="cth. 5000"
-                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.capacity ? "border-red-400" : "border-gray-200"}`}
-                />
-                {errors.capacity && <p className="text-xs text-red-500 mt-1">{errors.capacity}</p>}
-              </div>
-
               {/* Waktu Mulai & Selesai */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -298,6 +362,28 @@ export default function Event() {
                 </div>
               </div>
 
+              {/* Kapasitas & Harga */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Kapasitas Venue</label>
+                  <input
+                    type="number" name="total_seats" value={form.total_seats} onChange={handleChange} min={1}
+                    placeholder="cth. 5000"
+                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.total_seats ? "border-red-400" : "border-gray-200"}`}
+                  />
+                  {errors.total_seats && <p className="text-xs text-red-500 mt-1">{errors.total_seats}</p>}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Harga (Rp)</label>
+                  <input
+                    type="number" name="price" value={form.price} onChange={handleChange} min={0}
+                    placeholder="cth. 150000"
+                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.price ? "border-red-400" : "border-gray-200"}`}
+                  />
+                  {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
+                </div>
+              </div>
+
               {/* Kategori & Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -309,7 +395,7 @@ export default function Event() {
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
                   <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                    {STATUSES.map((s) => <option key={s}>{s}</option>)}
+                    {STATUSES.map((s) => <option key={s} value={s}>{statusLabel[s]}</option>)}
                   </select>
                 </div>
               </div>
@@ -365,9 +451,9 @@ export default function Event() {
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
           <option value="Semua">Semua Status</option>
-          {STATUSES.map((s) => <option key={s}>{s}</option>)}
+          {STATUSES.map((s) => <option key={s} value={s}>{statusLabel[s]}</option>)}
         </select>
-        <span className="text-xs text-gray-400 ml-auto">{filtered.length} event ditemukan</span>
+        <span className="text-xs text-gray-400 ml-auto">{events.length} event ditemukan</span>
       </div>
 
       {/* Event List */}
@@ -379,25 +465,29 @@ export default function Event() {
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Lokasi</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal & Waktu</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kapasitas</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kategori</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
               <th className="px-5 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td>
+              </tr>
+            ) : events.length === 0 ? (
               <tr>
                 <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
                   Tidak ada event yang ditemukan.
                 </td>
               </tr>
             ) : (
-              filtered.map((ev) => (
+              events.map((ev) => (
                 <tr key={ev.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       {ev.banner ? (
-                        <img src={ev.banner} alt={ev.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                        <img src={ev.banner} alt={ev.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
                           <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -406,40 +496,46 @@ export default function Event() {
                         </div>
                       )}
                       <div>
-                        <p className="font-medium text-gray-800">{ev.name}</p>
+                        <p className="font-medium text-gray-800">{ev.title}</p>
                         <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{ev.description}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-gray-600">{ev.location}</td>
+                  <td className="px-5 py-4 text-gray-600">{ev.location ?? "-"}</td>
                   <td className="px-5 py-4 text-gray-600">
-                    <p>
-                      {new Date(ev.dateStart).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
-                      {ev.dateEnd && ev.dateEnd !== ev.dateStart && (
-                        <> – {new Date(ev.dateEnd).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</>
-                      )}
-                    </p>
-                    {ev.timeStart && ev.timeEnd && (
-                      <p className="text-xs text-gray-400 mt-0.5">{ev.timeStart} – {ev.timeEnd}</p>
+                    {ev.start_event ? (
+                      <p>
+                        {new Date(ev.start_event).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                        {ev.end_event && ev.end_event !== ev.start_event && (
+                          <> - {new Date(ev.end_event).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</>
+                        )}
+                      </p>
+                    ) : "-"}
+                    {ev.start_event && ev.end_event && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {new Date(ev.start_event).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                        {" - "}
+                        {new Date(ev.end_event).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
                     )}
                   </td>
                   <td className="px-5 py-4 text-gray-600">
-                    {ev.capacity > 0 ? ev.capacity.toLocaleString("id-ID") : "-"}
+                    {ev.total_seats > 0 ? ev.total_seats.toLocaleString("id-ID") : "-"}
                   </td>
-                  <td className="px-5 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColor[ev.category]}`}>
-                      {ev.category}
-                    </span>
+                  <td className="px-5 py-4 text-gray-600">
+                    {Number(ev.price) === 0
+                      ? "Gratis"
+                      : `Rp ${Number(ev.price).toLocaleString("id-ID")}`}
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[ev.status]}`}>
-                      {ev.status}
+                      {statusLabel[ev.status]}
                     </span>
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleEdit(ev.id)}
+                        onClick={() => handleEdit(ev)}
                         className="text-gray-400 hover:text-orange-500 transition-colors"
                         title="Edit event"
                       >
@@ -467,3 +563,4 @@ export default function Event() {
     </div>
   );
 }
+

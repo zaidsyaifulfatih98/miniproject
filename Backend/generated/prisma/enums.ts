@@ -19,9 +19,11 @@ export type Roles = (typeof Roles)[keyof typeof Roles]
 
 export const EventStatus = {
   DRAFT: 'DRAFT',
-  PUBLISHED: 'PUBLISHED',
-  CANCELLED: 'CANCELLED',
-  COMPLETED: 'COMPLETED'
+  PENDING: 'PENDING',
+  ACTIVE: 'ACTIVE',
+  REJECTED: 'REJECTED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
 } as const
 
 export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus]
@@ -29,8 +31,10 @@ export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus]
 
 export const TicketType = {
   FREE: 'FREE',
-  PAID: 'PAID',
-  VIP: 'VIP'
+  EARLY_BIRD: 'EARLY_BIRD',
+  REGULAR: 'REGULAR',
+  VIP: 'VIP',
+  VVIP: 'VVIP'
 } as const
 
 export type TicketType = (typeof TicketType)[keyof typeof TicketType]
@@ -38,7 +42,10 @@ export type TicketType = (typeof TicketType)[keyof typeof TicketType]
 
 export const BookingStatus = {
   PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
+  WAITING_FOR_PAYMENTS: 'WAITING_FOR_PAYMENTS',
+  WAITING_FOR_CONFIRMATION: 'WAITING_FOR_CONFIRMATION',
+  REJECTED: 'REJECTED',
+  DONE: 'DONE',
   CANCELLED: 'CANCELLED',
   EXPIRED: 'EXPIRED'
 } as const
@@ -48,19 +55,16 @@ export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
 
 export const PaymentStatus = {
   PENDING: 'PENDING',
-  WAITING_CONFIRMATION: 'WAITING_CONFIRMATION',
-  CONFIRMED: 'CONFIRMED',
-  REJECTED: 'REJECTED',
-  CANCELLED: 'CANCELLED'
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED'
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 
 export const PromoType = {
-  DISCOUNT: 'DISCOUNT',
   REFERRAL: 'REFERRAL',
-  VOUCHER: 'VOUCHER'
+  EVENT_VOUCHER: 'EVENT_VOUCHER'
 } as const
 
 export type PromoType = (typeof PromoType)[keyof typeof PromoType]
