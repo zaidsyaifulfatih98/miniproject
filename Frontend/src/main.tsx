@@ -2,12 +2,63 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Page from './page/Page'
+import RootLayout from './components/RootLayout'
+import Event from './page/Event'
+import Ticket from './page/Ticket'
+import Customers from './page/Customers'
+import Transactions from './page/Transactions'
+import Report from './page/Report'
+import Dashboard from './page/Dashboard'
+import Admin from './page/Admin'
+import Register from './page/Register'
+import LoginOrganizer from './page/LoginOrganizer'
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    Component: Page,
+    path : '/register',
+    Component : Register
+  },
+  {
+    path: '/login',
+    Component : LoginOrganizer
+  },
+
+  {
+    element : <RootLayout/>,
+    children: [
+      {
+        path: '/dashboard',
+        Component: Dashboard,
+
+      }, 
+      {
+        path: '/event',
+        Component: Event,
+      },
+      {
+        path: '/ticket',
+        Component: Ticket,
+      },
+      {
+        path: '/customers',
+        Component: Customers,
+      },
+      {
+        path: '/transactions',
+        Component: Transactions,
+      },
+      {
+        path: '/report',
+        Component: Report,
+      },
+      {
+        path: '/admin',
+        Component: Admin,
+      }
+    ]
+  },
+  {
+    
   },
   
 ])

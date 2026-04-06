@@ -30,7 +30,7 @@ export * from "./enums"
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
  * // Fetch zero or more Users
- * const users = await prisma.user.findMany()
+ * const users = await prisma.users.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -40,12 +40,62 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model User
+ * Model Users
  * 
  */
-export type User = Prisma.UserModel
+export type Users = Prisma.UsersModel
 /**
- * Model Post
+ * Model Events
  * 
  */
-export type Post = Prisma.PostModel
+export type Events = Prisma.EventsModel
+/**
+ * Model Tickets
+ * 
+ */
+export type Tickets = Prisma.TicketsModel
+/**
+ * Model Bookings
+ * 
+ */
+export type Bookings = Prisma.BookingsModel
+/**
+ * Model Payments
+ * 
+ */
+export type Payments = Prisma.PaymentsModel
+/**
+ * Model Reviews
+ * 
+ */
+export type Reviews = Prisma.ReviewsModel
+/**
+ * Model Promotions
+ * 
+ */
+export type Promotions = Prisma.PromotionsModel
+/**
+ * Model Referrals
+ * 
+ */
+export type Referrals = Prisma.ReferralsModel
+/**
+ * Model DailySalesSnapshots
+ * 
+ */
+export type DailySalesSnapshots = Prisma.DailySalesSnapshotsModel
+/**
+ * Model EventPerformanceStats
+ * 
+ */
+export type EventPerformanceStats = Prisma.EventPerformanceStatsModel
+/**
+ * Model PointsHistory
+ * 
+ */
+export type PointsHistory = Prisma.PointsHistoryModel
+/**
+ * Model TicketInventoryLogs
+ * 
+ */
+export type TicketInventoryLogs = Prisma.TicketInventoryLogsModel

@@ -4,25 +4,237 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 
 model Users {
-  id        String   @id @default(uuid())
-  full_name String   @db.VarChar()
-  email     String   @unique
-  password  String
-  role      Roles[]
-  referral_code String  @unique  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime?
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  full_name     String    @db.VarChar()
+  birth_date    DateTime  @db.Date
+  gender        String    @db.VarChar(30)
+  address       String    @db.Text
+  role          Roles[]
+  referral_code String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  events             Events[]
+  bookings           Bookings[]
+  reviews            Reviews[]
+  points_history     PointsHistory[]
+  referrals_given    Referrals[]     @relation("ReferrerUser")
+  referrals_received Referrals[]     @relation("ReferredUser")
+}
+
+model Events {
+  id              String      @id @default(uuid())
+  organizer_id    String
+  title           String      @db.VarChar()
+  description     String?     @db.Text
+  category        String?     @db.VarChar()
+  location        String?     @db.VarChar()
+  price           Decimal
+  total_seats     Int
+  available_seats Int
+  status          EventStatus @default(DRAFT)
+  start_time      DateTime?
+  end_time        DateTime?
+  start_event     DateTime?
+  end_event       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt       DateTime?
+
+  organizer             Users                  @relation(fields: [organizer_id], references: [id])
+  tickets               Tickets[]
+  bookings              Bookings[]
+  reviews               Reviews[]
+  promotions            Promotions[]
+  daily_sales_snapshots DailySalesSnapshots[]
+  performance_stats     EventPerformanceStats?
+}
+
+model Tickets {
+  id          String     @id @default(uuid())
+  event_id    String
+  type        TicketType
+  description String     @db.Text
+  price       Decimal
+  quota       Int
+  used_ticket Int
+  deletedAt   DateTime?
+
+  event                 Events                @relation(fields: [event_id], references: [id])
+  bookings              Bookings[]
+  ticket_inventory_logs TicketInventoryLogs[]
+}
+
+model Bookings {
+  id              String        @id @default(uuid())
+  display_id      String?       @db.VarChar()
+  user_id         String
+  event_id        String
+  ticket_id       String
+  promotion_id    String?
+  quantity        Int?
+  status          BookingStatus @default(PENDING)
+  total_price     Decimal?
+  discount_amount Decimal?
+  points_used     Int?
+  final_price     Decimal?
+  expires_at      DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  user      Users       @relation(fields: [user_id], references: [id])
+  event     Events      @relation(fields: [event_id], references: [id])
+  ticket    Tickets     @relation(fields: [ticket_id], references: [id])
+  promotion Promotions? @relation(fields: [promotion_id], references: [id])
+  payment   Payments?
+  review    Reviews?
+}
+
+model Payments {
+  id                String        @id @default(uuid())
+  booking_id        String        @unique
+  amount            Decimal?
+  payment_proof_url String?       @db.VarChar()
+  status            PaymentStatus @default(PENDING)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  booking Bookings @relation(fields: [booking_id], references: [id])
+}
+
+model Reviews {
+  id         String    @id @default(uuid())
+  user_id    String
+  event_id   String
+  booking_id String    @unique
+  rating     Int
+  comment    String?   @db.Text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  user    Users    @relation(fields: [user_id], references: [id])
+  event   Events   @relation(fields: [event_id], references: [id])
+  booking Bookings @relation(fields: [booking_id], references: [id])
+}
+
+model Promotions {
+  id              String    @id @default(uuid())
+  event_id        String
+  type            PromoType
+  promotion_code  String    @db.VarChar()
+  discount_amount Decimal
+  max_usage       Int?
+  used_count      Int?
+  expires_at      DateTime?
+  deletedAt       DateTime?
+
+  event    Events     @relation(fields: [event_id], references: [id])
+  bookings Bookings[]
+}
+
+model Referrals {
+  id               String   @id @default(uuid())
+  referrer_user_id String
+  referred_user_id String
+  points_earned    Int?
+  createdAt        DateTime @default(now())
+
+  referrer Users @relation("ReferrerUser", fields: [referrer_user_id], references: [id])
+  referred Users @relation("ReferredUser", fields: [referred_user_id], references: [id])
+}
+
+model DailySalesSnapshots {
+  id            String   @id @default(uuid())
+  event_id      String
+  date          DateTime @db.Date
+  daily_tickets Int
+  daily_revenue Decimal  @db.Decimal(10, 2)
+
+  event Events @relation(fields: [event_id], references: [id])
+}
+
+model EventPerformanceStats {
+  id                  String  @id @default(uuid())
+  event_id            String  @unique
+  total_views         Int
+  tickets_sold        Int
+  revenue_gross       Decimal @db.Decimal(15, 2)
+  revenue_net         Decimal @db.Decimal(15, 2)
+  referral_conversion Int
+
+  event Events @relation(fields: [event_id], references: [id])
+}
+
+model PointsHistory {
+  id         String    @id @default(uuid())
+  user_id    String
+  points     Int
+  expires_at DateTime?
+  createdAt  DateTime  @default(now())
+  deletedAt  DateTime?
+
+  user Users @relation(fields: [user_id], references: [id])
+}
+
+model TicketInventoryLogs {
+  id              String   @id @default(uuid())
+  ticket_id       String
+  sold_at         DateTime
+  remaining_quota Int
+
+  ticket Tickets @relation(fields: [ticket_id], references: [id])
 }
 
 enum Roles {
   CUSTOMERS
   ORGANIZER
+}
+
+enum EventStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  REJECTED
+  COMPLETED
+  CANCELLED
+
+}
+
+enum TicketType {
+  FREE
+  EARLY_BIRD
+  REGULAR
+  VIP
+  VVIP
+}
+
+enum BookingStatus {
+  PENDING
+  WAITING_FOR_PAYMENTS
+  WAITING_FOR_CONFIRMATION
+  REJECTED
+  DONE  
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PromoType {
+  REFERRAL
+  EVENT_VOUCHER
 }

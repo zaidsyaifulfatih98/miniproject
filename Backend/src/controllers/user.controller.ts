@@ -1,9 +1,44 @@
 import { Request, Response, NextFunction } from "express";
 import { userService } from "../services/user.service";
 
-const isCUID = (value: string) => /^c[a-z0-9]{24}$/.test(value);
+const isUUID = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 export const userController = {
+  async loginOrganizer(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        res.status(400).json({ success: false, message: "Email dan password wajib diisi" });
+        return;
+      }
+
+      const result = await userService.loginOrganizer(email, password);
+
+      res.status(200).json({
+        success: true,
+        message: "Login berhasil",
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(401).json({ success: false, message: error.message });
+    }
+  },
+
+  async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await userService.create(req.body);
+      res.status(201).json({
+        success: true,
+        message: "create user successfully",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
       const users = await userService.getAll();
@@ -21,7 +56,7 @@ export const userController = {
     try {
       const id = req.params.id as string;
 
-      if (!isCUID(id)) {
+      if (!isUUID(id)) {
         res.status(400).json({ success: false, message: "invalid id" });
         return;
       }
@@ -47,7 +82,7 @@ export const userController = {
     try {
       const id = req.params.id as string;
 
-      if (!isCUID(id)) {
+      if (!isUUID(id)) {
         res.status(400).json({ success: false, message: "invalid id" });
         return;
       }
@@ -58,27 +93,6 @@ export const userController = {
         success: true,
         message: "update user successfully",
         data: user,
-      });
-    } catch (error) {
-      next(error);
-    }
-  },
-
-  async getPostsByUserId(req: Request, res: Response, next: NextFunction) {
-    try {
-      const id = req.params.id as string;
-
-      if (!isCUID(id)) {
-        res.status(400).json({ success: false, message: "invalid id" });
-        return;
-      }
-
-      const posts = await userService.getPostsByUserId(id);
-
-      res.status(200).json({
-        success: true,
-        message: "get user posts successfully",
-        data: posts,
       });
     } catch (error) {
       next(error);

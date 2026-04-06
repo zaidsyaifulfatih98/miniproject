@@ -9,7 +9,58 @@
 * 🟢 You can import this file directly.
 */
 
+export const Roles = {
+  CUSTOMERS: 'CUSTOMERS',
+  ORGANIZER: 'ORGANIZER'
+} as const
+
+export type Roles = (typeof Roles)[keyof typeof Roles]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const EventStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  CANCELLED: 'CANCELLED',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus]
+
+
+export const TicketType = {
+  FREE: 'FREE',
+  PAID: 'PAID',
+  VIP: 'VIP'
+} as const
+
+export type TicketType = (typeof TicketType)[keyof typeof TicketType]
+
+
+export const BookingStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
+
+
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  WAITING_CONFIRMATION: 'WAITING_CONFIRMATION',
+  CONFIRMED: 'CONFIRMED',
+  REJECTED: 'REJECTED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const PromoType = {
+  DISCOUNT: 'DISCOUNT',
+  REFERRAL: 'REFERRAL',
+  VOUCHER: 'VOUCHER'
+} as const
+
+export type PromoType = (typeof PromoType)[keyof typeof PromoType]
