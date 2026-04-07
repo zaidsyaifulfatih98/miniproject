@@ -44,13 +44,22 @@ const statusLabel: Record<EventStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
-const categoryColor: Record<EventCategory, string> = {
-  Konser: "bg-purple-100 text-purple-700",
-  Workshop: "bg-blue-100 text-blue-700",
-  Seminar: "bg-orange-100 text-orange-700",
-  Festival: "bg-pink-100 text-pink-700",
-  Olahraga: "bg-teal-100 text-teal-700",
-  Lainnya: "bg-gray-100 text-gray-600",
+const categoryColor: Record<string, string> = {
+  KONSER: "bg-purple-100 text-purple-700",
+  WORKSHOP: "bg-blue-100 text-blue-700",
+  SEMINAR: "bg-orange-100 text-orange-700",
+  FESTIVAL: "bg-pink-100 text-pink-700",
+  OLAHRAGA: "bg-teal-100 text-teal-700",
+  LAINNYA: "bg-gray-100 text-gray-600",
+};
+
+const categoryLabel: Record<string, string> = {
+  KONSER: "Konser",
+  WORKSHOP: "Workshop",
+  SEMINAR: "Seminar",
+  FESTIVAL: "Festival",
+  OLAHRAGA: "Olahraga",
+  LAINNYA: "Lainnya",
 };
 
 const emptyForm = {
@@ -66,7 +75,6 @@ const emptyForm = {
   description: "",
   category: "Konser" as EventCategory,
   status: "DRAFT" as EventStatus,
-  organizer_id: "",
 };
 
 export default function Event() {
@@ -123,7 +131,6 @@ export default function Event() {
     if (!form.price || isNaN(Number(form.price)) || Number(form.price) < 0)
       e.price = "Harga tidak valid.";
     if (!form.description.trim()) e.description = "Deskripsi wajib diisi.";
-    if (!form.organizer_id.trim()) e.organizer_id = "Organizer ID wajib diisi.";
     return e;
   }
 
@@ -132,12 +139,13 @@ export default function Event() {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
+    const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
     const payload = {
-      organizer_id: form.organizer_id,
+      users_id: currentUser.id,
       title: form.title,
       location: form.location,
       description: form.description,
-      category: form.category,
+      category: form.category.toUpperCase(),
       status: form.status,
       price: Number(form.price),
       total_seats: Number(form.total_seats),
@@ -205,9 +213,8 @@ export default function Event() {
       price: ev.price,
       banner: ev.banner ?? "",
       description: ev.description ?? "",
-      category: (ev.category as EventCategory) ?? "Konser",
+      category: (ev.category ? (categoryLabel[ev.category] as EventCategory) : "Konser") ?? "Konser",
       status: ev.status,
-      organizer_id: "",
     });
     setEditId(ev.id);
     setErrors({});
@@ -465,6 +472,7 @@ export default function Event() {
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Lokasi</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal & Waktu</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kapasitas</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kategori</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
               <th className="px-5 py-3" />
@@ -473,11 +481,11 @@ export default function Event() {
           <tbody className="divide-y divide-gray-50">
             {loading ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td>
+                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td>
               </tr>
             ) : events.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-12 text-gray-400 text-sm">
+                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
                   Tidak ada event yang ditemukan.
                 </td>
               </tr>
@@ -521,6 +529,13 @@ export default function Event() {
                   </td>
                   <td className="px-5 py-4 text-gray-600">
                     {ev.total_seats > 0 ? ev.total_seats.toLocaleString("id-ID") : "-"}
+                  </td>
+                  <td className="px-5 py-4">
+                    {ev.category ? (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColor[ev.category] ?? "bg-gray-100 text-gray-600"}`}>
+                        {categoryLabel[ev.category] ?? ev.category}
+                      </span>
+                    ) : "-"}
                   </td>
                   <td className="px-5 py-4 text-gray-600">
                     {Number(ev.price) === 0

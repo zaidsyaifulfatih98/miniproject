@@ -66,6 +66,8 @@ model Tickets {
   price       Decimal
   quota       Int
   used_ticket Int
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   deletedAt   DateTime?
 
   event                 Events                @relation(fields: [event_id], references: [id])
@@ -105,8 +107,9 @@ model Payments {
   amount            Decimal?
   payment_proof_url String?       @db.VarChar()
   status            PaymentStatus @default(PENDING)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt   DateTime?
 
   booking Bookings @relation(fields: [booking_id], references: [id])
 }
@@ -136,7 +139,9 @@ model Promotions {
   max_usage       Int?
   used_count      Int?
   expires_at      DateTime?
-  deletedAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt   DateTime?
 
   event    Events     @relation(fields: [event_id], references: [id])
   bookings Bookings[]
@@ -147,7 +152,9 @@ model Referrals {
   referrer_user_id String
   referred_user_id String
   points_earned    Int?
-  createdAt        DateTime @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt   DateTime?
 
   referrer Users @relation("ReferrerUser", fields: [referrer_user_id], references: [id])
   referred Users @relation("ReferredUser", fields: [referred_user_id], references: [id])
@@ -189,7 +196,7 @@ model PointsHistory {
 model TicketInventoryLogs {
   id              String   @id @default(uuid())
   ticket_id       String
-  sold_at         DateTime
+  sold_at         DateTime @default(now())
   remaining_quota Int
 
   ticket Tickets @relation(fields: [ticket_id], references: [id])

@@ -1,140 +1,172 @@
 
-import { useState } from "react";
-import { useEventStore } from "../store/eventStore";
+import { useState, useEffect, useCallback } from "react";
 
-type TicketType = "Early Bird" | "Reguler" | "VIP" | "VVIP";
-const TICKET_TYPES: TicketType[] = ["Early Bird", "Reguler", "VIP", "VVIP"];
+const API_BASE = "http://localhost:8000/api";
+
+type TicketType = "FREE" | "EARLY_BIRD" | "REGULAR" | "VIP" | "VVIP";
+const TICKET_TYPES: TicketType[] = ["FREE", "EARLY_BIRD", "REGULAR", "VIP", "VVIP"];
+
+const ticketTypeLabel: Record<TicketType, string> = {
+  FREE: "Free",
+  EARLY_BIRD: "Early Bird",
+  REGULAR: "Reguler",
+  VIP: "VIP",
+  VVIP: "VVIP",
+};
 
 const ticketTypeBadge: Record<TicketType, string> = {
-  "Early Bird": "bg-green-100 text-green-700",
-  Reguler: "bg-blue-100 text-blue-700",
+  FREE: "bg-gray-100 text-gray-600",
+  EARLY_BIRD: "bg-green-100 text-green-700",
+  REGULAR: "bg-blue-100 text-blue-700",
   VIP: "bg-purple-100 text-purple-700",
   VVIP: "bg-yellow-100 text-yellow-700",
 };
 
+interface EventItem {
+  id: string;
+  title: string;
+}
+
 interface TicketItem {
-  id: number;
-  eventId: number;
+  id: string;
+  event_id: string;
   type: TicketType;
-  price: number;
+  price: string;
   quota: number;
-  sold: number;
+  used_ticket: number;
   description: string;
 }
 
 interface PromoItem {
-  id: number;
-  eventId: number;
-  code: string;
-  discount: number; // percent
-  maxUse: number;
-  used: number;
-  expiry: string;
+  id: string;
+  event_id: string;
+  promotion_code: string;
+  discount_amount: string;
+  max_usage: number | null;
+  used_count: number | null;
+  expires_at: string | null;
+  event?: { id: string; title: string };
 }
 
-const initialTickets: TicketItem[] = [
-  { id: 1, eventId: 1, type: "Early Bird", price: 150000, quota: 200, sold: 180, description: "Harga spesial pembelian awal." },
-  { id: 2, eventId: 1, type: "Reguler", price: 250000, quota: 500, sold: 120, description: "Tiket reguler standar." },
-  { id: 3, eventId: 1, type: "VIP", price: 500000, quota: 100, sold: 60, description: "Akses area khusus VIP." },
-  { id: 4, eventId: 2, type: "Reguler", price: 100000, quota: 150, sold: 90, description: "Termasuk materi workshop." },
-  { id: 5, eventId: 2, type: "VIP", price: 200000, quota: 50, sold: 30, description: "Konsultasi 1-on-1 dengan mentor." },
-  { id: 6, eventId: 3, type: "VVIP", price: 750000, quota: 20, sold: 20, description: "Meja utama + networking dinner." },
-];
-
-const initialPromos: PromoItem[] = [
-  { id: 1, eventId: 1, code: "KONSER20", discount: 20, maxUse: 100, used: 45, expiry: "2026-04-10" },
-  { id: 2, eventId: 2, code: "WORKSHOP15", discount: 15, maxUse: 50, used: 12, expiry: "2026-05-01" },
-];
-
 const emptyTicketForm = {
-  eventId: 1,
-  type: "Reguler" as TicketType,
+  event_id: "",
+  type: "REGULAR" as TicketType,
   price: "",
   quota: "",
   description: "",
 };
 
 const emptyPromoForm = {
-  eventId: 1,
-  code: "",
-  discount: "",
-  maxUse: "",
-  expiry: "",
+  event_id: "",
+  promotion_code: "",
+  discount_amount: "",
+  max_usage: "",
+  expires_at: "",
 };
 
-function generateCode(eventId: number, events: { id: number; name: string }[]): string {
+function generateCode(eventId: string, events: EventItem[]): string {
   const ev = events.find((e) => e.id === eventId);
-  const prefix = (ev?.name ?? "EVENT").substring(0, 4).toUpperCase().replace(/\s/g, "");
+  const prefix = (ev?.title ?? "EVENT").substring(0, 4).toUpperCase().replace(/\s/g, "");
   const suffix = Math.floor(1000 + Math.random() * 9000);
   return `${prefix}${suffix}`;
 }
 
 export default function Ticket() {
-  const events = useEventStore((s) => s.events);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [tab, setTab] = useState<"tiket" | "promo">("tiket");
-  const [tickets, setTickets] = useState<TicketItem[]>(initialTickets);
-  const [promos, setPromos] = useState<PromoItem[]>(initialPromos);
+  const [tickets, setTickets] = useState<TicketItem[]>([]);
+  const [promos, setPromos] = useState<PromoItem[]>([]);
+  const [filterEventId, setFilterEventId] = useState<string>("Semua");
 
   // Ticket form state
   const [showTicketForm, setShowTicketForm] = useState(false);
-  const [editTicketId, setEditTicketId] = useState<number | null>(null);
+  const [editTicketId, setEditTicketId] = useState<string | null>(null);
   const [ticketForm, setTicketForm] = useState(emptyTicketForm);
   const [ticketErrors, setTicketErrors] = useState<Partial<Record<string, string>>>({});
 
   // Promo form state
   const [showPromoForm, setShowPromoForm] = useState(false);
-  const [editPromoId, setEditPromoId] = useState<number | null>(null);
+  const [editPromoId, setEditPromoId] = useState<string | null>(null);
   const [promoForm, setPromoForm] = useState(emptyPromoForm);
   const [promoErrors, setPromoErrors] = useState<Partial<Record<string, string>>>({});
 
-  // Filters
-  const [filterEvent, setFilterEvent] = useState<number | "Semua">("Semua");
+  // ── Data Fetching ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API_BASE}/events`)
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setEvents(data.data); })
+      .catch(console.error);
+  }, []);
+
+  const fetchTickets = useCallback(() => {
+    const url = filterEventId === "Semua"
+      ? `${API_BASE}/tickets`
+      : `${API_BASE}/tickets?event_id=${filterEventId}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setTickets(data.data); })
+      .catch(console.error);
+  }, [filterEventId]);
+
+  const fetchPromos = useCallback(() => {
+    const url = filterEventId === "Semua"
+      ? `${API_BASE}/promos`
+      : `${API_BASE}/promos?event_id=${filterEventId}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => { if (data.success) setPromos(data.data); })
+      .catch(console.error);
+  }, [filterEventId]);
+
+  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+  useEffect(() => { fetchPromos(); }, [fetchPromos]);
 
   // ── Ticket handlers ────────────────────────────────────────────────────────
   function validateTicket() {
     const e: Record<string, string> = {};
+    if (!ticketForm.event_id) e.event_id = "Event wajib dipilih.";
     if (!ticketForm.price || Number(ticketForm.price) <= 0) e.price = "Harga harus lebih dari 0.";
     if (!ticketForm.quota || Number(ticketForm.quota) <= 0) e.quota = "Kuota harus lebih dari 0.";
     if (!ticketForm.description.trim()) e.description = "Deskripsi wajib diisi.";
     return e;
   }
 
-  function handleTicketSubmit(e: React.FormEvent) {
+  async function handleTicketSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validateTicket();
     if (Object.keys(errs).length > 0) { setTicketErrors(errs); return; }
-    const ticketData = {
-      eventId: Number(ticketForm.eventId),
+    const body = {
+      event_id: ticketForm.event_id,
       type: ticketForm.type,
       price: Number(ticketForm.price),
       quota: Number(ticketForm.quota),
       description: ticketForm.description,
     };
-    if (editTicketId !== null) {
-      setTickets((prev) => prev.map((t) => t.id === editTicketId ? { ...t, ...ticketData } : t));
-    } else {
-      setTickets((prev) => [
-        ...prev,
-        { id: prev.length ? Math.max(...prev.map((t) => t.id)) + 1 : 1, sold: 0, ...ticketData },
-      ]);
+    try {
+      const url = editTicketId ? `${API_BASE}/tickets/${editTicketId}` : `${API_BASE}/tickets`;
+      const method = editTicketId ? "PUT" : "POST";
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!data.success) { alert(data.message); return; }
+      fetchTickets();
+      setTicketForm(emptyTicketForm);
+      setTicketErrors({});
+      setShowTicketForm(false);
+      setEditTicketId(null);
+    } catch (err) {
+      console.error(err);
     }
-    setTicketForm(emptyTicketForm);
-    setTicketErrors({});
-    setShowTicketForm(false);
-    setEditTicketId(null);
   }
 
-  function handleEditTicket(id: number) {
-    const t = tickets.find((x) => x.id === id);
-    if (!t) return;
+  function handleEditTicket(t: TicketItem) {
     setTicketForm({
-      eventId: t.eventId,
+      event_id: t.event_id,
       type: t.type,
       price: String(t.price),
       quota: String(t.quota),
       description: t.description,
     });
-    setEditTicketId(id);
+    setEditTicketId(t.id);
     setTicketErrors({});
     setShowTicketForm(true);
   }
@@ -144,57 +176,64 @@ export default function Ticket() {
     setTicketErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
   }
 
-  function handleDeleteTicket(id: number) {
-    setTickets((prev) => prev.filter((t) => t.id !== id));
+  async function handleDeleteTicket(id: string) {
+    if (!confirm("Hapus tiket ini?")) return;
+    try {
+      await fetch(`${API_BASE}/tickets/${id}`, { method: "DELETE" });
+      fetchTickets();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   // ── Promo handlers ─────────────────────────────────────────────────────────
   function validatePromo() {
     const e: Record<string, string> = {};
-    if (!promoForm.code.trim()) e.code = "Kode kupon wajib diisi.";
-    if (!promoForm.discount || Number(promoForm.discount) <= 0 || Number(promoForm.discount) > 100)
-      e.discount = "Diskon harus antara 1–100%.";
-    if (!promoForm.maxUse || Number(promoForm.maxUse) <= 0) e.maxUse = "Maks. penggunaan wajib diisi.";
-    if (!promoForm.expiry) e.expiry = "Tanggal kedaluwarsa wajib diisi.";
+    if (!promoForm.event_id) e.event_id = "Event wajib dipilih.";
+    if (!promoForm.promotion_code.trim()) e.promotion_code = "Kode kupon wajib diisi.";
+    if (!promoForm.discount_amount || Number(promoForm.discount_amount) <= 0)
+      e.discount_amount = "Nominal diskon harus lebih dari 0.";
+    if (!promoForm.max_usage || Number(promoForm.max_usage) <= 0) e.max_usage = "Maks. penggunaan wajib diisi.";
+    if (!promoForm.expires_at) e.expires_at = "Tanggal kedaluwarsa wajib diisi.";
     return e;
   }
 
-  function handlePromoSubmit(e: React.FormEvent) {
+  async function handlePromoSubmit(e: React.FormEvent) {
     e.preventDefault();
     const errs = validatePromo();
     if (Object.keys(errs).length > 0) { setPromoErrors(errs); return; }
-    const promoData = {
-      eventId: Number(promoForm.eventId),
-      code: promoForm.code.toUpperCase(),
-      discount: Number(promoForm.discount),
-      maxUse: Number(promoForm.maxUse),
-      expiry: promoForm.expiry,
+    const body = {
+      event_id: promoForm.event_id,
+      promotion_code: promoForm.promotion_code.toUpperCase(),
+      discount_amount: Number(promoForm.discount_amount),
+      max_usage: Number(promoForm.max_usage),
+      expires_at: promoForm.expires_at,
     };
-    if (editPromoId !== null) {
-      setPromos((prev) => prev.map((p) => p.id === editPromoId ? { ...p, ...promoData } : p));
-    } else {
-      setPromos((prev) => [
-        ...prev,
-        { id: prev.length ? Math.max(...prev.map((p) => p.id)) + 1 : 1, used: 0, ...promoData },
-      ]);
+    try {
+      const url = editPromoId ? `${API_BASE}/promos/${editPromoId}` : `${API_BASE}/promos`;
+      const method = editPromoId ? "PUT" : "POST";
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!data.success) { alert(data.message); return; }
+      fetchPromos();
+      setPromoForm(emptyPromoForm);
+      setPromoErrors({});
+      setShowPromoForm(false);
+      setEditPromoId(null);
+    } catch (err) {
+      console.error(err);
     }
-    setPromoForm(emptyPromoForm);
-    setPromoErrors({});
-    setShowPromoForm(false);
-    setEditPromoId(null);
   }
 
-  function handleEditPromo(id: number) {
-    const p = promos.find((x) => x.id === id);
-    if (!p) return;
+  function handleEditPromo(p: PromoItem) {
     setPromoForm({
-      eventId: p.eventId,
-      code: p.code,
-      discount: String(p.discount),
-      maxUse: String(p.maxUse),
-      expiry: p.expiry,
+      event_id: p.event_id,
+      promotion_code: p.promotion_code,
+      discount_amount: String(p.discount_amount),
+      max_usage: String(p.max_usage ?? ""),
+      expires_at: p.expires_at ? p.expires_at.substring(0, 10) : "",
     });
-    setEditPromoId(id);
+    setEditPromoId(p.id);
     setPromoErrors({});
     setShowPromoForm(true);
   }
@@ -204,16 +243,20 @@ export default function Ticket() {
     setPromoErrors((prev) => ({ ...prev, [e.target.name]: undefined }));
   }
 
-  function handleDeletePromo(id: number) {
-    setPromos((prev) => prev.filter((p) => p.id !== id));
+  async function handleDeletePromo(id: string) {
+    if (!confirm("Hapus promo ini?")) return;
+    try {
+      await fetch(`${API_BASE}/promos/${id}`, { method: "DELETE" });
+      fetchPromos();
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  // ── Filtered data ──────────────────────────────────────────────────────────
-  const filteredTickets = filterEvent === "Semua" ? tickets : tickets.filter((t) => t.eventId === filterEvent);
-  const filteredPromos = filterEvent === "Semua" ? promos : promos.filter((p) => p.eventId === filterEvent);
-
-  function getEventName(id: number) {
-    return events.find((e) => e.id === id)?.name ?? "-";
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function getEventName(event_id: string, event?: { id: string; title: string }) {
+    if (event) return event.title;
+    return events.find((e) => e.id === event_id)?.title ?? "-";
   }
 
   return (
@@ -227,7 +270,7 @@ export default function Ticket() {
         <button
           onClick={() => {
             if (tab === "tiket") { setEditTicketId(null); setTicketForm(emptyTicketForm); setTicketErrors({}); setShowTicketForm(true); }
-            else if (tab === "promo") { setEditPromoId(null); setPromoForm(emptyPromoForm); setPromoErrors({}); setShowPromoForm(true); }
+            else { setEditPromoId(null); setPromoForm(emptyPromoForm); setPromoErrors({}); setShowPromoForm(true); }
           }}
           className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
         >
@@ -235,7 +278,6 @@ export default function Ticket() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
           {tab === "tiket" ? "Tambah Tiket" : "Tambah Promo"}
-
         </button>
       </div>
 
@@ -255,12 +297,12 @@ export default function Ticket() {
           ))}
         </div>
         <select
-          value={filterEvent === "Semua" ? "Semua" : String(filterEvent)}
-          onChange={(e) => setFilterEvent(e.target.value === "Semua" ? "Semua" : Number(e.target.value))}
+          value={filterEventId}
+          onChange={(e) => setFilterEventId(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
           <option value="Semua">Semua Event</option>
-          {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+          {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
         </select>
       </div>
 
@@ -281,24 +323,24 @@ export default function Ticket() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredTickets.length === 0 ? (
+              {tickets.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">Tidak ada tiket ditemukan.</td>
                 </tr>
-              ) : filteredTickets.map((t) => {
-                const sisa = t.quota - t.sold;
-                const pct = Math.round((t.sold / t.quota) * 100);
+              ) : tickets.map((t) => {
+                const sisa = t.quota - t.used_ticket;
+                const pct = t.quota > 0 ? Math.round((t.used_ticket / t.quota) * 100) : 0;
                 return (
                   <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 text-gray-700 font-medium">{getEventName(t.eventId)}</td>
+                    <td className="px-5 py-4 text-gray-700 font-medium">{getEventName(t.event_id)}</td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[t.type]}`}>
-                        {t.type}
+                        {ticketTypeLabel[t.type]}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-gray-700">Rp {t.price.toLocaleString("id-ID")}</td>
+                    <td className="px-5 py-4 text-gray-700">Rp {Number(t.price).toLocaleString("id-ID")}</td>
                     <td className="px-5 py-4 text-gray-700">{t.quota}</td>
-                    <td className="px-5 py-4 text-gray-700">{t.sold}</td>
+                    <td className="px-5 py-4 text-gray-700">{t.used_ticket}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -315,7 +357,7 @@ export default function Ticket() {
                     <td className="px-5 py-4 text-gray-500 text-xs max-w-[160px] truncate">{t.description}</td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => handleEditTicket(t.id)} className="text-gray-400 hover:text-orange-500 transition-colors" title="Edit tiket">
+                        <button onClick={() => handleEditTicket(t)} className="text-gray-400 hover:text-orange-500 transition-colors" title="Edit tiket">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
@@ -350,37 +392,49 @@ export default function Ticket() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filteredPromos.length === 0 ? (
+              {promos.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-gray-400 text-sm">Tidak ada promo ditemukan.</td>
                 </tr>
-              ) : filteredPromos.map((p) => {
-                const expired = new Date(p.expiry) < new Date();
+              ) : promos.map((p) => {
+                const expired = p.expires_at ? new Date(p.expires_at) < new Date() : false;
+                const used = p.used_count ?? 0;
+                const maxUse = p.max_usage ?? 0;
                 return (
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 text-gray-700 font-medium">{getEventName(p.eventId)}</td>
+                    <td className="px-5 py-4 text-gray-700 font-medium">{getEventName(p.event_id, p.event)}</td>
                     <td className="px-5 py-4">
                       <span className="font-mono bg-orange-50 text-orange-600 border border-orange-200 px-2.5 py-0.5 rounded text-xs font-semibold tracking-widest">
-                        {p.code}
+                        {p.promotion_code}
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="text-green-700 font-semibold">{p.discount}%</span>
+                      <span className="text-green-700 font-semibold">Rp {Number(p.discount_amount).toLocaleString("id-ID")}</span>
                     </td>
                     <td className="px-5 py-4 text-gray-600">
-                      {p.used} / {p.maxUse}
-                      <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
-                        <div className="h-full bg-orange-400 rounded-full" style={{ width: `${Math.min((p.used / p.maxUse) * 100, 100)}%` }} />
-                      </div>
+                      {maxUse > 0 ? (
+                        <>
+                          {used} / {maxUse}
+                          <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                            <div className="h-full bg-orange-400 rounded-full" style={{ width: `${Math.min((used / maxUse) * 100, 100)}%` }} />
+                          </div>
+                        </>
+                      ) : (
+                        <>{used} / ∞</>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${expired ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"}`}>
-                        {expired ? "Kedaluwarsa" : new Date(p.expiry).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                        {p.expires_at
+                          ? expired
+                            ? "Kedaluwarsa"
+                            : new Date(p.expires_at).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                          : "Tidak ada batas"}
                       </span>
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => handleEditPromo(p.id)} className="text-gray-400 hover:text-orange-500 transition-colors" title="Edit promo">
+                        <button onClick={() => handleEditPromo(p)} className="text-gray-400 hover:text-orange-500 transition-colors" title="Edit promo">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
@@ -415,17 +469,19 @@ export default function Ticket() {
             <form onSubmit={handleTicketSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Event</label>
-                <select name="eventId" value={ticketForm.eventId} onChange={handleTicketChange}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                  {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+                <select name="event_id" value={ticketForm.event_id} onChange={handleTicketChange}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${ticketErrors.event_id ? "border-red-400" : "border-gray-200"}`}>
+                  <option value="">-- Pilih Event --</option>
+                  {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
                 </select>
+                {ticketErrors.event_id && <p className="text-xs text-red-500 mt-1">{ticketErrors.event_id}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Tipe Tiket</label>
                   <select name="type" value={ticketForm.type} onChange={handleTicketChange}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                    {TICKET_TYPES.map((t) => <option key={t}>{t}</option>)}
+                    {TICKET_TYPES.map((t) => <option key={t} value={t}>{ticketTypeLabel[t]}</option>)}
                   </select>
                 </div>
                 <div>
@@ -476,46 +532,48 @@ export default function Ticket() {
             <form onSubmit={handlePromoSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Event</label>
-                <select name="eventId" value={promoForm.eventId} onChange={handlePromoChange}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                  {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+                <select name="event_id" value={promoForm.event_id} onChange={handlePromoChange}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.event_id ? "border-red-400" : "border-gray-200"}`}>
+                  <option value="">-- Pilih Event --</option>
+                  {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
                 </select>
+                {promoErrors.event_id && <p className="text-xs text-red-500 mt-1">{promoErrors.event_id}</p>}
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Kode Kupon</label>
                 <div className="flex gap-2">
-                  <input name="code" value={promoForm.code} onChange={handlePromoChange}
+                  <input name="promotion_code" value={promoForm.promotion_code} onChange={handlePromoChange}
                     placeholder="cth. DISC2026"
-                    className={`flex-1 border rounded-lg px-3 py-2 text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.code ? "border-red-400" : "border-gray-200"}`} />
+                    className={`flex-1 border rounded-lg px-3 py-2 text-sm font-mono uppercase outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.promotion_code ? "border-red-400" : "border-gray-200"}`} />
                   <button type="button"
-                    onClick={() => setPromoForm((prev) => ({ ...prev, code: generateCode(Number(prev.eventId), events) }))}
+                    onClick={() => setPromoForm((prev) => ({ ...prev, promotion_code: generateCode(prev.event_id, events) }))}
                     className="px-3 py-2 text-xs border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors whitespace-nowrap">
                     Auto-generate
                   </button>
                 </div>
-                {promoErrors.code && <p className="text-xs text-red-500 mt-1">{promoErrors.code}</p>}
+                {promoErrors.promotion_code && <p className="text-xs text-red-500 mt-1">{promoErrors.promotion_code}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Diskon (%)</label>
-                  <input type="number" name="discount" value={promoForm.discount} onChange={handlePromoChange} min={1} max={100}
-                    placeholder="cth. 20"
-                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.discount ? "border-red-400" : "border-gray-200"}`} />
-                  {promoErrors.discount && <p className="text-xs text-red-500 mt-1">{promoErrors.discount}</p>}
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nominal Diskon (Rp)</label>
+                  <input type="number" name="discount_amount" value={promoForm.discount_amount} onChange={handlePromoChange} min={1}
+                    placeholder="cth. 50000"
+                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.discount_amount ? "border-red-400" : "border-gray-200"}`} />
+                  {promoErrors.discount_amount && <p className="text-xs text-red-500 mt-1">{promoErrors.discount_amount}</p>}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Maks. Penggunaan</label>
-                  <input type="number" name="maxUse" value={promoForm.maxUse} onChange={handlePromoChange} min={1}
+                  <input type="number" name="max_usage" value={promoForm.max_usage} onChange={handlePromoChange} min={1}
                     placeholder="cth. 100"
-                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.maxUse ? "border-red-400" : "border-gray-200"}`} />
-                  {promoErrors.maxUse && <p className="text-xs text-red-500 mt-1">{promoErrors.maxUse}</p>}
+                    className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.max_usage ? "border-red-400" : "border-gray-200"}`} />
+                  {promoErrors.max_usage && <p className="text-xs text-red-500 mt-1">{promoErrors.max_usage}</p>}
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Berlaku Hingga</label>
-                <input type="date" name="expiry" value={promoForm.expiry} onChange={handlePromoChange}
-                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.expiry ? "border-red-400" : "border-gray-200"}`} />
-                {promoErrors.expiry && <p className="text-xs text-red-500 mt-1">{promoErrors.expiry}</p>}
+                <input type="date" name="expires_at" value={promoForm.expires_at} onChange={handlePromoChange}
+                  className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${promoErrors.expires_at ? "border-red-400" : "border-gray-200"}`} />
+                {promoErrors.expires_at && <p className="text-xs text-red-500 mt-1">{promoErrors.expires_at}</p>}
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => { setShowPromoForm(false); setEditPromoId(null); }}

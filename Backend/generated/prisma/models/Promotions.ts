@@ -47,6 +47,8 @@ export type PromotionsMinAggregateOutputType = {
   max_usage: number | null
   used_count: number | null
   expires_at: Date | null
+  createdAt: Date | null
+  updatedAt: Date | null
   deletedAt: Date | null
 }
 
@@ -59,6 +61,8 @@ export type PromotionsMaxAggregateOutputType = {
   max_usage: number | null
   used_count: number | null
   expires_at: Date | null
+  createdAt: Date | null
+  updatedAt: Date | null
   deletedAt: Date | null
 }
 
@@ -71,6 +75,8 @@ export type PromotionsCountAggregateOutputType = {
   max_usage: number
   used_count: number
   expires_at: number
+  createdAt: number
+  updatedAt: number
   deletedAt: number
   _all: number
 }
@@ -97,6 +103,8 @@ export type PromotionsMinAggregateInputType = {
   max_usage?: true
   used_count?: true
   expires_at?: true
+  createdAt?: true
+  updatedAt?: true
   deletedAt?: true
 }
 
@@ -109,6 +117,8 @@ export type PromotionsMaxAggregateInputType = {
   max_usage?: true
   used_count?: true
   expires_at?: true
+  createdAt?: true
+  updatedAt?: true
   deletedAt?: true
 }
 
@@ -121,6 +131,8 @@ export type PromotionsCountAggregateInputType = {
   max_usage?: true
   used_count?: true
   expires_at?: true
+  createdAt?: true
+  updatedAt?: true
   deletedAt?: true
   _all?: true
 }
@@ -220,6 +232,8 @@ export type PromotionsGroupByOutputType = {
   max_usage: number | null
   used_count: number | null
   expires_at: Date | null
+  createdAt: Date
+  updatedAt: Date
   deletedAt: Date | null
   _count: PromotionsCountAggregateOutputType | null
   _avg: PromotionsAvgAggregateOutputType | null
@@ -255,6 +269,8 @@ export type PromotionsWhereInput = {
   max_usage?: Prisma.IntNullableFilter<"Promotions"> | number | null
   used_count?: Prisma.IntNullableFilter<"Promotions"> | number | null
   expires_at?: Prisma.DateTimeNullableFilter<"Promotions"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"Promotions"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Promotions"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Promotions"> | Date | string | null
   event?: Prisma.XOR<Prisma.EventsScalarRelationFilter, Prisma.EventsWhereInput>
   bookings?: Prisma.BookingsListRelationFilter
@@ -269,6 +285,8 @@ export type PromotionsOrderByWithRelationInput = {
   max_usage?: Prisma.SortOrderInput | Prisma.SortOrder
   used_count?: Prisma.SortOrderInput | Prisma.SortOrder
   expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   event?: Prisma.EventsOrderByWithRelationInput
   bookings?: Prisma.BookingsOrderByRelationAggregateInput
@@ -286,6 +304,8 @@ export type PromotionsWhereUniqueInput = Prisma.AtLeast<{
   max_usage?: Prisma.IntNullableFilter<"Promotions"> | number | null
   used_count?: Prisma.IntNullableFilter<"Promotions"> | number | null
   expires_at?: Prisma.DateTimeNullableFilter<"Promotions"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"Promotions"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Promotions"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Promotions"> | Date | string | null
   event?: Prisma.XOR<Prisma.EventsScalarRelationFilter, Prisma.EventsWhereInput>
   bookings?: Prisma.BookingsListRelationFilter
@@ -300,6 +320,8 @@ export type PromotionsOrderByWithAggregationInput = {
   max_usage?: Prisma.SortOrderInput | Prisma.SortOrder
   used_count?: Prisma.SortOrderInput | Prisma.SortOrder
   expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PromotionsCountOrderByAggregateInput
   _avg?: Prisma.PromotionsAvgOrderByAggregateInput
@@ -320,6 +342,8 @@ export type PromotionsScalarWhereWithAggregatesInput = {
   max_usage?: Prisma.IntNullableWithAggregatesFilter<"Promotions"> | number | null
   used_count?: Prisma.IntNullableWithAggregatesFilter<"Promotions"> | number | null
   expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Promotions"> | Date | string | null
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Promotions"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Promotions"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Promotions"> | Date | string | null
 }
 
@@ -331,6 +355,8 @@ export type PromotionsCreateInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   event: Prisma.EventsCreateNestedOneWithoutPromotionsInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutPromotionInput
@@ -345,6 +371,8 @@ export type PromotionsUncheckedCreateInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutPromotionInput
 }
@@ -357,6 +385,8 @@ export type PromotionsUpdateInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   event?: Prisma.EventsUpdateOneRequiredWithoutPromotionsNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutPromotionNestedInput
@@ -371,6 +401,8 @@ export type PromotionsUncheckedUpdateInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutPromotionNestedInput
 }
@@ -384,6 +416,8 @@ export type PromotionsCreateManyInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
 }
 
@@ -395,6 +429,8 @@ export type PromotionsUpdateManyMutationInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -407,6 +443,8 @@ export type PromotionsUncheckedUpdateManyInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -434,6 +472,8 @@ export type PromotionsCountOrderByAggregateInput = {
   max_usage?: Prisma.SortOrder
   used_count?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
 
@@ -452,6 +492,8 @@ export type PromotionsMaxOrderByAggregateInput = {
   max_usage?: Prisma.SortOrder
   used_count?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
 
@@ -464,6 +506,8 @@ export type PromotionsMinOrderByAggregateInput = {
   max_usage?: Prisma.SortOrder
   used_count?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
 
@@ -543,6 +587,8 @@ export type PromotionsCreateWithoutEventInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsCreateNestedManyWithoutPromotionInput
 }
@@ -555,6 +601,8 @@ export type PromotionsUncheckedCreateWithoutEventInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutPromotionInput
 }
@@ -597,6 +645,8 @@ export type PromotionsScalarWhereInput = {
   max_usage?: Prisma.IntNullableFilter<"Promotions"> | number | null
   used_count?: Prisma.IntNullableFilter<"Promotions"> | number | null
   expires_at?: Prisma.DateTimeNullableFilter<"Promotions"> | Date | string | null
+  createdAt?: Prisma.DateTimeFilter<"Promotions"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Promotions"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Promotions"> | Date | string | null
 }
 
@@ -608,6 +658,8 @@ export type PromotionsCreateWithoutBookingsInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   event: Prisma.EventsCreateNestedOneWithoutPromotionsInput
 }
@@ -621,6 +673,8 @@ export type PromotionsUncheckedCreateWithoutBookingsInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
 }
 
@@ -648,6 +702,8 @@ export type PromotionsUpdateWithoutBookingsInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   event?: Prisma.EventsUpdateOneRequiredWithoutPromotionsNestedInput
 }
@@ -661,6 +717,8 @@ export type PromotionsUncheckedUpdateWithoutBookingsInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -672,6 +730,8 @@ export type PromotionsCreateManyEventInput = {
   max_usage?: number | null
   used_count?: number | null
   expires_at?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
 }
 
@@ -683,6 +743,8 @@ export type PromotionsUpdateWithoutEventInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUpdateManyWithoutPromotionNestedInput
 }
@@ -695,6 +757,8 @@ export type PromotionsUncheckedUpdateWithoutEventInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutPromotionNestedInput
 }
@@ -707,6 +771,8 @@ export type PromotionsUncheckedUpdateManyWithoutEventInput = {
   max_usage?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   used_count?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -750,6 +816,8 @@ export type PromotionsSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   max_usage?: boolean
   used_count?: boolean
   expires_at?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Promotions$bookingsArgs<ExtArgs>
@@ -765,6 +833,8 @@ export type PromotionsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   max_usage?: boolean
   used_count?: boolean
   expires_at?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["promotions"]>
@@ -778,6 +848,8 @@ export type PromotionsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   max_usage?: boolean
   used_count?: boolean
   expires_at?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["promotions"]>
@@ -791,10 +863,12 @@ export type PromotionsSelectScalar = {
   max_usage?: boolean
   used_count?: boolean
   expires_at?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type PromotionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "type" | "promotion_code" | "discount_amount" | "max_usage" | "used_count" | "expires_at" | "deletedAt", ExtArgs["result"]["promotions"]>
+export type PromotionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "type" | "promotion_code" | "discount_amount" | "max_usage" | "used_count" | "expires_at" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["promotions"]>
 export type PromotionsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Promotions$bookingsArgs<ExtArgs>
@@ -822,6 +896,8 @@ export type $PromotionsPayload<ExtArgs extends runtime.Types.Extensions.Internal
     max_usage: number | null
     used_count: number | null
     expires_at: Date | null
+    createdAt: Date
+    updatedAt: Date
     deletedAt: Date | null
   }, ExtArgs["result"]["promotions"]>
   composites: {}
@@ -1256,6 +1332,8 @@ export interface PromotionsFieldRefs {
   readonly max_usage: Prisma.FieldRef<"Promotions", 'Int'>
   readonly used_count: Prisma.FieldRef<"Promotions", 'Int'>
   readonly expires_at: Prisma.FieldRef<"Promotions", 'DateTime'>
+  readonly createdAt: Prisma.FieldRef<"Promotions", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Promotions", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Promotions", 'DateTime'>
 }
     

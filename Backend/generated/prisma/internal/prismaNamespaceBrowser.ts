@@ -130,6 +130,8 @@ export const TicketsScalarFieldEnum = {
   price: 'price',
   quota: 'quota',
   used_ticket: 'used_ticket',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
 } as const
 
@@ -165,7 +167,8 @@ export const PaymentsScalarFieldEnum = {
   payment_proof_url: 'payment_proof_url',
   status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type PaymentsScalarFieldEnum = (typeof PaymentsScalarFieldEnum)[keyof typeof PaymentsScalarFieldEnum]
@@ -195,6 +198,8 @@ export const PromotionsScalarFieldEnum = {
   max_usage: 'max_usage',
   used_count: 'used_count',
   expires_at: 'expires_at',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
   deletedAt: 'deletedAt'
 } as const
 
@@ -206,7 +211,9 @@ export const ReferralsScalarFieldEnum = {
   referrer_user_id: 'referrer_user_id',
   referred_user_id: 'referred_user_id',
   points_earned: 'points_earned',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 } as const
 
 export type ReferralsScalarFieldEnum = (typeof ReferralsScalarFieldEnum)[keyof typeof ReferralsScalarFieldEnum]
