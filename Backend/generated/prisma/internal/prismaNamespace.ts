@@ -1362,7 +1362,7 @@ export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof Us
 
 export const EventsScalarFieldEnum = {
   id: 'id',
-  organizer_id: 'organizer_id',
+  users_id: 'users_id',
   title: 'title',
   description: 'description',
   category: 'category',
@@ -1588,6 +1588,20 @@ export type ListEnumRolesFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'Roles'
  */
 export type EnumRolesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Roles'>
+    
+
+
+/**
+ * Reference to a field of type 'EventCategory'
+ */
+export type EnumEventCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventCategory'>
+    
+
+
+/**
+ * Reference to a field of type 'EventCategory[]'
+ */
+export type ListEnumEventCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EventCategory[]'>
     
 
 

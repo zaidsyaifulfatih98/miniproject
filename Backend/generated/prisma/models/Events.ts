@@ -40,10 +40,10 @@ export type EventsSumAggregateOutputType = {
 
 export type EventsMinAggregateOutputType = {
   id: string | null
-  organizer_id: string | null
+  users_id: string | null
   title: string | null
   description: string | null
-  category: string | null
+  category: $Enums.EventCategory | null
   location: string | null
   price: runtime.Decimal | null
   total_seats: number | null
@@ -60,10 +60,10 @@ export type EventsMinAggregateOutputType = {
 
 export type EventsMaxAggregateOutputType = {
   id: string | null
-  organizer_id: string | null
+  users_id: string | null
   title: string | null
   description: string | null
-  category: string | null
+  category: $Enums.EventCategory | null
   location: string | null
   price: runtime.Decimal | null
   total_seats: number | null
@@ -80,7 +80,7 @@ export type EventsMaxAggregateOutputType = {
 
 export type EventsCountAggregateOutputType = {
   id: number
-  organizer_id: number
+  users_id: number
   title: number
   description: number
   category: number
@@ -114,7 +114,7 @@ export type EventsSumAggregateInputType = {
 
 export type EventsMinAggregateInputType = {
   id?: true
-  organizer_id?: true
+  users_id?: true
   title?: true
   description?: true
   category?: true
@@ -134,7 +134,7 @@ export type EventsMinAggregateInputType = {
 
 export type EventsMaxAggregateInputType = {
   id?: true
-  organizer_id?: true
+  users_id?: true
   title?: true
   description?: true
   category?: true
@@ -154,7 +154,7 @@ export type EventsMaxAggregateInputType = {
 
 export type EventsCountAggregateInputType = {
   id?: true
-  organizer_id?: true
+  users_id?: true
   title?: true
   description?: true
   category?: true
@@ -261,10 +261,10 @@ export type EventsGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
 
 export type EventsGroupByOutputType = {
   id: string
-  organizer_id: string
+  users_id: string
   title: string
   description: string | null
-  category: string | null
+  category: $Enums.EventCategory
   location: string | null
   price: runtime.Decimal
   total_seats: number
@@ -304,10 +304,10 @@ export type EventsWhereInput = {
   OR?: Prisma.EventsWhereInput[]
   NOT?: Prisma.EventsWhereInput | Prisma.EventsWhereInput[]
   id?: Prisma.StringFilter<"Events"> | string
-  organizer_id?: Prisma.StringFilter<"Events"> | string
+  users_id?: Prisma.StringFilter<"Events"> | string
   title?: Prisma.StringFilter<"Events"> | string
   description?: Prisma.StringNullableFilter<"Events"> | string | null
-  category?: Prisma.StringNullableFilter<"Events"> | string | null
+  category?: Prisma.EnumEventCategoryFilter<"Events"> | $Enums.EventCategory
   location?: Prisma.StringNullableFilter<"Events"> | string | null
   price?: Prisma.DecimalFilter<"Events"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFilter<"Events"> | number
@@ -331,10 +331,10 @@ export type EventsWhereInput = {
 
 export type EventsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  organizer_id?: Prisma.SortOrder
+  users_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  category?: Prisma.SortOrderInput | Prisma.SortOrder
+  category?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   price?: Prisma.SortOrder
   total_seats?: Prisma.SortOrder
@@ -361,10 +361,10 @@ export type EventsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.EventsWhereInput | Prisma.EventsWhereInput[]
   OR?: Prisma.EventsWhereInput[]
   NOT?: Prisma.EventsWhereInput | Prisma.EventsWhereInput[]
-  organizer_id?: Prisma.StringFilter<"Events"> | string
+  users_id?: Prisma.StringFilter<"Events"> | string
   title?: Prisma.StringFilter<"Events"> | string
   description?: Prisma.StringNullableFilter<"Events"> | string | null
-  category?: Prisma.StringNullableFilter<"Events"> | string | null
+  category?: Prisma.EnumEventCategoryFilter<"Events"> | $Enums.EventCategory
   location?: Prisma.StringNullableFilter<"Events"> | string | null
   price?: Prisma.DecimalFilter<"Events"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFilter<"Events"> | number
@@ -388,10 +388,10 @@ export type EventsWhereUniqueInput = Prisma.AtLeast<{
 
 export type EventsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  organizer_id?: Prisma.SortOrder
+  users_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
-  category?: Prisma.SortOrderInput | Prisma.SortOrder
+  category?: Prisma.SortOrder
   location?: Prisma.SortOrderInput | Prisma.SortOrder
   price?: Prisma.SortOrder
   total_seats?: Prisma.SortOrder
@@ -416,10 +416,10 @@ export type EventsScalarWhereWithAggregatesInput = {
   OR?: Prisma.EventsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.EventsScalarWhereWithAggregatesInput | Prisma.EventsScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Events"> | string
-  organizer_id?: Prisma.StringWithAggregatesFilter<"Events"> | string
+  users_id?: Prisma.StringWithAggregatesFilter<"Events"> | string
   title?: Prisma.StringWithAggregatesFilter<"Events"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"Events"> | string | null
-  category?: Prisma.StringNullableWithAggregatesFilter<"Events"> | string | null
+  category?: Prisma.EnumEventCategoryWithAggregatesFilter<"Events"> | $Enums.EventCategory
   location?: Prisma.StringNullableWithAggregatesFilter<"Events"> | string | null
   price?: Prisma.DecimalWithAggregatesFilter<"Events"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntWithAggregatesFilter<"Events"> | number
@@ -438,7 +438,7 @@ export type EventsCreateInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -462,10 +462,10 @@ export type EventsCreateInput = {
 
 export type EventsUncheckedCreateInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -490,7 +490,7 @@ export type EventsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -514,10 +514,10 @@ export type EventsUpdateInput = {
 
 export type EventsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -540,10 +540,10 @@ export type EventsUncheckedUpdateInput = {
 
 export type EventsCreateManyInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -562,7 +562,7 @@ export type EventsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -579,10 +579,10 @@ export type EventsUpdateManyMutationInput = {
 
 export type EventsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -609,7 +609,7 @@ export type EventsOrderByRelationAggregateInput = {
 
 export type EventsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  organizer_id?: Prisma.SortOrder
+  users_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -635,7 +635,7 @@ export type EventsAvgOrderByAggregateInput = {
 
 export type EventsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  organizer_id?: Prisma.SortOrder
+  users_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -655,7 +655,7 @@ export type EventsMaxOrderByAggregateInput = {
 
 export type EventsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  organizer_id?: Prisma.SortOrder
+  users_id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
   category?: Prisma.SortOrder
@@ -728,6 +728,10 @@ export type EventsUncheckedUpdateManyWithoutOrganizerNestedInput = {
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type EnumEventCategoryFieldUpdateOperationsInput = {
+  set?: $Enums.EventCategory
 }
 
 export type DecimalFieldUpdateOperationsInput = {
@@ -838,7 +842,7 @@ export type EventsCreateWithoutOrganizerInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -863,7 +867,7 @@ export type EventsUncheckedCreateWithoutOrganizerInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -915,10 +919,10 @@ export type EventsScalarWhereInput = {
   OR?: Prisma.EventsScalarWhereInput[]
   NOT?: Prisma.EventsScalarWhereInput | Prisma.EventsScalarWhereInput[]
   id?: Prisma.StringFilter<"Events"> | string
-  organizer_id?: Prisma.StringFilter<"Events"> | string
+  users_id?: Prisma.StringFilter<"Events"> | string
   title?: Prisma.StringFilter<"Events"> | string
   description?: Prisma.StringNullableFilter<"Events"> | string | null
-  category?: Prisma.StringNullableFilter<"Events"> | string | null
+  category?: Prisma.EnumEventCategoryFilter<"Events"> | $Enums.EventCategory
   location?: Prisma.StringNullableFilter<"Events"> | string | null
   price?: Prisma.DecimalFilter<"Events"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFilter<"Events"> | number
@@ -937,7 +941,7 @@ export type EventsCreateWithoutTicketsInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -960,10 +964,10 @@ export type EventsCreateWithoutTicketsInput = {
 
 export type EventsUncheckedCreateWithoutTicketsInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1003,7 +1007,7 @@ export type EventsUpdateWithoutTicketsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1026,10 +1030,10 @@ export type EventsUpdateWithoutTicketsInput = {
 
 export type EventsUncheckedUpdateWithoutTicketsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1053,7 +1057,7 @@ export type EventsCreateWithoutBookingsInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1076,10 +1080,10 @@ export type EventsCreateWithoutBookingsInput = {
 
 export type EventsUncheckedCreateWithoutBookingsInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1119,7 +1123,7 @@ export type EventsUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1142,10 +1146,10 @@ export type EventsUpdateWithoutBookingsInput = {
 
 export type EventsUncheckedUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1169,7 +1173,7 @@ export type EventsCreateWithoutReviewsInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1192,10 +1196,10 @@ export type EventsCreateWithoutReviewsInput = {
 
 export type EventsUncheckedCreateWithoutReviewsInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1235,7 +1239,7 @@ export type EventsUpdateWithoutReviewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1258,10 +1262,10 @@ export type EventsUpdateWithoutReviewsInput = {
 
 export type EventsUncheckedUpdateWithoutReviewsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1285,7 +1289,7 @@ export type EventsCreateWithoutPromotionsInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1308,10 +1312,10 @@ export type EventsCreateWithoutPromotionsInput = {
 
 export type EventsUncheckedCreateWithoutPromotionsInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1351,7 +1355,7 @@ export type EventsUpdateWithoutPromotionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1374,10 +1378,10 @@ export type EventsUpdateWithoutPromotionsInput = {
 
 export type EventsUncheckedUpdateWithoutPromotionsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1401,7 +1405,7 @@ export type EventsCreateWithoutDaily_sales_snapshotsInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1424,10 +1428,10 @@ export type EventsCreateWithoutDaily_sales_snapshotsInput = {
 
 export type EventsUncheckedCreateWithoutDaily_sales_snapshotsInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1467,7 +1471,7 @@ export type EventsUpdateWithoutDaily_sales_snapshotsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1490,10 +1494,10 @@ export type EventsUpdateWithoutDaily_sales_snapshotsInput = {
 
 export type EventsUncheckedUpdateWithoutDaily_sales_snapshotsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1517,7 +1521,7 @@ export type EventsCreateWithoutPerformance_statsInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1540,10 +1544,10 @@ export type EventsCreateWithoutPerformance_statsInput = {
 
 export type EventsUncheckedCreateWithoutPerformance_statsInput = {
   id?: string
-  organizer_id: string
+  users_id: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1583,7 +1587,7 @@ export type EventsUpdateWithoutPerformance_statsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1606,10 +1610,10 @@ export type EventsUpdateWithoutPerformance_statsInput = {
 
 export type EventsUncheckedUpdateWithoutPerformance_statsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  organizer_id?: Prisma.StringFieldUpdateOperationsInput | string
+  users_id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1633,7 +1637,7 @@ export type EventsCreateManyOrganizerInput = {
   id?: string
   title: string
   description?: string | null
-  category?: string | null
+  category?: $Enums.EventCategory
   location?: string | null
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats: number
@@ -1652,7 +1656,7 @@ export type EventsUpdateWithoutOrganizerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1677,7 +1681,7 @@ export type EventsUncheckedUpdateWithoutOrganizerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1702,7 +1706,7 @@ export type EventsUncheckedUpdateManyWithoutOrganizerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  category?: Prisma.EnumEventCategoryFieldUpdateOperationsInput | $Enums.EventCategory
   location?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   total_seats?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1786,7 +1790,7 @@ export type EventsCountOutputTypeCountDaily_sales_snapshotsArgs<ExtArgs extends 
 
 export type EventsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  organizer_id?: boolean
+  users_id?: boolean
   title?: boolean
   description?: boolean
   category?: boolean
@@ -1814,7 +1818,7 @@ export type EventsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 
 export type EventsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  organizer_id?: boolean
+  users_id?: boolean
   title?: boolean
   description?: boolean
   category?: boolean
@@ -1835,7 +1839,7 @@ export type EventsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
 
 export type EventsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  organizer_id?: boolean
+  users_id?: boolean
   title?: boolean
   description?: boolean
   category?: boolean
@@ -1856,7 +1860,7 @@ export type EventsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
 
 export type EventsSelectScalar = {
   id?: boolean
-  organizer_id?: boolean
+  users_id?: boolean
   title?: boolean
   description?: boolean
   category?: boolean
@@ -1874,7 +1878,7 @@ export type EventsSelectScalar = {
   deletedAt?: boolean
 }
 
-export type EventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "organizer_id" | "title" | "description" | "category" | "location" | "price" | "total_seats" | "available_seats" | "status" | "start_time" | "end_time" | "start_event" | "end_event" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["events"]>
+export type EventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "users_id" | "title" | "description" | "category" | "location" | "price" | "total_seats" | "available_seats" | "status" | "start_time" | "end_time" | "start_event" | "end_event" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["events"]>
 export type EventsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   organizer?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   tickets?: boolean | Prisma.Events$ticketsArgs<ExtArgs>
@@ -1905,10 +1909,10 @@ export type $EventsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
-    organizer_id: string
+    users_id: string
     title: string
     description: string | null
-    category: string | null
+    category: $Enums.EventCategory
     location: string | null
     price: runtime.Decimal
     total_seats: number
@@ -2352,10 +2356,10 @@ export interface Prisma__EventsClient<T, Null = never, ExtArgs extends runtime.T
  */
 export interface EventsFieldRefs {
   readonly id: Prisma.FieldRef<"Events", 'String'>
-  readonly organizer_id: Prisma.FieldRef<"Events", 'String'>
+  readonly users_id: Prisma.FieldRef<"Events", 'String'>
   readonly title: Prisma.FieldRef<"Events", 'String'>
   readonly description: Prisma.FieldRef<"Events", 'String'>
-  readonly category: Prisma.FieldRef<"Events", 'String'>
+  readonly category: Prisma.FieldRef<"Events", 'EventCategory'>
   readonly location: Prisma.FieldRef<"Events", 'String'>
   readonly price: Prisma.FieldRef<"Events", 'Decimal'>
   readonly total_seats: Prisma.FieldRef<"Events", 'Int'>
