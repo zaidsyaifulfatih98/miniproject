@@ -32,10 +32,10 @@ model Users {
 
 model Events {
   id              String      @id @default(uuid())
-  organizer_id    String
+  users_id        String
   title           String      @db.VarChar()
   description     String?     @db.Text
-  category        String?     @db.VarChar()
+  category        EventCategory @default(LAINNYA)
   location        String?     @db.VarChar()
   price           Decimal
   total_seats     Int
@@ -49,7 +49,7 @@ model Events {
   updatedAt       DateTime    @updatedAt
   deletedAt       DateTime?
 
-  organizer             Users                  @relation(fields: [organizer_id], references: [id])
+  organizer             Users                  @relation(fields: [users_id], references: [id])
   tickets               Tickets[]
   bookings              Bookings[]
   reviews               Reviews[]
@@ -237,4 +237,13 @@ enum PaymentStatus {
 enum PromoType {
   REFERRAL
   EVENT_VOUCHER
+}
+
+enum EventCategory {
+  KONSER
+  WORKSHOP
+  SEMINAR
+  FESTIVAL
+  OLAHRAGA
+  LAINNYA
 }

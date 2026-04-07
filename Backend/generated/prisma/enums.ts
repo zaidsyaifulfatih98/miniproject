@@ -68,3 +68,15 @@ export const PromoType = {
 } as const
 
 export type PromoType = (typeof PromoType)[keyof typeof PromoType]
+
+
+export const EventCategory = {
+  KONSER: 'KONSER',
+  WORKSHOP: 'WORKSHOP',
+  SEMINAR: 'SEMINAR',
+  FESTIVAL: 'FESTIVAL',
+  OLAHRAGA: 'OLAHRAGA',
+  LAINNYA: 'LAINNYA'
+} as const
+
+export type EventCategory = (typeof EventCategory)[keyof typeof EventCategory]
