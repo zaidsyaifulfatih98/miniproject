@@ -254,7 +254,7 @@ export type TicketInventoryLogsScalarWhereWithAggregatesInput = {
 
 export type TicketInventoryLogsCreateInput = {
   id?: string
-  sold_at: Date | string
+  sold_at?: Date | string
   remaining_quota: number
   ticket: Prisma.TicketsCreateNestedOneWithoutTicket_inventory_logsInput
 }
@@ -262,7 +262,7 @@ export type TicketInventoryLogsCreateInput = {
 export type TicketInventoryLogsUncheckedCreateInput = {
   id?: string
   ticket_id: string
-  sold_at: Date | string
+  sold_at?: Date | string
   remaining_quota: number
 }
 
@@ -283,7 +283,7 @@ export type TicketInventoryLogsUncheckedUpdateInput = {
 export type TicketInventoryLogsCreateManyInput = {
   id?: string
   ticket_id: string
-  sold_at: Date | string
+  sold_at?: Date | string
   remaining_quota: number
 }
 
@@ -383,13 +383,13 @@ export type TicketInventoryLogsUncheckedUpdateManyWithoutTicketNestedInput = {
 
 export type TicketInventoryLogsCreateWithoutTicketInput = {
   id?: string
-  sold_at: Date | string
+  sold_at?: Date | string
   remaining_quota: number
 }
 
 export type TicketInventoryLogsUncheckedCreateWithoutTicketInput = {
   id?: string
-  sold_at: Date | string
+  sold_at?: Date | string
   remaining_quota: number
 }
 
@@ -431,7 +431,7 @@ export type TicketInventoryLogsScalarWhereInput = {
 
 export type TicketInventoryLogsCreateManyTicketInput = {
   id?: string
-  sold_at: Date | string
+  sold_at?: Date | string
   remaining_quota: number
 }
 

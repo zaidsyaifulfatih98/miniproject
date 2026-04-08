@@ -46,6 +46,8 @@ export type TicketsMinAggregateOutputType = {
   price: runtime.Decimal | null
   quota: number | null
   used_ticket: number | null
+  createdAt: Date | null
+  updatedAt: Date | null
   deletedAt: Date | null
 }
 
@@ -57,6 +59,8 @@ export type TicketsMaxAggregateOutputType = {
   price: runtime.Decimal | null
   quota: number | null
   used_ticket: number | null
+  createdAt: Date | null
+  updatedAt: Date | null
   deletedAt: Date | null
 }
 
@@ -68,6 +72,8 @@ export type TicketsCountAggregateOutputType = {
   price: number
   quota: number
   used_ticket: number
+  createdAt: number
+  updatedAt: number
   deletedAt: number
   _all: number
 }
@@ -93,6 +99,8 @@ export type TicketsMinAggregateInputType = {
   price?: true
   quota?: true
   used_ticket?: true
+  createdAt?: true
+  updatedAt?: true
   deletedAt?: true
 }
 
@@ -104,6 +112,8 @@ export type TicketsMaxAggregateInputType = {
   price?: true
   quota?: true
   used_ticket?: true
+  createdAt?: true
+  updatedAt?: true
   deletedAt?: true
 }
 
@@ -115,6 +125,8 @@ export type TicketsCountAggregateInputType = {
   price?: true
   quota?: true
   used_ticket?: true
+  createdAt?: true
+  updatedAt?: true
   deletedAt?: true
   _all?: true
 }
@@ -213,6 +225,8 @@ export type TicketsGroupByOutputType = {
   price: runtime.Decimal
   quota: number
   used_ticket: number
+  createdAt: Date
+  updatedAt: Date
   deletedAt: Date | null
   _count: TicketsCountAggregateOutputType | null
   _avg: TicketsAvgAggregateOutputType | null
@@ -247,6 +261,8 @@ export type TicketsWhereInput = {
   price?: Prisma.DecimalFilter<"Tickets"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFilter<"Tickets"> | number
   used_ticket?: Prisma.IntFilter<"Tickets"> | number
+  createdAt?: Prisma.DateTimeFilter<"Tickets"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Tickets"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Tickets"> | Date | string | null
   event?: Prisma.XOR<Prisma.EventsScalarRelationFilter, Prisma.EventsWhereInput>
   bookings?: Prisma.BookingsListRelationFilter
@@ -261,6 +277,8 @@ export type TicketsOrderByWithRelationInput = {
   price?: Prisma.SortOrder
   quota?: Prisma.SortOrder
   used_ticket?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   event?: Prisma.EventsOrderByWithRelationInput
   bookings?: Prisma.BookingsOrderByRelationAggregateInput
@@ -278,6 +296,8 @@ export type TicketsWhereUniqueInput = Prisma.AtLeast<{
   price?: Prisma.DecimalFilter<"Tickets"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFilter<"Tickets"> | number
   used_ticket?: Prisma.IntFilter<"Tickets"> | number
+  createdAt?: Prisma.DateTimeFilter<"Tickets"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Tickets"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Tickets"> | Date | string | null
   event?: Prisma.XOR<Prisma.EventsScalarRelationFilter, Prisma.EventsWhereInput>
   bookings?: Prisma.BookingsListRelationFilter
@@ -292,6 +312,8 @@ export type TicketsOrderByWithAggregationInput = {
   price?: Prisma.SortOrder
   quota?: Prisma.SortOrder
   used_ticket?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TicketsCountOrderByAggregateInput
   _avg?: Prisma.TicketsAvgOrderByAggregateInput
@@ -311,6 +333,8 @@ export type TicketsScalarWhereWithAggregatesInput = {
   price?: Prisma.DecimalWithAggregatesFilter<"Tickets"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntWithAggregatesFilter<"Tickets"> | number
   used_ticket?: Prisma.IntWithAggregatesFilter<"Tickets"> | number
+  createdAt?: Prisma.DateTimeWithAggregatesFilter<"Tickets"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Tickets"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Tickets"> | Date | string | null
 }
 
@@ -321,6 +345,8 @@ export type TicketsCreateInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   event: Prisma.EventsCreateNestedOneWithoutTicketsInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutTicketInput
@@ -335,6 +361,8 @@ export type TicketsUncheckedCreateInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutTicketInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUncheckedCreateNestedManyWithoutTicketInput
@@ -347,6 +375,8 @@ export type TicketsUpdateInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   event?: Prisma.EventsUpdateOneRequiredWithoutTicketsNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutTicketNestedInput
@@ -361,6 +391,8 @@ export type TicketsUncheckedUpdateInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutTicketNestedInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUncheckedUpdateManyWithoutTicketNestedInput
@@ -374,6 +406,8 @@ export type TicketsCreateManyInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
 }
 
@@ -384,6 +418,8 @@ export type TicketsUpdateManyMutationInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -395,6 +431,8 @@ export type TicketsUncheckedUpdateManyInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -416,6 +454,8 @@ export type TicketsCountOrderByAggregateInput = {
   price?: Prisma.SortOrder
   quota?: Prisma.SortOrder
   used_ticket?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
 
@@ -433,6 +473,8 @@ export type TicketsMaxOrderByAggregateInput = {
   price?: Prisma.SortOrder
   quota?: Prisma.SortOrder
   used_ticket?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
 
@@ -444,6 +486,8 @@ export type TicketsMinOrderByAggregateInput = {
   price?: Prisma.SortOrder
   quota?: Prisma.SortOrder
   used_ticket?: Prisma.SortOrder
+  createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
 }
 
@@ -539,6 +583,8 @@ export type TicketsCreateWithoutEventInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsCreateNestedManyWithoutTicketInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsCreateNestedManyWithoutTicketInput
@@ -551,6 +597,8 @@ export type TicketsUncheckedCreateWithoutEventInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutTicketInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUncheckedCreateNestedManyWithoutTicketInput
@@ -593,6 +641,8 @@ export type TicketsScalarWhereInput = {
   price?: Prisma.DecimalFilter<"Tickets"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFilter<"Tickets"> | number
   used_ticket?: Prisma.IntFilter<"Tickets"> | number
+  createdAt?: Prisma.DateTimeFilter<"Tickets"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Tickets"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Tickets"> | Date | string | null
 }
 
@@ -603,6 +653,8 @@ export type TicketsCreateWithoutBookingsInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   event: Prisma.EventsCreateNestedOneWithoutTicketsInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsCreateNestedManyWithoutTicketInput
@@ -616,6 +668,8 @@ export type TicketsUncheckedCreateWithoutBookingsInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUncheckedCreateNestedManyWithoutTicketInput
 }
@@ -643,6 +697,8 @@ export type TicketsUpdateWithoutBookingsInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   event?: Prisma.EventsUpdateOneRequiredWithoutTicketsNestedInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUpdateManyWithoutTicketNestedInput
@@ -656,6 +712,8 @@ export type TicketsUncheckedUpdateWithoutBookingsInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUncheckedUpdateManyWithoutTicketNestedInput
 }
@@ -667,6 +725,8 @@ export type TicketsCreateWithoutTicket_inventory_logsInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   event: Prisma.EventsCreateNestedOneWithoutTicketsInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutTicketInput
@@ -680,6 +740,8 @@ export type TicketsUncheckedCreateWithoutTicket_inventory_logsInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutTicketInput
 }
@@ -707,6 +769,8 @@ export type TicketsUpdateWithoutTicket_inventory_logsInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   event?: Prisma.EventsUpdateOneRequiredWithoutTicketsNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutTicketNestedInput
@@ -720,6 +784,8 @@ export type TicketsUncheckedUpdateWithoutTicket_inventory_logsInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutTicketNestedInput
 }
@@ -731,6 +797,8 @@ export type TicketsCreateManyEventInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   quota: number
   used_ticket: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
   deletedAt?: Date | string | null
 }
 
@@ -741,6 +809,8 @@ export type TicketsUpdateWithoutEventInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUpdateManyWithoutTicketNestedInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUpdateManyWithoutTicketNestedInput
@@ -753,6 +823,8 @@ export type TicketsUncheckedUpdateWithoutEventInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutTicketNestedInput
   ticket_inventory_logs?: Prisma.TicketInventoryLogsUncheckedUpdateManyWithoutTicketNestedInput
@@ -765,6 +837,8 @@ export type TicketsUncheckedUpdateManyWithoutEventInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   quota?: Prisma.IntFieldUpdateOperationsInput | number
   used_ticket?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -816,6 +890,8 @@ export type TicketsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   price?: boolean
   quota?: boolean
   used_ticket?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Tickets$bookingsArgs<ExtArgs>
@@ -831,6 +907,8 @@ export type TicketsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   price?: boolean
   quota?: boolean
   used_ticket?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tickets"]>
@@ -843,6 +921,8 @@ export type TicketsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   price?: boolean
   quota?: boolean
   used_ticket?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tickets"]>
@@ -855,10 +935,12 @@ export type TicketsSelectScalar = {
   price?: boolean
   quota?: boolean
   used_ticket?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type TicketsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "type" | "description" | "price" | "quota" | "used_ticket" | "deletedAt", ExtArgs["result"]["tickets"]>
+export type TicketsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "type" | "description" | "price" | "quota" | "used_ticket" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["tickets"]>
 export type TicketsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Tickets$bookingsArgs<ExtArgs>
@@ -887,6 +969,8 @@ export type $TicketsPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     price: runtime.Decimal
     quota: number
     used_ticket: number
+    createdAt: Date
+    updatedAt: Date
     deletedAt: Date | null
   }, ExtArgs["result"]["tickets"]>
   composites: {}
@@ -1321,6 +1405,8 @@ export interface TicketsFieldRefs {
   readonly price: Prisma.FieldRef<"Tickets", 'Decimal'>
   readonly quota: Prisma.FieldRef<"Tickets", 'Int'>
   readonly used_ticket: Prisma.FieldRef<"Tickets", 'Int'>
+  readonly createdAt: Prisma.FieldRef<"Tickets", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Tickets", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Tickets", 'DateTime'>
 }
     

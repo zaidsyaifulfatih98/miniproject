@@ -3,8 +3,8 @@ import {
   LayoutDashboard,
   CalendarDays,
   Ticket,
+  Tag,
   ClipboardList,
-  Users,
   BarChart2,
   ChevronRight,
   Home,
@@ -28,14 +28,14 @@ const navItems = [
     icon: <Ticket className="w-5 h-5" />,
   },
   {
+    label: "Promo & Diskon",
+    path: "/promos",
+    icon: <Tag className="w-5 h-5" />,
+  },
+  {
     label: "Penjualan & Transaksi",
     path: "/transactions",
     icon: <ClipboardList className="w-5 h-5" />,
-  },
-  {
-    label: "Customers",
-    path: "/customers",
-    icon: <Users className="w-5 h-5" />,
   },
   {
     label: "Laporan",
@@ -48,8 +48,8 @@ const breadcrumbLabels: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/event": "Manajemen Event",
   "/ticket": "Manajemen Tiket",
+  "/promos": "Promo & Diskon",
   "/transactions": "Penjualan & Transaksi",
-  "/customers": "Manajemen Pengguna",
   "/report": "Laporan",
   
 };
@@ -133,12 +133,7 @@ export default function RootLayout() {
             <span className="text-gray-800 font-medium">{pageLabel}</span>
           </nav>
           <div className="flex items-center gap-3">
-            {user && (
-              <span className="text-sm text-gray-600">
-                Hai, <span className="font-semibold text-gray-800">{user.full_name}</span>
-              </span>
-            )}
-            
+                       
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"

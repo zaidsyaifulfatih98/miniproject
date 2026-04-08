@@ -1,20 +1,29 @@
 import prisma from "../configs/pool-coonection.config";
-import { EventStatus } from "../../generated/prisma/enums";
+import { EventCategory, EventStatus } from "../../generated/prisma/enums";
 
 const VALID_STATUSES = Object.values(EventStatus) as string[];
+const VALID_CATEGORIES = Object.values(EventCategory) as string[];
 
 export const eventService = {
   async getAll(filters?: {
     category?: string;
     status?: string;
     search?: string;
+    users_id?: string;
   }) {
     const where: any = {
       deletedAt: null,
     };
 
+    if (filters?.users_id) {
+      where.users_id = filters.users_id;
+    }
+
     if (filters?.category) {
-      where.category = filters.category;
+      const categoryUpper = filters.category.toUpperCase();
+      if (VALID_CATEGORIES.includes(categoryUpper)) {
+        where.category = categoryUpper as EventCategory;
+      }
     }
     if (filters?.status && VALID_STATUSES.includes(filters.status)) {
       where.status = filters.status as EventStatus;
@@ -73,10 +82,10 @@ export const eventService = {
   },
 
   async create(data: {
-    organizer_id: string;
+    users_id: string;
     title: string;
     description?: string;
-    category?: string;
+    category?: EventCategory;
     location?: string;
     price: number;
     total_seats: number;
@@ -105,7 +114,7 @@ export const eventService = {
     data: {
       title?: string;
       description?: string;
-      category?: string;
+      category?: EventCategory;
       location?: string;
       price?: number;
       total_seats?: number;

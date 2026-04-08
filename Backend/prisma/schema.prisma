@@ -12,7 +12,7 @@ model Users {
   id            String    @id @default(uuid())
   email         String    @unique
   password      String
-  full_name     String    @db.VarChar()
+  full_name     String    @db.VarChar(40)
   birth_date    DateTime  @db.Date
   gender        String    @db.VarChar(30)
   address       String    @db.Text
@@ -33,10 +33,10 @@ model Users {
 model Events {
   id              String      @id @default(uuid())
   users_id        String
-  title           String      @db.VarChar()
+  title           String      @db.VarChar(100)
   description     String?     @db.Text
   category        EventCategory @default(LAINNYA)
-  location        String?     @db.VarChar()
+  location        String?     @db.Text
   price           Decimal
   total_seats     Int
   available_seats Int
@@ -66,6 +66,8 @@ model Tickets {
   price       Decimal
   quota       Int
   used_ticket Int
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   deletedAt   DateTime?
 
   event                 Events                @relation(fields: [event_id], references: [id])
@@ -75,7 +77,7 @@ model Tickets {
 
 model Bookings {
   id              String        @id @default(uuid())
-  display_id      String?       @db.VarChar()
+  display_id      String?       @db.VarChar(20)
   user_id         String
   event_id        String
   ticket_id       String
@@ -105,8 +107,9 @@ model Payments {
   amount            Decimal?
   payment_proof_url String?       @db.VarChar()
   status            PaymentStatus @default(PENDING)
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt   DateTime?
 
   booking Bookings @relation(fields: [booking_id], references: [id])
 }
@@ -130,13 +133,16 @@ model Reviews {
 model Promotions {
   id              String    @id @default(uuid())
   event_id        String
+  name            String    @db.VarChar(50)
   type            PromoType
-  promotion_code  String    @db.VarChar()
+  promotion_code  String    @db.VarChar(30)
   discount_amount Decimal
   max_usage       Int?
   used_count      Int?
   expires_at      DateTime?
-  deletedAt       DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt   DateTime?
 
   event    Events     @relation(fields: [event_id], references: [id])
   bookings Bookings[]
@@ -147,7 +153,9 @@ model Referrals {
   referrer_user_id String
   referred_user_id String
   points_earned    Int?
-  createdAt        DateTime @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  deletedAt   DateTime?
 
   referrer Users @relation("ReferrerUser", fields: [referrer_user_id], references: [id])
   referred Users @relation("ReferredUser", fields: [referred_user_id], references: [id])
@@ -189,7 +197,7 @@ model PointsHistory {
 model TicketInventoryLogs {
   id              String   @id @default(uuid())
   ticket_id       String
-  sold_at         DateTime
+  sold_at         DateTime @default(now())
   remaining_quota Int
 
   ticket Tickets @relation(fields: [ticket_id], references: [id])
@@ -235,8 +243,10 @@ enum PaymentStatus {
 }
 
 enum PromoType {
-  REFERRAL
-  EVENT_VOUCHER
+  FLASH_SALE
+  VOUCHER
+  BUNDLE
+  LAINNYA
 }
 
 enum EventCategory {

@@ -40,6 +40,8 @@ export type ReferralsMinAggregateOutputType = {
   referred_user_id: string | null
   points_earned: number | null
   createdAt: Date | null
+  updatedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type ReferralsMaxAggregateOutputType = {
@@ -48,6 +50,8 @@ export type ReferralsMaxAggregateOutputType = {
   referred_user_id: string | null
   points_earned: number | null
   createdAt: Date | null
+  updatedAt: Date | null
+  deletedAt: Date | null
 }
 
 export type ReferralsCountAggregateOutputType = {
@@ -56,6 +60,8 @@ export type ReferralsCountAggregateOutputType = {
   referred_user_id: number
   points_earned: number
   createdAt: number
+  updatedAt: number
+  deletedAt: number
   _all: number
 }
 
@@ -74,6 +80,8 @@ export type ReferralsMinAggregateInputType = {
   referred_user_id?: true
   points_earned?: true
   createdAt?: true
+  updatedAt?: true
+  deletedAt?: true
 }
 
 export type ReferralsMaxAggregateInputType = {
@@ -82,6 +90,8 @@ export type ReferralsMaxAggregateInputType = {
   referred_user_id?: true
   points_earned?: true
   createdAt?: true
+  updatedAt?: true
+  deletedAt?: true
 }
 
 export type ReferralsCountAggregateInputType = {
@@ -90,6 +100,8 @@ export type ReferralsCountAggregateInputType = {
   referred_user_id?: true
   points_earned?: true
   createdAt?: true
+  updatedAt?: true
+  deletedAt?: true
   _all?: true
 }
 
@@ -185,6 +197,8 @@ export type ReferralsGroupByOutputType = {
   referred_user_id: string
   points_earned: number | null
   createdAt: Date
+  updatedAt: Date
+  deletedAt: Date | null
   _count: ReferralsCountAggregateOutputType | null
   _avg: ReferralsAvgAggregateOutputType | null
   _sum: ReferralsSumAggregateOutputType | null
@@ -216,6 +230,8 @@ export type ReferralsWhereInput = {
   referred_user_id?: Prisma.StringFilter<"Referrals"> | string
   points_earned?: Prisma.IntNullableFilter<"Referrals"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Referrals"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Referrals"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"Referrals"> | Date | string | null
   referrer?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
   referred?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
 }
@@ -226,6 +242,8 @@ export type ReferralsOrderByWithRelationInput = {
   referred_user_id?: Prisma.SortOrder
   points_earned?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   referrer?: Prisma.UsersOrderByWithRelationInput
   referred?: Prisma.UsersOrderByWithRelationInput
 }
@@ -239,6 +257,8 @@ export type ReferralsWhereUniqueInput = Prisma.AtLeast<{
   referred_user_id?: Prisma.StringFilter<"Referrals"> | string
   points_earned?: Prisma.IntNullableFilter<"Referrals"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Referrals"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Referrals"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"Referrals"> | Date | string | null
   referrer?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
   referred?: Prisma.XOR<Prisma.UsersScalarRelationFilter, Prisma.UsersWhereInput>
 }, "id">
@@ -249,6 +269,8 @@ export type ReferralsOrderByWithAggregationInput = {
   referred_user_id?: Prisma.SortOrder
   points_earned?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ReferralsCountOrderByAggregateInput
   _avg?: Prisma.ReferralsAvgOrderByAggregateInput
   _max?: Prisma.ReferralsMaxOrderByAggregateInput
@@ -265,12 +287,16 @@ export type ReferralsScalarWhereWithAggregatesInput = {
   referred_user_id?: Prisma.StringWithAggregatesFilter<"Referrals"> | string
   points_earned?: Prisma.IntNullableWithAggregatesFilter<"Referrals"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Referrals"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Referrals"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Referrals"> | Date | string | null
 }
 
 export type ReferralsCreateInput = {
   id?: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
   referrer: Prisma.UsersCreateNestedOneWithoutReferrals_givenInput
   referred: Prisma.UsersCreateNestedOneWithoutReferrals_receivedInput
 }
@@ -281,12 +307,16 @@ export type ReferralsUncheckedCreateInput = {
   referred_user_id: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type ReferralsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   referrer?: Prisma.UsersUpdateOneRequiredWithoutReferrals_givenNestedInput
   referred?: Prisma.UsersUpdateOneRequiredWithoutReferrals_receivedNestedInput
 }
@@ -297,6 +327,8 @@ export type ReferralsUncheckedUpdateInput = {
   referred_user_id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReferralsCreateManyInput = {
@@ -305,12 +337,16 @@ export type ReferralsCreateManyInput = {
   referred_user_id: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type ReferralsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReferralsUncheckedUpdateManyInput = {
@@ -319,6 +355,8 @@ export type ReferralsUncheckedUpdateManyInput = {
   referred_user_id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReferralsListRelationFilter = {
@@ -337,6 +375,8 @@ export type ReferralsCountOrderByAggregateInput = {
   referred_user_id?: Prisma.SortOrder
   points_earned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type ReferralsAvgOrderByAggregateInput = {
@@ -349,6 +389,8 @@ export type ReferralsMaxOrderByAggregateInput = {
   referred_user_id?: Prisma.SortOrder
   points_earned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type ReferralsMinOrderByAggregateInput = {
@@ -357,6 +399,8 @@ export type ReferralsMinOrderByAggregateInput = {
   referred_user_id?: Prisma.SortOrder
   points_earned?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
+  deletedAt?: Prisma.SortOrder
 }
 
 export type ReferralsSumOrderByAggregateInput = {
@@ -451,6 +495,8 @@ export type ReferralsCreateWithoutReferrerInput = {
   id?: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
   referred: Prisma.UsersCreateNestedOneWithoutReferrals_receivedInput
 }
 
@@ -459,6 +505,8 @@ export type ReferralsUncheckedCreateWithoutReferrerInput = {
   referred_user_id: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type ReferralsCreateOrConnectWithoutReferrerInput = {
@@ -475,6 +523,8 @@ export type ReferralsCreateWithoutReferredInput = {
   id?: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
   referrer: Prisma.UsersCreateNestedOneWithoutReferrals_givenInput
 }
 
@@ -483,6 +533,8 @@ export type ReferralsUncheckedCreateWithoutReferredInput = {
   referrer_user_id: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type ReferralsCreateOrConnectWithoutReferredInput = {
@@ -520,6 +572,8 @@ export type ReferralsScalarWhereInput = {
   referred_user_id?: Prisma.StringFilter<"Referrals"> | string
   points_earned?: Prisma.IntNullableFilter<"Referrals"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Referrals"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Referrals"> | Date | string
+  deletedAt?: Prisma.DateTimeNullableFilter<"Referrals"> | Date | string | null
 }
 
 export type ReferralsUpsertWithWhereUniqueWithoutReferredInput = {
@@ -543,6 +597,8 @@ export type ReferralsCreateManyReferrerInput = {
   referred_user_id: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type ReferralsCreateManyReferredInput = {
@@ -550,12 +606,16 @@ export type ReferralsCreateManyReferredInput = {
   referrer_user_id: string
   points_earned?: number | null
   createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
 }
 
 export type ReferralsUpdateWithoutReferrerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   referred?: Prisma.UsersUpdateOneRequiredWithoutReferrals_receivedNestedInput
 }
 
@@ -564,6 +624,8 @@ export type ReferralsUncheckedUpdateWithoutReferrerInput = {
   referred_user_id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReferralsUncheckedUpdateManyWithoutReferrerInput = {
@@ -571,12 +633,16 @@ export type ReferralsUncheckedUpdateManyWithoutReferrerInput = {
   referred_user_id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReferralsUpdateWithoutReferredInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   referrer?: Prisma.UsersUpdateOneRequiredWithoutReferrals_givenNestedInput
 }
 
@@ -585,6 +651,8 @@ export type ReferralsUncheckedUpdateWithoutReferredInput = {
   referrer_user_id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ReferralsUncheckedUpdateManyWithoutReferredInput = {
@@ -592,6 +660,8 @@ export type ReferralsUncheckedUpdateManyWithoutReferredInput = {
   referrer_user_id?: Prisma.StringFieldUpdateOperationsInput | string
   points_earned?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -602,6 +672,8 @@ export type ReferralsSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   referred_user_id?: boolean
   points_earned?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
+  deletedAt?: boolean
   referrer?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   referred?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["referrals"]>
@@ -612,6 +684,8 @@ export type ReferralsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   referred_user_id?: boolean
   points_earned?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
+  deletedAt?: boolean
   referrer?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   referred?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["referrals"]>
@@ -622,6 +696,8 @@ export type ReferralsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   referred_user_id?: boolean
   points_earned?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
+  deletedAt?: boolean
   referrer?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   referred?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["referrals"]>
@@ -632,9 +708,11 @@ export type ReferralsSelectScalar = {
   referred_user_id?: boolean
   points_earned?: boolean
   createdAt?: boolean
+  updatedAt?: boolean
+  deletedAt?: boolean
 }
 
-export type ReferralsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "referrer_user_id" | "referred_user_id" | "points_earned" | "createdAt", ExtArgs["result"]["referrals"]>
+export type ReferralsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "referrer_user_id" | "referred_user_id" | "points_earned" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["referrals"]>
 export type ReferralsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   referrer?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   referred?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
@@ -660,6 +738,8 @@ export type $ReferralsPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     referred_user_id: string
     points_earned: number | null
     createdAt: Date
+    updatedAt: Date
+    deletedAt: Date | null
   }, ExtArgs["result"]["referrals"]>
   composites: {}
 }
@@ -1090,6 +1170,8 @@ export interface ReferralsFieldRefs {
   readonly referred_user_id: Prisma.FieldRef<"Referrals", 'String'>
   readonly points_earned: Prisma.FieldRef<"Referrals", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Referrals", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Referrals", 'DateTime'>
+  readonly deletedAt: Prisma.FieldRef<"Referrals", 'DateTime'>
 }
     
 
