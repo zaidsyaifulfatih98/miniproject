@@ -94,10 +94,12 @@ export default function Event() {
     try {
       setLoading(true);
       setError(null);
+      const user = JSON.parse(localStorage.getItem("user") ?? "{}");
       const params = new URLSearchParams();
       if (filterCategory !== "Semua") params.set("category", filterCategory);
       if (filterStatus !== "Semua") params.set("status", filterStatus);
       if (search) params.set("search", search);
+      if (user?.id) params.set("organizer_id", user.id);
       const res = await fetch(`${API_BASE}/events?${params.toString()}`);
       if (!res.ok) throw new Error("Gagal memuat data event");
       const json = await res.json();

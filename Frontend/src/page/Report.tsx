@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -52,27 +53,21 @@ const demographicsData = [
 
 const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9"];
 
-const salesData = [
-  { id: "TRX-001", event: "Java Jazz Festival", tiket: "VIP", qty: 2, total: 1_500_000, tanggal: "2026-03-10" },
-  { id: "TRX-002", event: "Tech Summit 2026", tiket: "Regular", qty: 1, total: 350_000, tanggal: "2026-03-11" },
-  { id: "TRX-003", event: "Java Jazz Festival", tiket: "Regular", qty: 4, total: 1_200_000, tanggal: "2026-03-12" },
-  { id: "TRX-004", event: "Startup Weekend", tiket: "Early Bird", qty: 3, total: 600_000, tanggal: "2026-03-13" },
-  { id: "TRX-005", event: "Tech Summit 2026", tiket: "VIP", qty: 1, total: 750_000, tanggal: "2026-03-14" },
-];
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-const financialData = {
-  grossRevenue: 48_750_000,
-  tax: 4_875_000,
-  platformFee: 2_437_500,
-  netRevenue: 41_437_500,
-};
+type DBTicketType = "FREE" | "EARLY_BIRD" | "REGULAR" | "VIP" | "VVIP";
 
-const financialBarData = [
-  { name: "Pendapatan Kotor", value: financialData.grossRevenue },
-  { name: "Pajak (10%)", value: financialData.tax },
-  { name: "Fee Platform (5%)", value: financialData.platformFee },
-  { name: "Pendapatan Bersih", value: financialData.netRevenue },
-];
+interface BookingAPI {
+  id: string;
+  display_id: string | null;
+  quantity: number | null;
+  status: string;
+  total_price: string | null;
+  final_price: string | null;
+  createdAt: string;
+  event: { id: string; title: string };
+  ticket: { id: string; type: DBTicketType; price: string };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -80,17 +75,15 @@ function formatRupiah(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-function exportToCSV() {
-  const headers = ["ID Transaksi", "Event", "Jenis Tiket", "Qty", "Total (Rp)", "Tanggal"];
-  const rows = salesData.map((r) => [r.id, r.event, r.tiket, r.qty, r.total, r.tanggal]);
-  const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "laporan_penjualan.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+function mapTicketType(t: DBTicketType): string {
+  const map: Record<DBTicketType, string> = {
+    FREE: "Free",
+    EARLY_BIRD: "Early Bird",
+    REGULAR: "Regular",
+    VIP: "VIP",
+    VVIP: "VVIP",
+  };
+  return map[t] ?? t;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -116,6 +109,62 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Report() {
+  const [bookings, setBookings] = useState<BookingAPI[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const organizerId: string = user?.id ?? "";
+    const url = organizerId
+      ? `http://localhost:8000/api/bookings?organizer_id=${organizerId}`
+      : "http://localhost:8000/api/bookings";
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => {
+        setBookings(Array.isArray(data) ? data : (data.data ?? []));
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const doneBookings = bookings.filter((b) => b.status === "DONE");
+
+  const salesData = doneBookings.map((b) => ({
+    id: b.display_id ?? b.id.slice(0, 8).toUpperCase(),
+    event: b.event?.title ?? "–",
+    tiket: mapTicketType((b.ticket?.type ?? "REGULAR") as DBTicketType),
+    qty: b.quantity ?? 0,
+    total: Number(b.total_price ?? 0),
+    tanggal: b.createdAt.slice(0, 10),
+  }));
+
+  const grossRevenue = doneBookings.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+  const netRevenue   = doneBookings.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
+  const tax          = grossRevenue * 0.1;
+  const platformFee  = grossRevenue * 0.05;
+
+  const financialData = { grossRevenue, tax, platformFee, netRevenue };
+
+  const financialBarData = [
+    { name: "Pendapatan Kotor", value: financialData.grossRevenue },
+    { name: "Pajak (10%)", value: financialData.tax },
+    { name: "Fee Platform (5%)", value: financialData.platformFee },
+    { name: "Pendapatan Bersih", value: financialData.netRevenue },
+  ];
+
+  function exportToCSV() {
+    const headers = ["ID Transaksi", "Event", "Jenis Tiket", "Qty", "Total (Rp)", "Tanggal"];
+    const rows = salesData.map((r) => [r.id, r.event, r.tiket, r.qty, r.total, r.tanggal]);
+    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "laporan_penjualan.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-10">
       <div>
@@ -203,31 +252,43 @@ export default function Report() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {salesData.map((row) => (
-                <tr key={row.id} className="hover:bg-indigo-50/40 transition-colors">
-                  <td className="px-5 py-3.5 font-mono text-indigo-600 font-medium">{row.id}</td>
-                  <td className="px-5 py-3.5 text-gray-700">{row.event}</td>
-                  <td className="px-5 py-3.5">
-                    <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      row.tiket === "VIP" ? "bg-amber-100 text-amber-700" :
-                      row.tiket === "Regular" ? "bg-sky-100 text-sky-700" :
-                      "bg-emerald-100 text-emerald-700"
-                    }`}>{row.tiket}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-right text-gray-700">{row.qty}</td>
-                  <td className="px-5 py-3.5 text-right font-semibold text-gray-800">{formatRupiah(row.total)}</td>
-                  <td className="px-5 py-3.5 text-gray-500">{row.tanggal}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-6 text-center text-gray-400">Memuat data…</td>
                 </tr>
-              ))}
+              ) : salesData.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-6 text-center text-gray-400">Belum ada transaksi.</td>
+                </tr>
+              ) : (
+                <>
+                  {salesData.map((row) => (
+                    <tr key={row.id} className="hover:bg-indigo-50/40 transition-colors">
+                      <td className="px-5 py-3.5 font-mono text-indigo-600 font-medium">{row.id}</td>
+                      <td className="px-5 py-3.5 text-gray-700">{row.event}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                          row.tiket === "VIP" ? "bg-amber-100 text-amber-700" :
+                          row.tiket === "Regular" ? "bg-sky-100 text-sky-700" :
+                          "bg-emerald-100 text-emerald-700"
+                        }`}>{row.tiket}</span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-gray-700">{row.qty}</td>
+                      <td className="px-5 py-3.5 text-right font-semibold text-gray-800">{formatRupiah(row.total)}</td>
+                      <td className="px-5 py-3.5 text-gray-500">{row.tanggal}</td>
+                    </tr>
+                  ))}
+                </>
+              )}
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* ── ANALITIK PESERTA ─────────────────────────────────────────────────── */}
+      {/* ── ANALITIK PEMBELI ─────────────────────────────────────────────────── */}
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <SectionHeader
-          title="Analitik Peserta"
+          title="Analitik Pembeli"
           subtitle="Demografi pembeli dan tren waktu pembelian teramai"
         />
 

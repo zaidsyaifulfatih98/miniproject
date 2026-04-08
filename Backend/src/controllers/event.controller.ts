@@ -4,11 +4,12 @@ import { eventService } from "../services/event.service";
 export const eventController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const { category, status, search } = req.query;
+      const { category, status, search, organizer_id } = req.query;
       const events = await eventService.getAll({
         category: category as string | undefined,
         status: status as string | undefined,
         search: search as string | undefined,
+        users_id: organizer_id as string | undefined,
       });
       res.status(200).json({ success: true, data: events });
     } catch (error) {

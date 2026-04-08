@@ -7,12 +7,12 @@ const VALID_TYPES = Object.values(TicketType) as string[];
 export const ticketController = {
   async getAllByEvent(req: Request, res: Response, next: NextFunction) {
     try {
-      const { event_id } = req.query;
+      const { event_id, organizer_id } = req.query;
       if (event_id) {
         const tickets = await ticketService.getAllByEvent(event_id as string);
         res.status(200).json({ success: true, data: tickets });
       } else {
-        const tickets = await ticketService.getAll();
+        const tickets = await ticketService.getAll(organizer_id as string | undefined);
         res.status(200).json({ success: true, data: tickets });
       }
     } catch (error) {

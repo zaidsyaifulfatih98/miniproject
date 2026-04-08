@@ -2,9 +2,12 @@ import prisma from "../configs/pool-coonection.config";
 import { TicketType } from "../../generated/prisma/enums";
 
 export const ticketService = {
-  async getAll() {
+  async getAll(organizer_id?: string) {
     return await prisma.tickets.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        ...(organizer_id ? { event: { users_id: organizer_id, deletedAt: null } } : {}),
+      },
       orderBy: { type: "asc" },
       include: { event: { select: { id: true, title: true } } },
     });

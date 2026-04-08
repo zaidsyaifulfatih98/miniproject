@@ -63,8 +63,10 @@ export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 
 export const PromoType = {
-  REFERRAL: 'REFERRAL',
-  EVENT_VOUCHER: 'EVENT_VOUCHER'
+  FLASH_SALE: 'FLASH_SALE',
+  VOUCHER: 'VOUCHER',
+  BUNDLE: 'BUNDLE',
+  LAINNYA: 'LAINNYA'
 } as const
 
 export type PromoType = (typeof PromoType)[keyof typeof PromoType]

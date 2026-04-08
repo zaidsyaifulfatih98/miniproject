@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   AreaChart,
@@ -13,103 +14,10 @@ import {
   Cell,
 } from "recharts";
 
-// ─── Mock summary data ────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-const stats = [
-  {
-    label: "Total Event",
-    value: "24",
-    change: "+3 bulan ini",
-    positive: true,
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-    ),
-    color: "bg-indigo-50 text-indigo-600",
-    href: "/event",
-  },
-  {
-    label: "Total Tiket Terjual",
-    value: "4.820",
-    change: "+12% dari kemarin",
-    positive: true,
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-      </svg>
-    ),
-    color: "bg-purple-50 text-purple-600",
-    href: "/ticket",
-  },
-  {
-    label: "Total Transaksi",
-    value: "1.340",
-    change: "+87 hari ini",
-    positive: true,
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-    ),
-    color: "bg-sky-50 text-sky-600",
-    href: "/transactions",
-  },
-  {
-    label: "Total Customer",
-    value: "3.105",
-    change: "+24 minggu ini",
-    positive: true,
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-5.197-3.768M9 20H4v-2a4 4 0 015.197-3.768M15 11a4 4 0 10-8 0 4 4 0 008 0zm6 0a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-    color: "bg-emerald-50 text-emerald-600",
-    href: "/customers",
-  },
-  {
-    label: "Pendapatan Bersih",
-    value: "Rp 41,4jt",
-    change: "+5% bulan ini",
-    positive: true,
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    color: "bg-amber-50 text-amber-600",
-    href: "/report",
-  },
-];
-
-const revenueData = [
-  { bulan: "Okt", pendapatan: 18_200_000 },
-  { bulan: "Nov", pendapatan: 24_500_000 },
-  { bulan: "Des", pendapatan: 31_000_000 },
-  { bulan: "Jan", pendapatan: 27_400_000 },
-  { bulan: "Feb", pendapatan: 35_800_000 },
-  { bulan: "Mar", pendapatan: 41_437_500 },
-];
-
-const ticketByEvent = [
-  { event: "Java Jazz", terjual: 1240 },
-  { event: "Tech Summit", terjual: 980 },
-  { event: "Startup WE", terjual: 760 },
-  { event: "Maraton", terjual: 640 },
-  { event: "Kuliner", terjual: 510 },
-  { event: "Workshop", terjual: 420 },
-];
-
+const MONTH_ID = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 const BAR_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9", "#f0abfc"];
-
-const recentTransactions = [
-  { id: "TRX-091", customer: "Rina Kusuma", event: "Java Jazz Festival", tiket: "VIP", total: 750_000, status: "Berhasil" },
-  { id: "TRX-090", customer: "Doni Setiawan", event: "Tech Summit 2026", tiket: "Regular", total: 350_000, status: "Berhasil" },
-  { id: "TRX-089", customer: "Siti Aminah", event: "Startup Weekend", tiket: "Early Bird", total: 200_000, status: "Pending" },
-  { id: "TRX-088", customer: "Budi Pranoto", event: "Java Jazz Festival", tiket: "Regular", total: 300_000, status: "Berhasil" },
-  { id: "TRX-087", customer: "Lestari Indah", event: "Maraton Kota", tiket: "Regular", total: 150_000, status: "Gagal" },
-];
 
 const quickLinks = [
   { label: "Kelola Event", desc: "Buat, edit, & hapus event", href: "/event", gradient: "from-indigo-500 to-indigo-600" },
@@ -119,10 +27,51 @@ const quickLinks = [
   { label: "Laporan", desc: "Ekspor CSV & analitik", href: "/report", gradient: "from-amber-500 to-amber-600" },
 ];
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface BookingRaw {
+  id: string;
+  display_id: string | null;
+  quantity: number | null;
+  status: string;
+  total_price: string | null;
+  final_price: string | null;
+  createdAt: string;
+  user: { id: string; full_name: string } | null;
+  event: { id: string; title: string } | null;
+  ticket: { id: string; type: string; price: string } | null;
+}
+
+interface EventRaw {
+  id: string;
+  title: string;
+  status: string;
+  available_seats: number;
+  createdAt: string;
+}
+
+interface UserRaw {
+  id: string;
+  role: string[];
+  createdAt: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatRupiah(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
+}
+
+function formatShort(n: number): string {
+  if (n >= 1_000_000_000) return `Rp ${(n / 1_000_000_000).toFixed(1).replace(".", ",")}M`;
+  if (n >= 1_000_000) return `Rp ${(n / 1_000_000).toFixed(1).replace(".", ",")}jt`;
+  return "Rp " + n.toLocaleString("id-ID");
+}
+
+function mapStatus(s: string): string {
+  if (s === "DONE") return "Berhasil";
+  if (s === "REJECTED" || s === "CANCELLED" || s === "EXPIRED") return "Gagal";
+  return "Pending";
 }
 
 const statusStyle: Record<string, string> = {
@@ -134,6 +83,231 @@ const statusStyle: Record<string, string> = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const [bookings, setBookings] = useState<BookingRaw[]>([]);
+  const [events, setEvents] = useState<EventRaw[]>([]);
+  const [users, setUsers] = useState<UserRaw[]>([]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const organizerId: string = user?.id ?? "";
+    const qs = organizerId ? `?organizer_id=${organizerId}` : "";
+    Promise.all([
+      fetch(`http://localhost:8000/api/bookings${qs}`).then((r) => r.json()),
+      fetch(`http://localhost:8000/api/events${qs}`).then((r) => r.json()),
+      fetch("http://localhost:8000/api/users").then((r) => r.json()),
+    ])
+      .then(([bData, eData, uData]) => {
+        setBookings(Array.isArray(bData) ? bData : (bData.data ?? []));
+        setEvents(Array.isArray(eData) ? eData : (eData.data ?? []));
+        setUsers(Array.isArray(uData) ? uData : (uData.data ?? []));
+      })
+      .catch(console.error);
+  }, []);
+
+  // ── Date helpers ────────────────────────────────────────────────────────────
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const todayStr = now.toISOString().slice(0, 10);
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+  const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+
+  const isThisMonth = (d: string) => { const dt = new Date(d); return dt.getMonth() === thisMonth && dt.getFullYear() === thisYear; };
+  const isLastMonth = (d: string) => { const dt = new Date(d); return dt.getMonth() === lastMonth && dt.getFullYear() === lastMonthYear; };
+
+  // ── Derived data ─────────────────────────────────────────────────────────────
+  const doneBookings = bookings.filter((b) => b.status === "DONE");
+  const customers = users.filter((u) => u.role?.includes("CUSTOMERS"));
+
+  // Stat: Total Event
+  const totalEvents = events.length;
+  const eventsThisMonth = events.filter((e) => isThisMonth(e.createdAt)).length;
+
+  // Stat: Tiket Terjual
+  const totalTicketsSold = doneBookings.reduce((s, b) => s + (b.quantity ?? 0), 0);
+  const ticketsThisMonth = doneBookings.filter((b) => isThisMonth(b.createdAt)).reduce((s, b) => s + (b.quantity ?? 0), 0);
+  const ticketsLastMonth = doneBookings.filter((b) => isLastMonth(b.createdAt)).reduce((s, b) => s + (b.quantity ?? 0), 0);
+  const ticketChangePct = ticketsLastMonth > 0
+    ? Math.round((ticketsThisMonth - ticketsLastMonth) / ticketsLastMonth * 100)
+    : (ticketsThisMonth > 0 ? 100 : 0);
+
+  // Stat: Transaksi
+  const totalTransactions = bookings.length;
+  const transactionsToday = bookings.filter((b) => b.createdAt.slice(0, 10) === todayStr).length;
+
+  // Stat: Customer
+  const totalCustomers = customers.length;
+  const newCustomersThisWeek = customers.filter((u) => new Date(u.createdAt) >= weekAgo).length;
+
+  // Stat: Pendapatan
+  const grossRevenue = doneBookings.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+  const netRevenue = doneBookings.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
+  const netThisMonth = doneBookings.filter((b) => isThisMonth(b.createdAt)).reduce((s, b) => s + Number(b.final_price ?? 0), 0);
+  const netLastMonth = doneBookings.filter((b) => isLastMonth(b.createdAt)).reduce((s, b) => s + Number(b.final_price ?? 0), 0);
+  const revenueChangePct = netLastMonth > 0
+    ? Math.round((netThisMonth - netLastMonth) / netLastMonth * 100)
+    : (netThisMonth > 0 ? 100 : 0);
+
+  // ── Stats cards ──────────────────────────────────────────────────────────────
+  const stats = [
+    {
+      label: "Total Event",
+      value: totalEvents.toLocaleString("id-ID"),
+      change: `+${eventsThisMonth} bulan ini`,
+      positive: true,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      color: "bg-indigo-50 text-indigo-600",
+      href: "/event",
+    },
+    {
+      label: "Total Tiket Terjual",
+      value: totalTicketsSold.toLocaleString("id-ID"),
+      change: `${ticketChangePct >= 0 ? "+" : ""}${ticketChangePct}% dari bulan lalu`,
+      positive: ticketChangePct >= 0,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+        </svg>
+      ),
+      color: "bg-purple-50 text-purple-600",
+      href: "/ticket",
+    },
+    {
+      label: "Total Transaksi",
+      value: totalTransactions.toLocaleString("id-ID"),
+      change: `+${transactionsToday} hari ini`,
+      positive: true,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      ),
+      color: "bg-sky-50 text-sky-600",
+      href: "/transactions",
+    },
+    {
+      label: "Total Customer",
+      value: totalCustomers.toLocaleString("id-ID"),
+      change: `+${newCustomersThisWeek} minggu ini`,
+      positive: true,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-5.197-3.768M9 20H4v-2a4 4 0 015.197-3.768M15 11a4 4 0 10-8 0 4 4 0 008 0zm6 0a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      color: "bg-emerald-50 text-emerald-600",
+      href: "/customers",
+    },
+    {
+      label: "Pendapatan Bersih",
+      value: formatShort(netRevenue),
+      change: `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct}% bulan ini`,
+      positive: revenueChangePct >= 0,
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
+      color: "bg-amber-50 text-amber-600",
+      href: "/report",
+    },
+  ];
+
+  // ── Charts ───────────────────────────────────────────────────────────────────
+  const revenueData = (() => {
+    const result = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(thisYear, thisMonth - i, 1);
+      const m = d.getMonth();
+      const y = d.getFullYear();
+      const sum = doneBookings
+        .filter((b) => { const bd = new Date(b.createdAt); return bd.getMonth() === m && bd.getFullYear() === y; })
+        .reduce((s, b) => s + Number(b.total_price ?? 0), 0);
+      result.push({ bulan: MONTH_ID[m], pendapatan: sum });
+    }
+    return result;
+  })();
+
+  const ticketByEvent = (() => {
+    const map = new Map<string, number>();
+    doneBookings.forEach((b) => {
+      const title = b.event?.title ?? "Lainnya";
+      map.set(title, (map.get(title) ?? 0) + (b.quantity ?? 0));
+    });
+    return [...map.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([event, terjual]) => ({ event: event.length > 11 ? event.slice(0, 10) + "…" : event, terjual }));
+  })();
+
+  // ── Recent Transactions ──────────────────────────────────────────────────────
+  const recentTransactions = bookings.slice(0, 5).map((b) => ({
+    id: b.display_id ?? b.id.slice(0, 8).toUpperCase(),
+    customer: b.user?.full_name ?? "–",
+    event: b.event?.title ?? "–",
+    tiket: b.ticket?.type?.replace(/_/g, " ") ?? "–",
+    total: Number(b.total_price ?? 0),
+    status: mapStatus(b.status),
+  }));
+
+  // ── Overview cards ───────────────────────────────────────────────────────────
+  const activeEvents = events.filter((e) => e.status === "ACTIVE").length;
+  const draftEvents = events.filter((e) => e.status === "DRAFT").length;
+  const completedEvents = events.filter((e) => e.status === "COMPLETED").length;
+  const remainingSeats = events.reduce((s, e) => s + (e.available_seats ?? 0), 0);
+  const doneCount = doneBookings.length;
+  const pendingCount = bookings.filter((b) => ["PENDING", "WAITING_FOR_PAYMENTS", "WAITING_FOR_CONFIRMATION"].includes(b.status)).length;
+  const failedCount = bookings.filter((b) => ["REJECTED", "CANCELLED", "EXPIRED"].includes(b.status)).length;
+  const newCustomersThisMonth = customers.filter((u) => isThisMonth(u.createdAt)).length;
+
+  const overviewCards = [
+    {
+      title: "Event", href: "/event", icon: "🗓️", accentBg: "bg-indigo-500",
+      metrics: [
+        { label: "Aktif", value: activeEvents.toLocaleString("id-ID") },
+        { label: "Draft", value: draftEvents.toLocaleString("id-ID") },
+        { label: "Selesai", value: completedEvents.toLocaleString("id-ID") },
+      ],
+    },
+    {
+      title: "Tiket", href: "/ticket", icon: "🎟️", accentBg: "bg-purple-500",
+      metrics: [
+        { label: "Terjual", value: totalTicketsSold.toLocaleString("id-ID") },
+        { label: "Tersisa", value: remainingSeats.toLocaleString("id-ID") },
+        { label: "Event", value: totalEvents.toLocaleString("id-ID") },
+      ],
+    },
+    {
+      title: "Transaksi", href: "/transactions", icon: "📋", accentBg: "bg-sky-500",
+      metrics: [
+        { label: "Berhasil", value: doneCount.toLocaleString("id-ID") },
+        { label: "Pending", value: pendingCount.toLocaleString("id-ID") },
+        { label: "Gagal", value: failedCount.toLocaleString("id-ID") },
+      ],
+    },
+    {
+      title: "Customers", href: "/customers", icon: "👥", accentBg: "bg-emerald-500",
+      metrics: [
+        { label: "Total", value: totalCustomers.toLocaleString("id-ID") },
+        { label: "Baru (bln)", value: newCustomersThisMonth.toLocaleString("id-ID") },
+        { label: "Minggu ini", value: newCustomersThisWeek.toLocaleString("id-ID") },
+      ],
+    },
+    {
+      title: "Laporan", href: "/report", icon: "📊", accentBg: "bg-amber-500",
+      metrics: [
+        { label: "Pendapatan", value: formatShort(netRevenue).replace("Rp ", "") },
+        { label: "Pajak", value: formatShort(grossRevenue * 0.1).replace("Rp ", "") },
+        { label: "Fee", value: formatShort(grossRevenue * 0.05).replace("Rp ", "") },
+      ],
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-8">
 
@@ -305,43 +479,7 @@ export default function Dashboard() {
         <h2 className="font-bold text-gray-800 mb-1">Overview Halaman</h2>
         <p className="text-xs text-gray-500 mb-5">Ringkasan kondisi tiap modul</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {[
-            {
-              title: "Event",
-              href: "/event",
-              icon: "🗓️",
-              metrics: [{ label: "Aktif", value: "18" }, { label: "Draft", value: "4" }, { label: "Selesai", value: "2" }],
-              accentBg: "bg-indigo-500",
-            },
-            {
-              title: "Tiket",
-              href: "/ticket",
-              icon: "🎟️",
-              metrics: [{ label: "Terjual", value: "4.820" }, { label: "Tersisa", value: "1.640" }, { label: "Event", value: "24" }],
-              accentBg: "bg-purple-500",
-            },
-            {
-              title: "Transaksi",
-              href: "/transactions",
-              icon: "📋",
-              metrics: [{ label: "Berhasil", value: "1.210" }, { label: "Pending", value: "87" }, { label: "Gagal", value: "43" }],
-              accentBg: "bg-sky-500",
-            },
-            {
-              title: "Customers",
-              href: "/customers",
-              icon: "👥",
-              metrics: [{ label: "Total", value: "3.105" }, { label: "Baru (bln)", value: "124" }, { label: "Aktif", value: "2.840" }],
-              accentBg: "bg-emerald-500",
-            },
-            {
-              title: "Laporan",
-              href: "/report",
-              icon: "📊",
-              metrics: [{ label: "Pendapatan", value: "41,4jt" }, { label: "Pajak", value: "4,8jt" }, { label: "Fee", value: "2,4jt" }],
-              accentBg: "bg-amber-500",
-            },
-          ].map((card) => (
+          {overviewCards.map((card) => (
             <Link
               key={card.title}
               to={card.href}

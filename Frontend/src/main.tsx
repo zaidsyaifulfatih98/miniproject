@@ -5,11 +5,11 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import RootLayout from './components/RootLayout'
 import Event from './page/Event'
 import Ticket from './page/Ticket'
-import Customers from './page/Customers'
 import Transactions from './page/Transactions'
 import Report from './page/Report'
 import Dashboard from './page/Dashboard'
 import Admin from './page/Admin'
+import Promos from './page/Promos'
 import Register from './page/Register'
 import LoginOrganizer from './page/LoginOrganizer'
 
@@ -40,8 +40,8 @@ const router = createBrowserRouter([
         Component: Ticket,
       },
       {
-        path: '/customers',
-        Component: Customers,
+        path: '/promos',
+        Component: Promos,
       },
       {
         path: '/transactions',

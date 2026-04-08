@@ -4,12 +4,12 @@ import { promoService } from "../services/promo.service";
 export const promoController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const { event_id } = req.query;
+      const { event_id, organizer_id } = req.query;
       if (event_id) {
         const promos = await promoService.getAllByEvent(event_id as string);
         res.status(200).json({ success: true, data: promos });
       } else {
-        const promos = await promoService.getAll();
+        const promos = await promoService.getAll(organizer_id as string | undefined);
         res.status(200).json({ success: true, data: promos });
       }
     } catch (error) {
@@ -19,14 +19,16 @@ export const promoController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { event_id, promotion_code, discount_amount, max_usage, expires_at } = req.body;
-      if (!event_id || !promotion_code || discount_amount === undefined) {
-        res.status(400).json({ success: false, message: "event_id, promotion_code, dan discount_amount wajib diisi" });
+      const { event_id, name, promotion_code, type, discount_amount, max_usage, expires_at } = req.body;
+      if (!event_id || !name || !promotion_code || discount_amount === undefined) {
+        res.status(400).json({ success: false, message: "event_id, name, promotion_code, dan discount_amount wajib diisi" });
         return;
       }
       const promo = await promoService.create({
         event_id,
+        name,
         promotion_code: promotion_code.toUpperCase(),
+        type,
         discount_amount: Number(discount_amount),
         max_usage: max_usage ? Number(max_usage) : undefined,
         expires_at,

@@ -1,74 +1,68 @@
 
-import { useState } from "react";
-import { useEventStore } from "../store/eventStore";
+import { useState, useEffect, useCallback } from "react";
 
-type TicketType = "Early Bird" | "Reguler" | "VIP" | "VVIP";
-const TICKET_TYPES: TicketType[] = ["Early Bird", "Reguler", "VIP", "VVIP"];
+const API_BASE = "http://localhost:8000/api";
+
+// ── DB enums ─────────────────────────────────────────────────────────────────
+type DBStatus =
+  | "PENDING"
+  | "WAITING_FOR_PAYMENTS"
+  | "WAITING_FOR_CONFIRMATION"
+  | "REJECTED"
+  | "DONE"
+  | "CANCELLED"
+  | "EXPIRED";
+
+type DBTicketType = "FREE" | "EARLY_BIRD" | "REGULAR" | "VIP" | "VVIP";
+
+// ── UI display types ──────────────────────────────────────────────────────────
+type TxStatus = "Berhasil" | "Menunggu" | "Expired" | "Gagal";
+type TicketType = "Free" | "Early Bird" | "Reguler" | "VIP" | "VVIP";
+
+// ── API shape ─────────────────────────────────────────────────────────────────
+interface BookingAPI {
+  id: string;
+  display_id: string | null;
+  event_id: string;
+  quantity: number | null;
+  status: DBStatus;
+  total_price: string | null;
+  discount_amount: string | null;
+  points_used: number | null;
+  final_price: string | null;
+  createdAt: string;
+  user: { id: string; full_name: string; email: string };
+  event: { id: string; title: string };
+  ticket: { id: string; type: DBTicketType; price: string };
+  promotion: { id: string; name: string; discount_amount: string } | null;
+}
+
+// ── Mappings ──────────────────────────────────────────────────────────────────
+function mapStatus(s: DBStatus): TxStatus {
+  if (s === "DONE") return "Berhasil";
+  if (s === "EXPIRED") return "Expired";
+  if (s === "PENDING" || s === "WAITING_FOR_PAYMENTS" || s === "WAITING_FOR_CONFIRMATION") return "Menunggu";
+  return "Gagal";
+}
+
+function mapTicketType(t: DBTicketType): TicketType {
+  const map: Record<DBTicketType, TicketType> = {
+    FREE: "Free",
+    EARLY_BIRD: "Early Bird",
+    REGULAR: "Reguler",
+    VIP: "VIP",
+    VVIP: "VVIP",
+  };
+  return map[t];
+}
 
 const ticketTypeBadge: Record<TicketType, string> = {
+  Free:         "bg-gray-100 text-gray-600",
   "Early Bird": "bg-green-100 text-green-700",
-  Reguler: "bg-blue-100 text-blue-700",
-  VIP: "bg-purple-100 text-purple-700",
-  VVIP: "bg-yellow-100 text-yellow-700",
+  Reguler:      "bg-blue-100 text-blue-700",
+  VIP:          "bg-purple-100 text-purple-700",
+  VVIP:         "bg-yellow-100 text-yellow-700",
 };
-
-interface TicketPool {
-  eventId: number;
-  type: TicketType;
-  price: number;
-  quota: number;
-  sold: number;
-}
-
-interface PromoPool {
-  eventId: number;
-  discount: number;
-  maxUse: number;
-  used: number;
-  expiry: string;
-}
-
-type TxStatus = "Berhasil" | "Menunggu" | "Expired" | "Gagal";
-
-interface Transaction {
-  id: string;
-  eventId: number;
-  buyer: string;
-  email: string;
-  ticketType: TicketType;
-  qty: number;
-  amount: number;
-  status: TxStatus;
-  date: string;
-  promoCode?: string;
-}
-
-const ticketPools: TicketPool[] = [
-  { eventId: 1, type: "Early Bird", price: 150000, quota: 200, sold: 180 },
-  { eventId: 1, type: "Reguler",    price: 250000, quota: 500, sold: 120 },
-  { eventId: 1, type: "VIP",        price: 500000, quota: 100, sold: 60  },
-  { eventId: 2, type: "Reguler",    price: 100000, quota: 150, sold: 90  },
-  { eventId: 2, type: "VIP",        price: 200000, quota: 50,  sold: 30  },
-  { eventId: 3, type: "VVIP",       price: 750000, quota: 20,  sold: 20  },
-];
-
-const promoPools: PromoPool[] = [
-  { eventId: 1, discount: 20, maxUse: 100, used: 45, expiry: "2026-04-10" },
-  { eventId: 2, discount: 15, maxUse: 50,  used: 12, expiry: "2026-05-01" },
-];
-
-const initialTransactions: Transaction[] = [
-  { id: "TRX-2026-001", eventId: 1, buyer: "Andi Prasetyo",  email: "andi@email.com",  ticketType: "VIP",        qty: 2, amount: 1000000, status: "Berhasil", date: "2026-03-10", promoCode: "KONSER20" },
-  { id: "TRX-2026-002", eventId: 1, buyer: "Sari Dewi",      email: "sari@email.com",  ticketType: "Reguler",    qty: 1, amount: 250000,  status: "Berhasil", date: "2026-03-12" },
-  { id: "TRX-2026-003", eventId: 2, buyer: "Budi Santoso",   email: "budi@email.com",  ticketType: "VIP",        qty: 1, amount: 200000,  status: "Menunggu", date: "2026-03-20", promoCode: "WORKSHOP15" },
-  { id: "TRX-2026-004", eventId: 3, buyer: "Rina Kusuma",    email: "rina@email.com",  ticketType: "VVIP",       qty: 1, amount: 750000,  status: "Berhasil", date: "2026-02-18" },
-  { id: "TRX-2026-005", eventId: 1, buyer: "Dimas Rahmat",   email: "dimas@email.com", ticketType: "Early Bird", qty: 3, amount: 450000,  status: "Berhasil", date: "2026-03-01" },
-  { id: "TRX-2026-006", eventId: 2, buyer: "Maya Putri",     email: "maya@email.com",  ticketType: "Reguler",    qty: 2, amount: 200000,  status: "Gagal",    date: "2026-03-22" },
-  { id: "TRX-2026-007", eventId: 1, buyer: "Tono Wijaya",    email: "tono@email.com",  ticketType: "VIP",        qty: 1, amount: 500000,  status: "Menunggu", date: "2026-03-28" },
-  { id: "TRX-2026-008", eventId: 3, buyer: "Lina Susanti",   email: "lina@email.com",  ticketType: "VVIP",       qty: 1, amount: 750000,  status: "Berhasil", date: "2026-02-20" },
-  { id: "TRX-2026-009", eventId: 2, buyer: "Hendra Gunawan", email: "hendra@email.com", ticketType: "Reguler",    qty: 2, amount: 200000,  status: "Expired",  date: "2026-01-10", promoCode: "WORKSHOP15" },
-  { id: "TRX-2026-010", eventId: 1, buyer: "Fera Anggraini",  email: "fera@email.com",   ticketType: "Early Bird", qty: 1, amount: 150000,  status: "Expired",  date: "2026-01-25" },
-];
 
 const statusColor: Record<TxStatus, string> = {
   Berhasil: "bg-green-100 text-green-700",
@@ -77,75 +71,93 @@ const statusColor: Record<TxStatus, string> = {
   Gagal:    "bg-red-100 text-red-600",
 };
 
-function getEventName(id: number, evList: { id: number; name: string }[]) {
-  return evList.find((e) => e.id === id)?.name ?? "-";
-}
-
-function getDiscountedAmount(tx: Transaction): number {
-  if (!tx.promoCode) return tx.amount;
-  const promo = promoPools.find((p) => p.eventId === tx.eventId);
-  if (!promo) return tx.amount;
-  return Math.round(tx.amount * (1 - promo.discount / 100));
-}
-
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function Transactions() {
-  const events = useEventStore((s) => s.events);
-  const [tab, setTab]               = useState<"transaksi" | "statistik">("transaksi");
-  const [filterEvent, setFilterEvent] = useState<number | "Semua">("Semua");
+  const [bookings, setBookings]       = useState<BookingAPI[]>([]);
+  const [loading, setLoading]         = useState(true);
+  const [tab, setTab]                 = useState<"transaksi" | "statistik">("transaksi");
+  const [filterEvent, setFilterEvent] = useState<string | "Semua">("Semua");
   const [filterStatus, setFilterStatus] = useState<TxStatus | "Semua">("Semua");
-  const [search, setSearch]         = useState("");
+  const [search, setSearch]           = useState("");
 
-  // ── Filtered transactions ──────────────────────────────────────────────────
-  const filteredTx = initialTransactions.filter((t) => {
-    const matchEvent  = filterEvent === "Semua" || t.eventId === filterEvent;
-    const matchStatus = filterStatus === "Semua" || t.status === filterStatus;
-    const matchSearch = t.buyer.toLowerCase().includes(search.toLowerCase()) ||
-      t.id.toLowerCase().includes(search.toLowerCase()) ||
-      t.email.toLowerCase().includes(search.toLowerCase());
-    return matchEvent && matchStatus && matchSearch;
+  // ── Fetch bookings ──────────────────────────────────────────────────────────
+  const fetchBookings = useCallback(() => {
+    setLoading(true);
+    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const organizerId: string = user?.id ?? "";
+    const url = organizerId ? `${API_BASE}/bookings?organizer_id=${organizerId}` : `${API_BASE}/bookings`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((res) => { if (res.success) setBookings(res.data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
+
+  // ── Unique events derived from bookings ────────────────────────────────────
+  const eventList = Array.from(
+    new Map(bookings.map((b) => [b.event_id, b.event])).values()
+  );
+
+  // ── Scoped bookings (by event filter) ─────────────────────────────────────
+  const scopedBookings = filterEvent === "Semua"
+    ? bookings
+    : bookings.filter((b) => b.event_id === filterEvent);
+
+  // ── Filtered transactions (transaksi tab) ─────────────────────────────────
+  const filteredTx = scopedBookings.filter((b) => {
+    const uiStatus = mapStatus(b.status);
+    const matchStatus = filterStatus === "Semua" || uiStatus === filterStatus;
+    const matchSearch =
+      (b.user?.full_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (b.display_id ?? b.id).toLowerCase().includes(search.toLowerCase()) ||
+      (b.user?.email ?? "").toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
   });
 
-  // ── Stats (respect filterEvent) ────────────────────────────────────────────
-  const scopedTickets = filterEvent === "Semua" ? ticketPools : ticketPools.filter((t) => t.eventId === filterEvent);
-  const scopedPromos  = filterEvent === "Semua" ? promoPools  : promoPools.filter((p) => p.eventId === filterEvent);
-  const scopedTx      = filterEvent === "Semua" ? initialTransactions : initialTransactions.filter((t) => t.eventId === filterEvent);
+  // ── Summary counts ─────────────────────────────────────────────────────────
+  const successTx  = scopedBookings.filter((b) => b.status === "DONE");
+  const pendingTx  = scopedBookings.filter((b) =>
+    b.status === "PENDING" || b.status === "WAITING_FOR_PAYMENTS" || b.status === "WAITING_FOR_CONFIRMATION"
+  );
+  const expiredTx  = scopedBookings.filter((b) => b.status === "EXPIRED");
+  const failedTx   = scopedBookings.filter((b) => b.status === "REJECTED" || b.status === "CANCELLED");
+  const txRevenue  = successTx.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
 
-  const totalQuota    = scopedTickets.reduce((s, t) => s + t.quota, 0);
-  const totalSold     = scopedTickets.reduce((s, t) => s + t.sold, 0);
-  const totalRevenue  = scopedTickets.reduce((s, t) => s + t.price * t.sold, 0);
-  const activePromos  = scopedPromos.filter((p) => new Date(p.expiry) >= new Date()).length;
+  // ── Statistics derived from bookings ──────────────────────────────────────
+  const totalSold    = successTx.reduce((s, b) => s + (b.quantity ?? 0), 0);
+  const totalRevenue = txRevenue;
+  const withPromo    = scopedBookings.filter((b) => b.promotion !== null && b.promotion !== undefined);
 
-  const eventScope = filterEvent === "Semua" ? events : events.filter((e) => e.id === filterEvent);
-  const byEvent = eventScope.map((ev) => {
-    const evTickets = ticketPools.filter((t) => t.eventId === ev.id);
-    const evSold    = evTickets.reduce((s, t) => s + t.sold, 0);
-    const evQuota   = evTickets.reduce((s, t) => s + t.quota, 0);
-    const evRevenue = evTickets.reduce((s, t) => s + t.price * t.sold, 0);
-    const evPromos  = promoPools.filter((p) => p.eventId === ev.id).length;
-    return { ev, evTickets, evSold, evQuota, evRevenue, evPromos };
-  }).filter((x) => x.evTickets.length > 0);
+  // Per-event stats
+  const byEvent = eventList
+    .filter((ev) => filterEvent === "Semua" || ev.id === filterEvent)
+    .map((ev) => {
+      const evBookings = scopedBookings.filter((b) => b.event_id === ev.id && b.status === "DONE");
+      const evSold    = evBookings.reduce((s, b) => s + (b.quantity ?? 0), 0);
+      const evRevenue = evBookings.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
+      const evPromos  = scopedBookings.filter((b) => b.event_id === ev.id && b.promotion).length;
+      return { ev, evSold, evRevenue, evPromos };
+    })
+    .filter((x) => x.evSold > 0 || x.evRevenue > 0);
 
-  const byType = TICKET_TYPES.map((type) => {
-    const typeTickets = scopedTickets.filter((t) => t.type === type);
-    const sold    = typeTickets.reduce((s, t) => s + t.sold, 0);
-    const quota   = typeTickets.reduce((s, t) => s + t.quota, 0);
-    const revenue = typeTickets.reduce((s, t) => s + t.price * t.sold, 0);
-    return { type, sold, quota, revenue };
-  }).filter((x) => x.quota > 0);
+  // Per-type stats
+  const allTicketTypes: DBTicketType[] = ["FREE", "EARLY_BIRD", "REGULAR", "VIP", "VVIP"];
+  const byType = allTicketTypes.map((dbType) => {
+    const typeBookings = scopedBookings.filter((b) => b.ticket?.type === dbType && b.status === "DONE");
+    const sold    = typeBookings.reduce((s, b) => s + (b.quantity ?? 0), 0);
+    const revenue = typeBookings.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
+    return { type: mapTicketType(dbType), sold, revenue };
+  }).filter((x) => x.sold > 0);
 
   const maxRevenue = Math.max(...byEvent.map((x) => x.evRevenue), 1);
   const maxSold    = Math.max(...byEvent.map((x) => x.evSold), 1);
-
-  // ── Summary card for transaksi tab ────────────────────────────────────────
-  const successTx  = scopedTx.filter((t) => t.status === "Berhasil");
-  const pendingTx  = scopedTx.filter((t) => t.status === "Menunggu");
-  const expiredTx  = scopedTx.filter((t) => t.status === "Expired");
-  const failedTx   = scopedTx.filter((t) => t.status === "Gagal");
-  const txRevenue  = successTx.reduce((s, t) => s + getDiscountedAmount(t), 0);
+  const totalTx    = scopedBookings.length;
+  const successRate = totalTx ? Math.round((successTx.length / totalTx) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -173,12 +185,12 @@ export default function Transactions() {
           ))}
         </div>
         <select
-          value={filterEvent === "Semua" ? "Semua" : String(filterEvent)}
-          onChange={(e) => setFilterEvent(e.target.value === "Semua" ? "Semua" : Number(e.target.value))}
+          value={filterEvent}
+          onChange={(e) => setFilterEvent(e.target.value === "Semua" ? "Semua" : e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
           <option value="Semua">Semua Event</option>
-          {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.name}</option>)}
+          {eventList.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
         </select>
       </div>
 
@@ -236,7 +248,7 @@ export default function Transactions() {
           {/* Table */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[1000px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">ID Transaksi</th>
@@ -245,52 +257,65 @@ export default function Transactions() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiket</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Qty</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Setelah Promo</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Setelah Diskon</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Promo</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {filteredTx.length === 0 ? (
+                {loading ? (
+                  <tr><td colSpan={10} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td></tr>
+                ) : filteredTx.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="text-center py-12 text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td>
                   </tr>
-                ) : filteredTx.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-4 font-mono text-xs text-gray-500">{t.id}</td>
-                    <td className="px-5 py-4">
-                      <p className="font-medium text-gray-800">{t.buyer}</p>
-                      <p className="text-xs text-gray-400">{t.email}</p>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600 text-xs max-w-[140px] truncate">{getEventName(t.eventId, events)}</td>
-                    <td className="px-5 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[t.ticketType]}`}>
-                        {t.ticketType}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-gray-600">{t.qty}</td>
-                    <td className="px-5 py-4 font-semibold text-gray-700">Rp {t.amount.toLocaleString("id-ID")}</td>
-                    <td className="px-5 py-4">
-                      {t.promoCode
-                        ? <span className="font-semibold text-green-700">Rp {getDiscountedAmount(t).toLocaleString("id-ID")}</span>
-                        : <span className="font-semibold text-gray-700">Rp {t.amount.toLocaleString("id-ID")}</span>
-                      }
-                    </td>
-                    <td className="px-5 py-4">
-                      {t.promoCode
-                        ? <span className="font-mono text-xs bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded tracking-widest">{t.promoCode}</span>
-                        : <span className="text-gray-300 text-xs">—</span>
-                      }
-                    </td>
-                    <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{formatDate(t.date)}</td>
-                    <td className="px-5 py-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[t.status]}`}>
-                        {t.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                ) : (
+                  <>
+                  {filteredTx.map((b) => {
+                  const uiStatus     = mapStatus(b.status);
+                  const uiTicketType = mapTicketType(b.ticket?.type ?? "REGULAR");
+                  const totalPrice   = Number(b.total_price ?? 0);
+                  const finalPrice   = Number(b.final_price ?? 0);
+                  const hasDiscount  = !!b.promotion || (b.points_used ?? 0) > 0;
+                  return (
+                    <tr key={b.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-4 font-mono text-xs text-gray-500">{b.display_id ?? b.id.slice(0, 8).toUpperCase()}</td>
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-gray-800">{b.user?.full_name ?? "-"}</p>
+                        <p className="text-xs text-gray-400">{b.user?.email ?? "-"}</p>
+                      </td>
+                      <td className="px-5 py-4 text-gray-600 text-xs max-w-[140px] truncate">{b.event?.title ?? "-"}</td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[uiTicketType]}`}>
+                          {uiTicketType}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-gray-600">{b.quantity ?? 0}</td>
+                      <td className="px-5 py-4 font-semibold text-gray-700">Rp {totalPrice.toLocaleString("id-ID")}</td>
+                      <td className="px-5 py-4">
+                        {hasDiscount
+                          ? <span className="font-semibold text-green-700">Rp {finalPrice.toLocaleString("id-ID")}</span>
+                          : <span className="font-semibold text-gray-700">Rp {totalPrice.toLocaleString("id-ID")}</span>
+                        }
+                      </td>
+                      <td className="px-5 py-4">
+                        {b.promotion
+                          ? <span className="font-mono text-xs bg-orange-50 text-orange-600 border border-orange-200 px-2 py-0.5 rounded tracking-widest">{b.promotion.name}</span>
+                          : <span className="text-gray-300 text-xs">—</span>
+                        }
+                      </td>
+                      <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{formatDate(b.createdAt)}</td>
+                      <td className="px-5 py-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[uiStatus]}`}>
+                          {uiStatus}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                  </>
+                )}
               </tbody>
             </table>            </div>          </div>
         </div>
@@ -305,7 +330,7 @@ export default function Transactions() {
               {
                 label: "Total Tiket Terjual",
                 value: totalSold.toLocaleString("id-ID"),
-                sub: `dari ${totalQuota.toLocaleString("id-ID")} kuota`,
+                sub: `dari transaksi berhasil`,
                 color: "text-orange-500",
                 bg: "bg-orange-50",
                 icon: (
@@ -317,7 +342,7 @@ export default function Transactions() {
               {
                 label: "Total Pendapatan",
                 value: `Rp ${(totalRevenue / 1_000_000).toFixed(1)}jt`,
-                sub: `dari ${scopedTickets.length} tipe tiket`,
+                sub: `dari ${successTx.length} booking selesai`,
                 color: "text-green-600",
                 bg: "bg-green-50",
                 icon: (
@@ -327,9 +352,9 @@ export default function Transactions() {
                 ),
               },
               {
-                label: "Tingkat Penjualan",
-                value: `${totalQuota ? Math.round((totalSold / totalQuota) * 100) : 0}%`,
-                sub: "dari total kuota",
+                label: "Tingkat Keberhasilan",
+                value: `${successRate}%`,
+                sub: `${successTx.length} dari ${totalTx} transaksi`,
                 color: "text-blue-600",
                 bg: "bg-blue-50",
                 icon: (
@@ -339,9 +364,9 @@ export default function Transactions() {
                 ),
               },
               {
-                label: "Promo Aktif",
-                value: `${activePromos} / ${scopedPromos.length}`,
-                sub: "kode kupon berlaku",
+                label: "Pakai Promo",
+                value: withPromo.length.toLocaleString("id-ID"),
+                sub: "booking dengan kode promo",
                 color: "text-purple-600",
                 bg: "bg-purple-50",
                 icon: (
@@ -373,7 +398,7 @@ export default function Transactions() {
                     return (
                       <div key={ev.id}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-600 truncate max-w-[55%]">{ev.name}</span>
+                          <span className="text-xs text-gray-600 truncate max-w-[55%]">{ev.title}</span>
                           <span className="text-xs font-semibold text-gray-700">Rp {(evRevenue / 1_000_000).toFixed(1)}jt</span>
                         </div>
                         <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
@@ -387,23 +412,16 @@ export default function Transactions() {
               <div className="bg-white rounded-xl border border-gray-200 p-5">
                 <h3 className="text-sm font-semibold text-gray-700 mb-4">Tiket Terjual per Event</h3>
                 <div className="space-y-3">
-                  {byEvent.map(({ ev, evSold, evQuota }) => {
-                    const barPct  = Math.round((evSold / maxSold) * 100);
-                    const soldPct = evQuota ? Math.round((evSold / evQuota) * 100) : 0;
-                    const barColor = soldPct >= 100 ? "bg-red-400" : soldPct >= 80 ? "bg-yellow-400" : "bg-green-400";
+                  {byEvent.map(({ ev, evSold }) => {
+                    const barPct = Math.round((evSold / maxSold) * 100);
                     return (
                       <div key={ev.id}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-600 truncate max-w-[55%]">{ev.name}</span>
-                          <span className="text-xs font-semibold text-gray-700">
-                            {evSold} <span className="text-gray-400 font-normal">/ {evQuota}</span>
-                            <span className={`ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold ${soldPct >= 100 ? "bg-red-100 text-red-600" : soldPct >= 80 ? "bg-yellow-100 text-yellow-700" : "bg-green-100 text-green-700"}`}>
-                              {soldPct}%
-                            </span>
-                          </span>
+                          <span className="text-xs text-gray-600 truncate max-w-[55%]">{ev.title}</span>
+                          <span className="text-xs font-semibold text-gray-700">{evSold} tiket</span>
                         </div>
                         <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div className={`h-full ${barColor} rounded-full transition-all duration-500`} style={{ width: `${barPct}%` }} />
+                          <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${barPct}%` }} />
                         </div>
                       </div>
                     );
@@ -419,12 +437,12 @@ export default function Transactions() {
               <h3 className="text-sm font-semibold text-gray-700">Performa per Event</h3>
             </div>
             <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[700px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Terjual / Kuota</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tingkat Penjualan</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiket Terjual</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Perbandingan</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Pendapatan</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Promo</th>
                 </tr>
@@ -432,18 +450,16 @@ export default function Transactions() {
               <tbody className="divide-y divide-gray-50">
                 {byEvent.length === 0 ? (
                   <tr><td colSpan={5} className="text-center py-10 text-gray-400 text-sm">Tidak ada data untuk ditampilkan.</td></tr>
-                ) : byEvent.map(({ ev, evSold, evQuota, evRevenue, evPromos }) => {
-                  const pct = evQuota ? Math.round((evSold / evQuota) * 100) : 0;
-                  return (
+                ) : byEvent.map(({ ev, evSold, evRevenue, evPromos }) => (
                     <tr key={ev.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-4 font-medium text-gray-800">{ev.name}</td>
-                      <td className="px-5 py-4 text-gray-600">{evSold} / {evQuota}</td>
+                      <td className="px-5 py-4 font-medium text-gray-800">{ev.title}</td>
+                      <td className="px-5 py-4 text-gray-600">{evSold} tiket</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <div className="w-28 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-yellow-400" : "bg-green-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                            <div className="h-full rounded-full bg-blue-400" style={{ width: `${Math.min(Math.round((evSold / maxSold) * 100), 100)}%` }} />
                           </div>
-                          <span className="text-xs font-semibold text-gray-600">{pct}%</span>
+                          <span className="text-xs font-semibold text-gray-600">{evSold}</span>
                         </div>
                       </td>
                       <td className="px-5 py-4 text-gray-700 font-medium">Rp {evRevenue.toLocaleString("id-ID")}</td>
@@ -453,8 +469,7 @@ export default function Transactions() {
                         </span>
                       </td>
                     </tr>
-                  );
-                })}
+                  ))}
               </tbody>
             </table>            </div>          </div>
 
@@ -465,24 +480,18 @@ export default function Transactions() {
                 <h3 className="text-sm font-semibold text-gray-700">Performa per Tipe Tiket</h3>
               </div>
               <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {byType.map(({ type, sold, quota, revenue }) => {
-                  const pct = quota ? Math.round((sold / quota) * 100) : 0;
-                  return (
+                {byType.map(({ type, sold, revenue }) => (
                     <div key={type} className="border border-gray-100 rounded-lg p-4 space-y-3">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[type]}`}>
                         {type}
                       </span>
                       <div>
-                        <p className="text-lg font-bold text-gray-800">{sold} <span className="text-sm font-normal text-gray-400">/ {quota}</span></p>
+                        <p className="text-lg font-bold text-gray-800">{sold}</p>
                         <p className="text-xs text-gray-400 mt-0.5">tiket terjual</p>
-                      </div>
-                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${pct >= 100 ? "bg-red-500" : pct >= 80 ? "bg-yellow-400" : "bg-green-400"}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                       </div>
                       <p className="text-xs text-gray-500 font-medium">Rp {revenue.toLocaleString("id-ID")}</p>
                     </div>
-                  );
-                })}
+                  ))}
               </div>
             </div>
           )}

@@ -41,6 +41,7 @@ export type PromotionsSumAggregateOutputType = {
 export type PromotionsMinAggregateOutputType = {
   id: string | null
   event_id: string | null
+  name: string | null
   type: $Enums.PromoType | null
   promotion_code: string | null
   discount_amount: runtime.Decimal | null
@@ -55,6 +56,7 @@ export type PromotionsMinAggregateOutputType = {
 export type PromotionsMaxAggregateOutputType = {
   id: string | null
   event_id: string | null
+  name: string | null
   type: $Enums.PromoType | null
   promotion_code: string | null
   discount_amount: runtime.Decimal | null
@@ -69,6 +71,7 @@ export type PromotionsMaxAggregateOutputType = {
 export type PromotionsCountAggregateOutputType = {
   id: number
   event_id: number
+  name: number
   type: number
   promotion_code: number
   discount_amount: number
@@ -97,6 +100,7 @@ export type PromotionsSumAggregateInputType = {
 export type PromotionsMinAggregateInputType = {
   id?: true
   event_id?: true
+  name?: true
   type?: true
   promotion_code?: true
   discount_amount?: true
@@ -111,6 +115,7 @@ export type PromotionsMinAggregateInputType = {
 export type PromotionsMaxAggregateInputType = {
   id?: true
   event_id?: true
+  name?: true
   type?: true
   promotion_code?: true
   discount_amount?: true
@@ -125,6 +130,7 @@ export type PromotionsMaxAggregateInputType = {
 export type PromotionsCountAggregateInputType = {
   id?: true
   event_id?: true
+  name?: true
   type?: true
   promotion_code?: true
   discount_amount?: true
@@ -226,6 +232,7 @@ export type PromotionsGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type PromotionsGroupByOutputType = {
   id: string
   event_id: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal
@@ -263,6 +270,7 @@ export type PromotionsWhereInput = {
   NOT?: Prisma.PromotionsWhereInput | Prisma.PromotionsWhereInput[]
   id?: Prisma.StringFilter<"Promotions"> | string
   event_id?: Prisma.StringFilter<"Promotions"> | string
+  name?: Prisma.StringFilter<"Promotions"> | string
   type?: Prisma.EnumPromoTypeFilter<"Promotions"> | $Enums.PromoType
   promotion_code?: Prisma.StringFilter<"Promotions"> | string
   discount_amount?: Prisma.DecimalFilter<"Promotions"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -279,6 +287,7 @@ export type PromotionsWhereInput = {
 export type PromotionsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   promotion_code?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -298,6 +307,7 @@ export type PromotionsWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PromotionsWhereInput[]
   NOT?: Prisma.PromotionsWhereInput | Prisma.PromotionsWhereInput[]
   event_id?: Prisma.StringFilter<"Promotions"> | string
+  name?: Prisma.StringFilter<"Promotions"> | string
   type?: Prisma.EnumPromoTypeFilter<"Promotions"> | $Enums.PromoType
   promotion_code?: Prisma.StringFilter<"Promotions"> | string
   discount_amount?: Prisma.DecimalFilter<"Promotions"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -314,6 +324,7 @@ export type PromotionsWhereUniqueInput = Prisma.AtLeast<{
 export type PromotionsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   promotion_code?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -336,6 +347,7 @@ export type PromotionsScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PromotionsScalarWhereWithAggregatesInput | Prisma.PromotionsScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Promotions"> | string
   event_id?: Prisma.StringWithAggregatesFilter<"Promotions"> | string
+  name?: Prisma.StringWithAggregatesFilter<"Promotions"> | string
   type?: Prisma.EnumPromoTypeWithAggregatesFilter<"Promotions"> | $Enums.PromoType
   promotion_code?: Prisma.StringWithAggregatesFilter<"Promotions"> | string
   discount_amount?: Prisma.DecimalWithAggregatesFilter<"Promotions"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -349,6 +361,7 @@ export type PromotionsScalarWhereWithAggregatesInput = {
 
 export type PromotionsCreateInput = {
   id?: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -365,6 +378,7 @@ export type PromotionsCreateInput = {
 export type PromotionsUncheckedCreateInput = {
   id?: string
   event_id: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -379,6 +393,7 @@ export type PromotionsUncheckedCreateInput = {
 
 export type PromotionsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -395,6 +410,7 @@ export type PromotionsUpdateInput = {
 export type PromotionsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -410,6 +426,7 @@ export type PromotionsUncheckedUpdateInput = {
 export type PromotionsCreateManyInput = {
   id?: string
   event_id: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -423,6 +440,7 @@ export type PromotionsCreateManyInput = {
 
 export type PromotionsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -437,6 +455,7 @@ export type PromotionsUpdateManyMutationInput = {
 export type PromotionsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -466,6 +485,7 @@ export type PromotionsNullableScalarRelationFilter = {
 export type PromotionsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   promotion_code?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -486,6 +506,7 @@ export type PromotionsAvgOrderByAggregateInput = {
 export type PromotionsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   promotion_code?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -500,6 +521,7 @@ export type PromotionsMaxOrderByAggregateInput = {
 export type PromotionsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   type?: Prisma.SortOrder
   promotion_code?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -581,6 +603,7 @@ export type EnumPromoTypeFieldUpdateOperationsInput = {
 
 export type PromotionsCreateWithoutEventInput = {
   id?: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -595,6 +618,7 @@ export type PromotionsCreateWithoutEventInput = {
 
 export type PromotionsUncheckedCreateWithoutEventInput = {
   id?: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -639,6 +663,7 @@ export type PromotionsScalarWhereInput = {
   NOT?: Prisma.PromotionsScalarWhereInput | Prisma.PromotionsScalarWhereInput[]
   id?: Prisma.StringFilter<"Promotions"> | string
   event_id?: Prisma.StringFilter<"Promotions"> | string
+  name?: Prisma.StringFilter<"Promotions"> | string
   type?: Prisma.EnumPromoTypeFilter<"Promotions"> | $Enums.PromoType
   promotion_code?: Prisma.StringFilter<"Promotions"> | string
   discount_amount?: Prisma.DecimalFilter<"Promotions"> | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -652,6 +677,7 @@ export type PromotionsScalarWhereInput = {
 
 export type PromotionsCreateWithoutBookingsInput = {
   id?: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -667,6 +693,7 @@ export type PromotionsCreateWithoutBookingsInput = {
 export type PromotionsUncheckedCreateWithoutBookingsInput = {
   id?: string
   event_id: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -696,6 +723,7 @@ export type PromotionsUpdateToOneWithWhereWithoutBookingsInput = {
 
 export type PromotionsUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -711,6 +739,7 @@ export type PromotionsUpdateWithoutBookingsInput = {
 export type PromotionsUncheckedUpdateWithoutBookingsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -724,6 +753,7 @@ export type PromotionsUncheckedUpdateWithoutBookingsInput = {
 
 export type PromotionsCreateManyEventInput = {
   id?: string
+  name: string
   type: $Enums.PromoType
   promotion_code: string
   discount_amount: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -737,6 +767,7 @@ export type PromotionsCreateManyEventInput = {
 
 export type PromotionsUpdateWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -751,6 +782,7 @@ export type PromotionsUpdateWithoutEventInput = {
 
 export type PromotionsUncheckedUpdateWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -765,6 +797,7 @@ export type PromotionsUncheckedUpdateWithoutEventInput = {
 
 export type PromotionsUncheckedUpdateManyWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.EnumPromoTypeFieldUpdateOperationsInput | $Enums.PromoType
   promotion_code?: Prisma.StringFieldUpdateOperationsInput | string
   discount_amount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -810,6 +843,7 @@ export type PromotionsCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.T
 export type PromotionsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   event_id?: boolean
+  name?: boolean
   type?: boolean
   promotion_code?: boolean
   discount_amount?: boolean
@@ -827,6 +861,7 @@ export type PromotionsSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type PromotionsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   event_id?: boolean
+  name?: boolean
   type?: boolean
   promotion_code?: boolean
   discount_amount?: boolean
@@ -842,6 +877,7 @@ export type PromotionsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type PromotionsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   event_id?: boolean
+  name?: boolean
   type?: boolean
   promotion_code?: boolean
   discount_amount?: boolean
@@ -857,6 +893,7 @@ export type PromotionsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type PromotionsSelectScalar = {
   id?: boolean
   event_id?: boolean
+  name?: boolean
   type?: boolean
   promotion_code?: boolean
   discount_amount?: boolean
@@ -868,7 +905,7 @@ export type PromotionsSelectScalar = {
   deletedAt?: boolean
 }
 
-export type PromotionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "type" | "promotion_code" | "discount_amount" | "max_usage" | "used_count" | "expires_at" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["promotions"]>
+export type PromotionsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "name" | "type" | "promotion_code" | "discount_amount" | "max_usage" | "used_count" | "expires_at" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["promotions"]>
 export type PromotionsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
   bookings?: boolean | Prisma.Promotions$bookingsArgs<ExtArgs>
@@ -890,6 +927,7 @@ export type $PromotionsPayload<ExtArgs extends runtime.Types.Extensions.Internal
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     event_id: string
+    name: string
     type: $Enums.PromoType
     promotion_code: string
     discount_amount: runtime.Decimal
@@ -1326,6 +1364,7 @@ export interface Prisma__PromotionsClient<T, Null = never, ExtArgs extends runti
 export interface PromotionsFieldRefs {
   readonly id: Prisma.FieldRef<"Promotions", 'String'>
   readonly event_id: Prisma.FieldRef<"Promotions", 'String'>
+  readonly name: Prisma.FieldRef<"Promotions", 'String'>
   readonly type: Prisma.FieldRef<"Promotions", 'PromoType'>
   readonly promotion_code: Prisma.FieldRef<"Promotions", 'String'>
   readonly discount_amount: Prisma.FieldRef<"Promotions", 'Decimal'>

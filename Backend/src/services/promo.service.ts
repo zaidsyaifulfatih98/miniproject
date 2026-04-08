@@ -9,9 +9,12 @@ export const promoService = {
     });
   },
 
-  async getAll() {
+  async getAll(organizer_id?: string) {
     return await prisma.promotions.findMany({
-      where: { deletedAt: null },
+      where: {
+        deletedAt: null,
+        ...(organizer_id ? { event: { users_id: organizer_id, deletedAt: null } } : {}),
+      },
       orderBy: { expires_at: "asc" },
       include: { event: { select: { id: true, title: true } } },
     });
@@ -19,17 +22,22 @@ export const promoService = {
 
   async create(data: {
     event_id: string;
+    name: string;
     promotion_code: string;
+    type?: PromoType;
     discount_amount: number;
     max_usage?: number;
     expires_at?: string;
   }) {
     return await prisma.promotions.create({
       data: {
-        ...data,
-        type: PromoType.EVENT_VOUCHER,
-        used_count: 0,
+        event_id: data.event_id,
+        name: data.name,
+        promotion_code: data.promotion_code,
+        type: data.type ?? PromoType.VOUCHER,
         discount_amount: data.discount_amount,
+        max_usage: data.max_usage,
+        used_count: 0,
         expires_at: data.expires_at ? new Date(data.expires_at) : null,
       },
     });

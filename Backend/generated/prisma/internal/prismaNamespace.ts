@@ -1453,6 +1453,7 @@ export type ReviewsScalarFieldEnum = (typeof ReviewsScalarFieldEnum)[keyof typeo
 export const PromotionsScalarFieldEnum = {
   id: 'id',
   event_id: 'event_id',
+  name: 'name',
   type: 'type',
   promotion_code: 'promotion_code',
   discount_amount: 'discount_amount',

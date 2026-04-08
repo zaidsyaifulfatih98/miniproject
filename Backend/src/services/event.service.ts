@@ -9,10 +9,15 @@ export const eventService = {
     category?: string;
     status?: string;
     search?: string;
+    users_id?: string;
   }) {
     const where: any = {
       deletedAt: null,
     };
+
+    if (filters?.users_id) {
+      where.users_id = filters.users_id;
+    }
 
     if (filters?.category) {
       const categoryUpper = filters.category.toUpperCase();
