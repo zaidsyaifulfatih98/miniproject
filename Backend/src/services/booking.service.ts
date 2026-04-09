@@ -10,7 +10,7 @@ export const bookingService = {
       },
       orderBy: { createdAt: "desc" },
       include: {
-        user: { select: { id: true, full_name: true, email: true } },
+        user: { select: { id: true, full_name: true, email: true, birth_date: true } },
         event: { select: { id: true, title: true } },
         ticket: { select: { id: true, type: true, price: true } },
         promotion: { select: { id: true, name: true, discount_amount: true } },

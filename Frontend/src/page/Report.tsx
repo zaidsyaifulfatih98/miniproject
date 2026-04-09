@@ -27,31 +27,11 @@ const funnelData = [
   { name: "Pembayaran Selesai", value: 2180, fill: "#a855f7" },
 ];
 
-const hourlyTrend = [
-  { jam: "08:00", pembelian: 42 },
-  { jam: "09:00", pembelian: 78 },
-  { jam: "10:00", pembelian: 130 },
-  { jam: "11:00", pembelian: 190 },
-  { jam: "12:00", pembelian: 240 },
-  { jam: "13:00", pembelian: 210 },
-  { jam: "14:00", pembelian: 175 },
-  { jam: "15:00", pembelian: 155 },
-  { jam: "16:00", pembelian: 200 },
-  { jam: "17:00", pembelian: 265 },
-  { jam: "18:00", pembelian: 310 },
-  { jam: "19:00", pembelian: 280 },
-  { jam: "20:00", pembelian: 195 },
-];
 
-const demographicsData = [
-  { name: "18–24 tahun", value: 34 },
-  { name: "25–34 tahun", value: 42 },
-  { name: "35–44 tahun", value: 15 },
-  { name: "45–54 tahun", value: 6 },
-  { name: "55+ tahun", value: 3 },
-];
 
-const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9"];
+
+
+const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9", "#f0abfc"];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -65,6 +45,7 @@ interface BookingAPI {
   total_price: string | null;
   final_price: string | null;
   createdAt: string;
+  user: { id: string; full_name: string; email: string; birth_date: string | null };
   event: { id: string; title: string };
   ticket: { id: string; type: DBTicketType; price: string };
 }
@@ -129,6 +110,17 @@ export default function Report() {
 
   const doneBookings = bookings.filter((b) => b.status === "DONE");
 
+  // Tren waktu pembelian per jam (X = jam, Y = total bookings DONE)
+  const hourlyMap: Record<number, number> = {};
+  doneBookings.forEach((b) => {
+    const hour = new Date(b.createdAt).getHours();
+    hourlyMap[hour] = (hourlyMap[hour] ?? 0) + 1;
+  });
+  const hourlyTrend = Array.from({ length: 24 }, (_, h) => ({
+    jam: `${String(h).padStart(2, "0")}:00`,
+    pembelian: hourlyMap[h] ?? 0,
+  }));
+
   const salesData = doneBookings.map((b) => ({
     id: b.display_id ?? b.id.slice(0, 8).toUpperCase(),
     event: b.event?.title ?? "–",
@@ -137,6 +129,40 @@ export default function Report() {
     total: Number(b.total_price ?? 0),
     tanggal: b.createdAt.slice(0, 10),
   }));
+
+  // Demografi usia pembeli dari birth_date user (scope: semua booking organizer)
+  const AGE_GROUPS = [
+    { name: "< 18 tahun",  min: 0,  max: 17 },
+    { name: "18–24 tahun", min: 18, max: 24 },
+    { name: "25–34 tahun", min: 25, max: 34 },
+    { name: "35–44 tahun", min: 35, max: 44 },
+    { name: "45–54 tahun", min: 45, max: 54 },
+    { name: "55+ tahun",   min: 55, max: Infinity },
+  ];
+  const uniqueBuyers = Array.from(
+    new Map(bookings.filter((b) => b.user?.birth_date).map((b) => [b.user.id, b.user])).values()
+  );
+  const now = new Date();
+  const demographicsData = (() => {
+    const counts: Record<string, number> = {};
+    AGE_GROUPS.forEach((g) => { counts[g.name] = 0; });
+    uniqueBuyers.forEach(({ birth_date }) => {
+      if (!birth_date) return;
+      const born = new Date(birth_date);
+      let age = now.getFullYear() - born.getFullYear();
+      const hasBirthdayPassed =
+        now.getMonth() > born.getMonth() ||
+        (now.getMonth() === born.getMonth() && now.getDate() >= born.getDate());
+      if (!hasBirthdayPassed) age -= 1;
+      const group = AGE_GROUPS.find((g) => age >= g.min && age <= g.max);
+      if (group) counts[group.name] += 1;
+    });
+    const total = Object.values(counts).reduce((s, n) => s + n, 0) || 1;
+    return AGE_GROUPS.map((g) => ({
+      name: g.name,
+      value: Math.round((counts[g.name] / total) * 100),
+    })).filter((g) => g.value > 0);
+  })();
 
   const grossRevenue = doneBookings.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
   const netRevenue   = doneBookings.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
