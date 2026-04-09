@@ -20,8 +20,18 @@ export type UsersModel = runtime.Types.Result.DefaultSelection<Prisma.$UsersPayl
 
 export type AggregateUsers = {
   _count: UsersCountAggregateOutputType | null
+  _avg: UsersAvgAggregateOutputType | null
+  _sum: UsersSumAggregateOutputType | null
   _min: UsersMinAggregateOutputType | null
   _max: UsersMaxAggregateOutputType | null
+}
+
+export type UsersAvgAggregateOutputType = {
+  points: number | null
+}
+
+export type UsersSumAggregateOutputType = {
+  points: number | null
 }
 
 export type UsersMinAggregateOutputType = {
@@ -32,6 +42,7 @@ export type UsersMinAggregateOutputType = {
   birth_date: Date | null
   gender: string | null
   address: string | null
+  points: number | null
   referral_code: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -46,6 +57,7 @@ export type UsersMaxAggregateOutputType = {
   birth_date: Date | null
   gender: string | null
   address: string | null
+  points: number | null
   referral_code: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -60,6 +72,7 @@ export type UsersCountAggregateOutputType = {
   birth_date: number
   gender: number
   address: number
+  points: number
   role: number
   referral_code: number
   createdAt: number
@@ -69,6 +82,14 @@ export type UsersCountAggregateOutputType = {
 }
 
 
+export type UsersAvgAggregateInputType = {
+  points?: true
+}
+
+export type UsersSumAggregateInputType = {
+  points?: true
+}
+
 export type UsersMinAggregateInputType = {
   id?: true
   email?: true
@@ -77,6 +98,7 @@ export type UsersMinAggregateInputType = {
   birth_date?: true
   gender?: true
   address?: true
+  points?: true
   referral_code?: true
   createdAt?: true
   updatedAt?: true
@@ -91,6 +113,7 @@ export type UsersMaxAggregateInputType = {
   birth_date?: true
   gender?: true
   address?: true
+  points?: true
   referral_code?: true
   createdAt?: true
   updatedAt?: true
@@ -105,6 +128,7 @@ export type UsersCountAggregateInputType = {
   birth_date?: true
   gender?: true
   address?: true
+  points?: true
   role?: true
   referral_code?: true
   createdAt?: true
@@ -151,6 +175,18 @@ export type UsersAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UsersAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UsersSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UsersMinAggregateInputType
@@ -181,6 +217,8 @@ export type UsersGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: UsersCountAggregateInputType | true
+  _avg?: UsersAvgAggregateInputType
+  _sum?: UsersSumAggregateInputType
   _min?: UsersMinAggregateInputType
   _max?: UsersMaxAggregateInputType
 }
@@ -193,12 +231,15 @@ export type UsersGroupByOutputType = {
   birth_date: Date
   gender: string
   address: string
+  points: number
   role: $Enums.Roles[]
   referral_code: string
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
   _count: UsersCountAggregateOutputType | null
+  _avg: UsersAvgAggregateOutputType | null
+  _sum: UsersSumAggregateOutputType | null
   _min: UsersMinAggregateOutputType | null
   _max: UsersMaxAggregateOutputType | null
 }
@@ -229,6 +270,7 @@ export type UsersWhereInput = {
   birth_date?: Prisma.DateTimeFilter<"Users"> | Date | string
   gender?: Prisma.StringFilter<"Users"> | string
   address?: Prisma.StringFilter<"Users"> | string
+  points?: Prisma.IntFilter<"Users"> | number
   role?: Prisma.EnumRolesNullableListFilter<"Users">
   referral_code?: Prisma.StringFilter<"Users"> | string
   createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
@@ -250,6 +292,7 @@ export type UsersOrderByWithRelationInput = {
   birth_date?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  points?: Prisma.SortOrder
   role?: Prisma.SortOrder
   referral_code?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -275,6 +318,7 @@ export type UsersWhereUniqueInput = Prisma.AtLeast<{
   birth_date?: Prisma.DateTimeFilter<"Users"> | Date | string
   gender?: Prisma.StringFilter<"Users"> | string
   address?: Prisma.StringFilter<"Users"> | string
+  points?: Prisma.IntFilter<"Users"> | number
   role?: Prisma.EnumRolesNullableListFilter<"Users">
   createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Users"> | Date | string
@@ -295,14 +339,17 @@ export type UsersOrderByWithAggregationInput = {
   birth_date?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  points?: Prisma.SortOrder
   role?: Prisma.SortOrder
   referral_code?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UsersCountOrderByAggregateInput
+  _avg?: Prisma.UsersAvgOrderByAggregateInput
   _max?: Prisma.UsersMaxOrderByAggregateInput
   _min?: Prisma.UsersMinOrderByAggregateInput
+  _sum?: Prisma.UsersSumOrderByAggregateInput
 }
 
 export type UsersScalarWhereWithAggregatesInput = {
@@ -316,6 +363,7 @@ export type UsersScalarWhereWithAggregatesInput = {
   birth_date?: Prisma.DateTimeWithAggregatesFilter<"Users"> | Date | string
   gender?: Prisma.StringWithAggregatesFilter<"Users"> | string
   address?: Prisma.StringWithAggregatesFilter<"Users"> | string
+  points?: Prisma.IntWithAggregatesFilter<"Users"> | number
   role?: Prisma.EnumRolesNullableListFilter<"Users">
   referral_code?: Prisma.StringWithAggregatesFilter<"Users"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Users"> | Date | string
@@ -331,6 +379,7 @@ export type UsersCreateInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -352,6 +401,7 @@ export type UsersUncheckedCreateInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -373,6 +423,7 @@ export type UsersUpdateInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -394,6 +445,7 @@ export type UsersUncheckedUpdateInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -415,6 +467,7 @@ export type UsersCreateManyInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -430,6 +483,7 @@ export type UsersUpdateManyMutationInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -445,6 +499,7 @@ export type UsersUncheckedUpdateManyInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -468,11 +523,16 @@ export type UsersCountOrderByAggregateInput = {
   birth_date?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  points?: Prisma.SortOrder
   role?: Prisma.SortOrder
   referral_code?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+}
+
+export type UsersAvgOrderByAggregateInput = {
+  points?: Prisma.SortOrder
 }
 
 export type UsersMaxOrderByAggregateInput = {
@@ -483,6 +543,7 @@ export type UsersMaxOrderByAggregateInput = {
   birth_date?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  points?: Prisma.SortOrder
   referral_code?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -497,10 +558,15 @@ export type UsersMinOrderByAggregateInput = {
   birth_date?: Prisma.SortOrder
   gender?: Prisma.SortOrder
   address?: Prisma.SortOrder
+  points?: Prisma.SortOrder
   referral_code?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+}
+
+export type UsersSumOrderByAggregateInput = {
+  points?: Prisma.SortOrder
 }
 
 export type UsersScalarRelationFilter = {
@@ -518,6 +584,14 @@ export type StringFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type UsersUpdateroleInput = {
@@ -621,6 +695,7 @@ export type UsersCreateWithoutEventsInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -641,6 +716,7 @@ export type UsersUncheckedCreateWithoutEventsInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -677,6 +753,7 @@ export type UsersUpdateWithoutEventsInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -697,6 +774,7 @@ export type UsersUncheckedUpdateWithoutEventsInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -717,6 +795,7 @@ export type UsersCreateWithoutBookingsInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -737,6 +816,7 @@ export type UsersUncheckedCreateWithoutBookingsInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -773,6 +853,7 @@ export type UsersUpdateWithoutBookingsInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -793,6 +874,7 @@ export type UsersUncheckedUpdateWithoutBookingsInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -813,6 +895,7 @@ export type UsersCreateWithoutReviewsInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -833,6 +916,7 @@ export type UsersUncheckedCreateWithoutReviewsInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -869,6 +953,7 @@ export type UsersUpdateWithoutReviewsInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -889,6 +974,7 @@ export type UsersUncheckedUpdateWithoutReviewsInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -909,6 +995,7 @@ export type UsersCreateWithoutReferrals_givenInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -929,6 +1016,7 @@ export type UsersUncheckedCreateWithoutReferrals_givenInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -954,6 +1042,7 @@ export type UsersCreateWithoutReferrals_receivedInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -974,6 +1063,7 @@ export type UsersUncheckedCreateWithoutReferrals_receivedInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -1010,6 +1100,7 @@ export type UsersUpdateWithoutReferrals_givenInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1030,6 +1121,7 @@ export type UsersUncheckedUpdateWithoutReferrals_givenInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1061,6 +1153,7 @@ export type UsersUpdateWithoutReferrals_receivedInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1081,6 +1174,7 @@ export type UsersUncheckedUpdateWithoutReferrals_receivedInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1101,6 +1195,7 @@ export type UsersCreateWithoutPoints_historyInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -1121,6 +1216,7 @@ export type UsersUncheckedCreateWithoutPoints_historyInput = {
   birth_date: Date | string
   gender: string
   address: string
+  points?: number
   role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
   referral_code: string
   createdAt?: Date | string
@@ -1157,6 +1253,7 @@ export type UsersUpdateWithoutPoints_historyInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1177,6 +1274,7 @@ export type UsersUncheckedUpdateWithoutPoints_historyInput = {
   birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   gender?: Prisma.StringFieldUpdateOperationsInput | string
   address?: Prisma.StringFieldUpdateOperationsInput | string
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
   referral_code?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1273,6 +1371,7 @@ export type UsersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   birth_date?: boolean
   gender?: boolean
   address?: boolean
+  points?: boolean
   role?: boolean
   referral_code?: boolean
   createdAt?: boolean
@@ -1295,6 +1394,7 @@ export type UsersSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   birth_date?: boolean
   gender?: boolean
   address?: boolean
+  points?: boolean
   role?: boolean
   referral_code?: boolean
   createdAt?: boolean
@@ -1310,6 +1410,7 @@ export type UsersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   birth_date?: boolean
   gender?: boolean
   address?: boolean
+  points?: boolean
   role?: boolean
   referral_code?: boolean
   createdAt?: boolean
@@ -1325,6 +1426,7 @@ export type UsersSelectScalar = {
   birth_date?: boolean
   gender?: boolean
   address?: boolean
+  points?: boolean
   role?: boolean
   referral_code?: boolean
   createdAt?: boolean
@@ -1332,7 +1434,7 @@ export type UsersSelectScalar = {
   deletedAt?: boolean
 }
 
-export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "birth_date" | "gender" | "address" | "role" | "referral_code" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["users"]>
+export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "birth_date" | "gender" | "address" | "points" | "role" | "referral_code" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["users"]>
 export type UsersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   events?: boolean | Prisma.Users$eventsArgs<ExtArgs>
   bookings?: boolean | Prisma.Users$bookingsArgs<ExtArgs>
@@ -1363,6 +1465,7 @@ export type $UsersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     birth_date: Date
     gender: string
     address: string
+    points: number
     role: $Enums.Roles[]
     referral_code: string
     createdAt: Date
@@ -1804,6 +1907,7 @@ export interface UsersFieldRefs {
   readonly birth_date: Prisma.FieldRef<"Users", 'DateTime'>
   readonly gender: Prisma.FieldRef<"Users", 'String'>
   readonly address: Prisma.FieldRef<"Users", 'String'>
+  readonly points: Prisma.FieldRef<"Users", 'Int'>
   readonly role: Prisma.FieldRef<"Users", 'Roles[]'>
   readonly referral_code: Prisma.FieldRef<"Users", 'String'>
   readonly createdAt: Prisma.FieldRef<"Users", 'DateTime'>
