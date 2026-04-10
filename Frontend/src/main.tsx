@@ -15,6 +15,7 @@ import Register from './page/Register'
 import LoginOrganizer from './page/LoginOrganizer'
 import LandingPage from './page/LandingPage'
 import Explore from './page/Explore'
+import DetailEvent from './page/DetailEvent'
 
 // Public Layout
 function PublicLayout() {
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
       {
         path: '/explore',
         Component: Explore,
+      },
+      {
+        path: '/events/:eventId',
+        Component: DetailEvent,
       },
     ]
   },

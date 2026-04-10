@@ -312,7 +312,7 @@ export default function LandingPage() {
               <p className="text-base sm:text-lg md:text-xl text-orange-100 mb-6 sm:mb-8">
                 {slide.subheadline}
               </p>
-              <button className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors text-sm sm:text-base">
+              <button className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors text-sm sm:text-base cursor-pointer">
                 Mulai Sekarang
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -321,14 +321,14 @@ export default function LandingPage() {
             {/* Navigation arrows */}
             <button
               onClick={() => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
-              className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition-colors"
+              className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition-colors cursor-pointer"
               aria-label="Previous slide"
             >
               <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <button
               onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
-              className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition-colors"
+              className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition-colors cursor-pointer"
               aria-label="Next slide"
             >
               <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -340,7 +340,7 @@ export default function LandingPage() {
                 <button
                   key={idx}
                   onClick={() => setCurrentSlide(idx)}
-                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all cursor-pointer ${
                     idx === currentSlide ? 'bg-white w-8 sm:w-10' : 'bg-white/50'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
@@ -363,7 +363,7 @@ export default function LandingPage() {
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Event Pilihan</h2>
               </div>
             </div>
-            <Link to="/explore" className="text-orange-600 hover:text-orange-700 font-semibold text-sm flex items-center gap-1 transition-colors">
+            <Link to="/explore" className="text-orange-600 hover:text-orange-700 font-semibold text-sm flex items-center gap-1 transition-colors cursor-pointer">
               Lihat Semua
               <ChevronRight className="w-4 h-4" />
             </Link>
@@ -415,7 +415,7 @@ export default function LandingPage() {
                   <p className="text-sm sm:text-base md:text-lg text-orange-100 mb-4 sm:mb-6">
                     Kode promo: <span className="font-bold text-white">FIRSTEVENT</span>
                   </p>
-                  <button className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors text-xs sm:text-sm md:text-base">
+                  <button className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors text-xs sm:text-sm md:text-base cursor-pointer">
                     Dapatkan Diskon
                   </button>
                 </div>
@@ -445,7 +445,7 @@ export default function LandingPage() {
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryChange(cat.id)}
-                    className={`flex-shrink-0 px-5 py-2.5 rounded-full font-semibold transition-all text-sm ${
+                    className={`flex-shrink-0 px-5 py-2.5 rounded-full font-semibold transition-all text-sm cursor-pointer ${
                       isActive
                         ? 'bg-orange-500 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -457,7 +457,7 @@ export default function LandingPage() {
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryChange(cat.id)}
-                    className="flex-shrink-0 group"
+                    className="flex-shrink-0 group cursor-pointer"
                   >
                     <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center transition-all ${
                       isActive
@@ -477,7 +477,7 @@ export default function LandingPage() {
           <div className="mb-8 relative">
             <button
               onClick={() => setShowLocationPicker(!showLocationPicker)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium text-sm hover:bg-gray-200 transition-all"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium text-sm hover:bg-gray-200 transition-all cursor-pointer"
             >
               <span>Cari event di kota</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${showLocationPicker ? 'rotate-180' : ''}`} />
@@ -494,7 +494,7 @@ export default function LandingPage() {
                         setLocationQuery(location.value);
                         setShowLocationPicker(false);
                       }}
-                      className={`w-full text-left px-4 py-2 rounded-lg transition-all font-medium text-sm ${
+                      className={`w-full text-left px-4 py-2 rounded-lg transition-all font-medium text-sm cursor-pointer ${
                         locationQuery === location.value
                           ? 'bg-orange-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -509,7 +509,7 @@ export default function LandingPage() {
                         setLocationQuery('');
                         setShowLocationPicker(false);
                       }}
-                      className="w-full text-left px-4 py-2 rounded-lg transition-all font-medium text-sm text-orange-600 hover:bg-orange-50 border-t border-gray-200 mt-2 pt-2"
+                      className="w-full text-left px-4 py-2 rounded-lg transition-all font-medium text-sm text-orange-600 hover:bg-orange-50 border-t border-gray-200 mt-2 pt-2 cursor-pointer"
                     >
                       Hapus Filter Lokasi
                     </button>
@@ -527,7 +527,7 @@ export default function LandingPage() {
                 <button
                   key={filter.id}
                   onClick={() => toggleFilter(filter.id)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all text-sm ${
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all text-sm cursor-pointer ${
                     activeFilters.includes(filter.id)
                       ? 'bg-orange-500 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -544,7 +544,7 @@ export default function LandingPage() {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="text-orange-600 hover:text-orange-700 text-sm font-semibold flex items-center gap-1 mb-8"
+              className="text-orange-600 hover:text-orange-700 text-sm font-semibold flex items-center gap-1 mb-8 cursor-pointer"
             >
               ✕ Hapus semua filter
             </button>
@@ -569,7 +569,7 @@ export default function LandingPage() {
               <p className="text-red-600 text-sm mb-4">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition"
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition cursor-pointer"
               >
                 Coba lagi
               </button>
@@ -586,7 +586,7 @@ export default function LandingPage() {
               </p>
               <button
                 onClick={clearFilters}
-                className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition"
+                className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition cursor-pointer"
               >
                 Lihat semua event
               </button>
@@ -619,7 +619,7 @@ export default function LandingPage() {
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
-                    className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full disabled:opacity-50 transition-colors text-sm sm:text-base"
+                    className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full disabled:opacity-50 transition-colors text-sm sm:text-base cursor-pointer"
                   >
                     {loadingMore ? (
                       <>

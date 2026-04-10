@@ -39,8 +39,8 @@ export default function EventCard({
   });
 
   return (
-    <Link to={`/event/${id}`}>
-      <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+    <Link to={`/events/${id}`} className="cursor-pointer">
+      <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col cursor-pointer">
         {/* Image */}
         <div className="relative w-full aspect-video bg-gray-200 overflow-hidden">
           <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
