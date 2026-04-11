@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import {
-  MapPin,
-  Calendar,
-  Layers,
-  X,
-} from "lucide-react";
+import { MapPin, Calendar, Layers, X } from "lucide-react";
 
 import DOMPurify from "dompurify";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-type EventStatus = "DRAFT" | "PENDING" | "ACTIVE" | "REJECTED" | "COMPLETED" | "CANCELLED";
+type EventStatus =
+  | "DRAFT"
+  | "PENDING"
+  | "ACTIVE"
+  | "REJECTED"
+  | "COMPLETED"
+  | "CANCELLED";
 type TabType = "deskripsi" | "tiket" | "syarat";
 
 interface EventDetail {
@@ -86,7 +87,8 @@ export default function DetailEvent() {
   const isSoldOut = event && event.available_seats <= 0;
 
   // Check if event has ended
-  const isEventEnded = event && event.end_event && new Date(event.end_event) < new Date();
+  const isEventEnded =
+    event && event.end_event && new Date(event.end_event) < new Date();
 
   // Get button state
   const getButtonState = () => {
@@ -96,7 +98,11 @@ export default function DetailEvent() {
     if (isSoldOut) {
       return { disabled: true, text: "Sold Out", color: "bg-gray-400" };
     }
-    return { disabled: false, text: "Beli Tiket", color: "bg-orange-500 hover:bg-orange-600" };
+    return {
+      disabled: false,
+      text: "Beli Tiket",
+      color: "bg-orange-500 hover:bg-orange-600",
+    };
   };
 
   const buttonState = getButtonState();
@@ -111,7 +117,7 @@ export default function DetailEvent() {
       month: "long",
       day: "numeric",
     });
-    
+
     if (time) {
       const timeObj = new Date(time);
       const timeFormatted = timeObj.toLocaleTimeString("id-ID", {
@@ -132,10 +138,6 @@ export default function DetailEvent() {
     return "Rp " + Math.floor(numPrice).toLocaleString("id-ID");
   };
 
-
-
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -151,7 +153,9 @@ export default function DetailEvent() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <p className="text-red-600 text-xl font-semibold">{error || "Event tidak ditemukan"}</p>
+          <p className="text-red-600 text-xl font-semibold">
+            {error || "Event tidak ditemukan"}
+          </p>
         </div>
       </div>
     );
@@ -161,9 +165,11 @@ export default function DetailEvent() {
     <div className="min-h-screen bg-gray-50">
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-4 right-4 px-4 py-3 rounded-lg text-white z-50 flex items-center gap-2 ${
-          toast.type === "success" ? "bg-green-500" : "bg-red-500"
-        }`}>
+        <div
+          className={`fixed top-4 right-4 px-4 py-3 rounded-lg text-white z-50 flex items-center gap-2 ${
+            toast.type === "success" ? "bg-green-500" : "bg-red-500"
+          }`}
+        >
           {toast.message}
           <button onClick={() => setToast(null)} className="ml-2">
             <X size={16} />
@@ -190,13 +196,14 @@ export default function DetailEvent() {
                 <span>{event.location}</span>
               </div>
             )}
-            
+
             {event.start_event && (
               <div className="flex items-center gap-2 text-sm md:text-base">
                 <Calendar size={20} className="flex-shrink-0" />
                 <span>
                   {formatDateTime(event.start_event, event.start_time)}
-                  {event.end_event && ` - ${formatDateTime(event.end_event, event.end_time)}`}
+                  {event.end_event &&
+                    ` - ${formatDateTime(event.end_event, event.end_time)}`}
                 </span>
               </div>
             )}
@@ -236,9 +243,9 @@ export default function DetailEvent() {
           ))}
         </div>
 
-        {/* Content Layout: flex-col on mobile, flex-row on desktop with overlap card */}
+        {/* Content Layout */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-0 relative lg:min-h-screen">
-          {/* Left Content Area - ensure space for right card */}
+          {/* Left Content Area */}
           <div className="flex-1 lg:pr-96 relative z-10">
             {/* Description Tab */}
             {activeTab === "deskripsi" && (
@@ -256,7 +263,9 @@ export default function DetailEvent() {
                         className="text-justify"
                       />
                     ) : (
-                      <p className="text-gray-500 italic">Deskripsi event tidak tersedia</p>
+                      <p className="text-gray-500 italic">
+                        Deskripsi event tidak tersedia
+                      </p>
                     )}
                   </div>
                 </div>
@@ -305,7 +314,9 @@ export default function DetailEvent() {
                           <div className="flex gap-4 text-sm text-gray-600">
                             <span>Kuota: {ticket.quota}</span>
                             <span>Terjual: {ticket.used_ticket}</span>
-                            <span>Tersisa: {ticket.quota - ticket.used_ticket}</span>
+                            <span>
+                              Tersisa: {ticket.quota - ticket.used_ticket}
+                            </span>
                           </div>
                         </div>
                       ))}
@@ -330,7 +341,7 @@ export default function DetailEvent() {
                   </h2>
                   <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4">
                     <p className="text-gray-600">
-                      Syarat dan ketentuan untuk event ini belum tersedia. 
+                      Syarat dan ketentuan untuk event ini belum tersedia.
                       Hubungi penyelenggara untuk informasi lebih lanjut.
                     </p>
                   </div>
@@ -339,7 +350,7 @@ export default function DetailEvent() {
             )}
           </div>
 
-          {/* Right Sticky Booking Card (Desktop Only) */}
+          {/* Booking Card (Desktop Only) */}
           <div className="hidden lg:block w-80 lg:absolute lg:right-0 lg:top-0 lg:-mt-73">
             <div className="sticky top-24 space-y-4">
               <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -354,7 +365,9 @@ export default function DetailEvent() {
                 <div className="p-4 space-y-4">
                   {/* Price */}
                   <div>
-                    <p className="text-xs text-gray-500 font-medium mb-1.5">Harga mulai dari</p>
+                    <p className="text-xs text-gray-500 font-medium mb-1.5">
+                      Harga mulai dari
+                    </p>
                     <p className="text-3xl font-bold text-orange-500">
                       {formatPrice(event.price)}
                     </p>
@@ -364,7 +377,9 @@ export default function DetailEvent() {
                   <button
                     disabled={buttonState.disabled}
                     className={`w-full py-2.5 px-4 rounded-lg font-semibold text-white transition-all duration-200 text-sm relative z-10 pointer-events-auto ${
-                      buttonState.disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer active:scale-95"
+                      buttonState.disabled
+                        ? "cursor-not-allowed opacity-70"
+                        : "cursor-pointer active:scale-95"
                     } ${buttonState.color}`}
                   >
                     {buttonState.text}
@@ -374,7 +389,9 @@ export default function DetailEvent() {
                   <div className="space-y-2.5 py-4 border-t border-b border-gray-200">
                     {event.location && (
                       <div>
-                        <p className="text-xs text-gray-500 font-medium mb-1">Lokasi</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Lokasi
+                        </p>
                         <p className="text-sm font-medium text-gray-900 flex items-start gap-2">
                           <MapPin size={16} className="mt-0.5 flex-shrink-0" />
                           <span>{event.location}</span>
@@ -384,18 +401,32 @@ export default function DetailEvent() {
 
                     {event.start_event && (
                       <div>
-                        <p className="text-xs text-gray-500 font-medium mb-1">Waktu</p>
+                        <p className="text-xs text-gray-500 font-medium mb-1">
+                          Waktu
+                        </p>
                         <p className="text-sm font-medium text-gray-900 flex items-start gap-2">
-                          <Calendar size={16} className="mt-0.5 flex-shrink-0" />
-                          <span>{formatDateTime(event.start_event, event.start_time)}</span>
+                          <Calendar
+                            size={16}
+                            className="mt-0.5 flex-shrink-0"
+                          />
+                          <span>
+                            {formatDateTime(
+                              event.start_event,
+                              event.start_time,
+                            )}
+                          </span>
                         </p>
                       </div>
                     )}
 
                     <div>
-                      <p className="text-xs text-gray-500 font-medium mb-1">Tiket Tersedia</p>
+                      <p className="text-xs text-gray-500 font-medium mb-1">
+                        Tiket Tersedia
+                      </p>
                       <p className="text-sm font-medium text-gray-900">
-                        {isSoldOut ? "Sold Out" : `${event.available_seats} tiket`}
+                        {isSoldOut
+                          ? "Sold Out"
+                          : `${event.available_seats} tiket`}
                       </p>
                     </div>
                   </div>
@@ -403,7 +434,9 @@ export default function DetailEvent() {
                   {/* Organizer */}
                   {event.organizer && (
                     <div className="py-3">
-                      <p className="text-xs text-gray-500 font-medium mb-2.5">Diselenggarakan oleh</p>
+                      <p className="text-xs text-gray-500 font-medium mb-2.5">
+                        Diselenggarakan oleh
+                      </p>
                       <div className="flex items-center gap-2">
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
                           {event.organizer.full_name.charAt(0).toUpperCase()}
@@ -422,12 +455,14 @@ export default function DetailEvent() {
           </div>
         </div>
 
-        {/* Mobile Fixed Bottom Button */}
+        {/* Mobile Bottom Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
           <button
             disabled={buttonState.disabled}
             className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 relative z-10 pointer-events-auto ${
-              buttonState.disabled ? "cursor-not-allowed opacity-70" : "cursor-pointer active:scale-95"
+              buttonState.disabled
+                ? "cursor-not-allowed opacity-70"
+                : "cursor-pointer active:scale-95"
             } ${buttonState.color}`}
           >
             {buttonState.text}

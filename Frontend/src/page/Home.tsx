@@ -85,7 +85,7 @@ const HERO_SLIDES = [
   },
 ];
 
-export default function LandingPage() {
+export default function Home() {
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Hero Carousel State
@@ -137,7 +137,7 @@ export default function LandingPage() {
         if (debouncedLocation) params.append('location', debouncedLocation);
         if (selectedCategory !== 'semua') params.append('category', selectedCategory);
         params.append('status', 'ACTIVE');
-        params.append('limit', '100'); // Fetch up to 100 events for pagination
+        params.append('limit', '100');
 
         console.log('Fetching with params:', params.toString());
 

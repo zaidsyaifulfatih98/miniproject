@@ -4,6 +4,7 @@ import './index.css'
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
 import RootLayout from './layouts/RootLayout'
 import MainLayout from './layouts/MainLayout'
+import ScrollToTop from './components/ScrollToTop'
 import Event from './page/Event'
 import Ticket from './page/Ticket'
 import Transactions from './page/Transactions'
@@ -12,10 +13,13 @@ import Dashboard from './page/Dashboard'
 import Admin from './page/Admin'
 import Promos from './page/Promos'
 import Register from './page/Register'
-import LoginOrganizer from './page/LoginOrganizer'
-import LandingPage from './page/LandingPage'
+import Login from './page/Login'
+import Home from './page/Home'
 import Explore from './page/Explore'
 import DetailEvent from './page/DetailEvent'
+import CreateEvent from './page/CreateEvent'
+import BecomeOrganizer from './page/BecomeOrganizer'
+import Profile from './page/Profile'
 
 // Public Layout
 function PublicLayout() {
@@ -35,73 +39,107 @@ function AuthLayout() {
   )
 }
 
+// Root Layout with ScrollToTop
+function RootElement() {
+  return (
+    <>
+      <ScrollToTop />
+      <Outlet />
+    </>
+  )
+}
+
 const router = createBrowserRouter([
-  // ── Auth pages ──
   {
-    element: <AuthLayout />,
+    element: <RootElement />,
     children: [
+      // ── Auth pages ──
       {
-        path: '/register',
-        Component: Register
+        element: <AuthLayout />,
+        children: [
+          {
+            path: '/register',
+            Component: Register
+          },
+          {
+            path: '/login',
+            Component: Login
+          },
+        ]
       },
-      {
-        path: '/login',
-        Component: LoginOrganizer
-      },
-    ]
-  },
 
-  // ── Public pages ──
-  {
-    element: <PublicLayout />,
-    children: [
+      // ── Public pages ──
       {
-        path: '/',
-        Component: LandingPage,
+        element: <PublicLayout />,
+        children: [
+          {
+            path: '/',
+            Component: Home,
+          },
+          {
+            path: '/explore',
+            Component: Explore,
+          },
+          {
+            path: '/events/:eventId',
+            Component: DetailEvent,
+          },
+          {
+            path: '/become-organizer',
+            Component: BecomeOrganizer,
+          },
+        ]
       },
-      {
-        path: '/explore',
-        Component: Explore,
-      },
-      {
-        path: '/events/:eventId',
-        Component: DetailEvent,
-      },
-    ]
-  },
 
-  // ── Dashboard Organizer ──
-  {
-    element: <RootLayout />,
-    children: [
+      // ── Protected Customer Routes ──
       {
-        path: '/dashboard',
-        Component: Dashboard,
-      }, 
-      {
-        path: '/event',
-        Component: Event,
+        element: <MainLayout />,
+        children: [
+          {
+            path: '/create-event',
+            Component: CreateEvent,
+          },
+          {
+            path: '/profile',
+            Component: Profile,
+          },
+        ]
       },
+
+      // ── Dashboard Organizer ──
       {
-        path: '/ticket',
-        Component: Ticket,
+        element: <RootLayout />,
+        children: [
+          {
+            path: '/dashboard',
+            Component: Dashboard,
+          },
+          {
+            path: '/event',
+            Component: Event,
+          },
+          {
+            path: '/ticket',
+            Component: Ticket,
+          },
+          {
+            path: '/promos',
+            Component: Promos,
+          },
+          {
+            path: '/transactions',
+            Component: Transactions,
+          },
+          {
+            path: '/report',
+            Component: Report,
+          },
+          {
+            path: '/admin',
+            Component: Admin,
+          }
+        ]
       },
-      {
-        path: '/promos',
-        Component: Promos,
-      },
-      {
-        path: '/transactions',
-        Component: Transactions,
-      },
-      {
-        path: '/report',
-        Component: Report,
-      },
-      {
-        path: '/admin',
-        Component: Admin,
-      }
     ]
   },
 ])

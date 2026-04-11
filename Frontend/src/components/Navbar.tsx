@@ -1,9 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Ticket, Search, MapPin, Plus, Compass, Menu, X } from "lucide-react";
+import { Ticket, Search, MapPin, Plus, Compass, Menu, X, LogOut, User, FileText } from "lucide-react";
 import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+
+interface User {
+  id: string;
+  name?: string;
+  fullName?: string;
+  email: string;
+  role: string[];
+  profile_picture?: string;
+}
 
 interface Suggestion {
   id: string;
@@ -18,6 +27,8 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [locationQuery, setLocationQuery] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState<boolean>(false);
   
   // Search suggestions
   const [searchSuggestions, setSearchSuggestions] = useState<Suggestion[]>([]);
@@ -32,6 +43,96 @@ export default function Navbar() {
   // Refs for click outside
   const searchRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check user auth on mount
+  useEffect(() => {
+    try {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
+  }, []);
+
+  const handleCreateEventClick = () => {
+    if (!user) {
+      navigate("/become-organizer");
+    } else if (user.role?.includes("ORGANIZER")) {
+      navigate("/create-event");
+    } else {
+      navigate("/become-organizer");
+    }
+  };
+
+  // Helper: Get user display name
+  const getUserDisplayName = (): string => {
+    if (user?.name) return user.name;
+    if (user?.fullName) return user.fullName;
+    if (user?.email) return user.email.split("@")[0];
+    return "User";
+  };
+
+  // Helper: Generate initials from name
+  const getInitials = (fallback: string = "U"): string => {
+    const name = getUserDisplayName();
+    if (!name) return fallback;
+    return name
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Helper: Generate avatar background color based on name
+  const getAvatarColor = (fallback: string = "bg-orange-600"): string => {
+    const name = getUserDisplayName();
+    if (!name) return fallback;
+    const colors = [
+      "bg-orange-600",
+      "bg-orange-500",
+      "bg-orange-700",
+      "bg-amber-600",
+      "bg-rose-600",
+      "bg-red-600",
+      "bg-orange-400",
+      "bg-yellow-600",
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setIsProfileDropdownOpen(false);
+    navigate("/");
+  };
+
+  // Click outside handler for dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isProfileDropdownOpen]);
 
   // Debounce search suggestions
   useEffect(() => {
@@ -313,13 +414,13 @@ export default function Navbar() {
 
           {/* ── Links (desktop) ── */}
           <div className="hidden md:flex items-center gap-1 flex-none">
-            <Link
-              to="/create-event"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
+            <button
+              onClick={handleCreateEventClick}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Buat Event
-            </Link>
+            </button>
 
             <Link
               to="/explore"
@@ -329,21 +430,124 @@ export default function Navbar() {
               Jelajah Event
             </Link>
 
-            <Link
-              to="/register"
-              className="ml-2 px-5 py-2 rounded-full text-sm font-semibold border-2 text-orange-500 hover:bg-orange-50 transition-colors"
-              style={{ borderColor: "#FF5C2E" }}
-            >
-              Daftar
-            </Link>
+            {/* Auth Section - Desktop */}
+            {user ? (
+              <div className="relative ml-2" ref={profileDropdownRef}>
+                {user.role?.includes("ORGANIZER") ? (
+                  <button
+                    onClick={() => navigate("/dashboard")}
+                    className="flex items-center justify-center w-11 h-11 rounded-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+                    title="Buka Dashboard"
+                  >
+                    {user.profile_picture ? (
+                      <img
+                        src={user.profile_picture}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span
+                        className={`flex items-center justify-center w-full h-full text-white font-extrabold text-lg ${getAvatarColor()}`}
+                      >
+                        {getInitials()}
+                      </span>
+                    )}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                      className="flex items-center justify-center w-11 h-11 rounded-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+                    >
+                      {user.profile_picture ? (
+                        <img
+                          src={user.profile_picture}
+                          alt={user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span
+                          className={`flex items-center justify-center w-full h-full text-white font-extrabold text-lg ${getAvatarColor()}`}
+                        >
+                          {getInitials()}
+                        </span>
+                      )}
+                    </button>
 
-            <Link
-              to="/login"
-              className="px-5 py-2 rounded-full text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: "#FF5C2E" }}
-            >
-              Masuk
-            </Link>
+                    {/* Dropdown Menu for Customers */}
+                    {isProfileDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                        <div className="px-4 py-3 border-b border-gray-200">
+                          <p className="text-sm font-semibold text-gray-900">{getUserDisplayName()}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+
+                        <div className="py-2">
+                          <button
+                            onClick={() => {
+                              navigate("/profile?tab=tickets");
+                              setIsProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+                          >
+                            <Ticket className="w-4 h-4" />
+                            Tiket Saya
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigate("/profile?tab=transactions");
+                              setIsProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+                          >
+                            <FileText className="w-4 h-4" />
+                            Riwayat Transaksi
+                          </button>
+                          <button
+                            onClick={() => {
+                              navigate("/profile");
+                              setIsProfileDropdownOpen(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
+                          >
+                            <User className="w-4 h-4" />
+                            Profil Saya
+                          </button>
+
+                          <div className="border-t border-gray-200 my-2"></div>
+
+                          <button
+                            onClick={handleLogout}
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Keluar
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : (
+              <>
+                <Link
+                  to="/register"
+                  className="ml-2 px-5 py-2 rounded-full text-sm font-semibold border-2 text-orange-500 hover:bg-orange-50 transition-colors"
+                  style={{ borderColor: "#FF5C2E" }}
+                >
+                  Daftar
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="px-5 py-2 rounded-full text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: "#FF5C2E" }}
+                >
+                  Masuk
+                </Link>
+              </>
+            )}
           </div>
 
           {/* ── Hamburger (mobile) ── */}
@@ -460,14 +664,16 @@ export default function Navbar() {
 
             {/* Mobile Links */}
             <div className="flex flex-col gap-1 pt-1">
-              <Link
-                to="/create-event"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
+              <button
+                onClick={() => {
+                  handleCreateEventClick();
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Buat Event
-              </Link>
+              </button>
 
               <Link
                 to="/explore"
@@ -478,24 +684,103 @@ export default function Navbar() {
                 Jelajah Event
               </Link>
 
-              <div className="flex gap-3 pt-2">
-                <Link
-                  to="/register"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 text-center px-4 py-2.5 rounded-full text-sm font-semibold border-2 text-orange-500 hover:bg-orange-50 transition-colors"
-                  style={{ borderColor: "#FF5C2E" }}
-                >
-                  Daftar
-                </Link>
-                <Link
-                  to="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="flex-1 text-center px-4 py-2.5 rounded-full text-sm font-semibold text-white hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: "#FF5C2E" }}
-                >
-                  Masuk
-                </Link>
-              </div>
+              {/* Mobile Auth Section */}
+              {user ? (
+                <div className="border-t border-gray-200 my-2 pt-2">
+                  <div className="px-4 py-2 bg-gray-50 rounded-lg mb-2">
+                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+
+                  {user.role?.includes("ORGANIZER") ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          navigate("/dashboard");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/admin");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
+                      >
+                        <User className="w-4 h-4" />
+                        Profil
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => {
+                          navigate("/profile?tab=tickets");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
+                      >
+                        <Ticket className="w-4 h-4" />
+                        Tiket Saya
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/profile?tab=transactions");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
+                      >
+                        <FileText className="w-4 h-4" />
+                        Riwayat Transaksi
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
+                      >
+                        <User className="w-4 h-4" />
+                        Profil Saya
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Keluar
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-3 pt-2">
+                  <Link
+                    to="/register"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex-1 text-center px-4 py-2.5 rounded-full text-sm font-semibold border-2 text-orange-500 hover:bg-orange-50 transition-colors"
+                    style={{ borderColor: "#FF5C2E" }}
+                  >
+                    Daftar
+                  </Link>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex-1 text-center px-4 py-2.5 rounded-full text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                    style={{ backgroundColor: "#FF5C2E" }}
+                  >
+                    Masuk
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}
