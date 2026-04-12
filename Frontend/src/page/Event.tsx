@@ -1,7 +1,8 @@
-﻿
-import { useState, useRef, useEffect, useCallback } from "react";
+﻿import { useState, useRef, useEffect, useCallback } from "react";
+import { z } from "zod";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
 
 type EventStatus = "DRAFT" | "PENDING" | "ACTIVE" | "REJECTED" | "COMPLETED" | "CANCELLED";
 type EventCategory = "Konser" | "Workshop" | "Seminar" | "Festival" | "Olahraga" | "Lainnya";
@@ -77,6 +78,36 @@ const emptyForm = {
   status: "DRAFT" as EventStatus,
 };
 
+const eventFormSchema = z
+  .object({
+    title: z.string().min(1, "Nama event wajib diisi."),
+    location: z.string().min(1, "Lokasi wajib diisi."),
+    dateStart: z.string().min(1, "Tanggal mulai wajib diisi."),
+    dateEnd: z.string().min(1, "Tanggal berakhir wajib diisi."),
+    timeStart: z.string().min(1, "Waktu mulai wajib diisi."),
+    timeEnd: z.string().min(1, "Waktu selesai wajib diisi."),
+    total_seats: z
+      .string()
+      .min(1, "Kapasitas venue wajib diisi.")
+      .refine((v) => !isNaN(Number(v)) && Number(v) > 0, "Kapasitas venue harus lebih dari 0."),
+    price: z
+      .string()
+      .min(1, "Harga wajib diisi.")
+      .refine((v) => !isNaN(Number(v)) && Number(v) >= 0, "Harga tidak valid."),
+    banner: z.string().optional(),
+    description: z.string().min(1, "Deskripsi wajib diisi."),
+    category: z.enum(["Konser", "Workshop", "Seminar", "Festival", "Olahraga", "Lainnya"] as const),
+    status: z.enum(["DRAFT", "PENDING", "ACTIVE", "REJECTED", "COMPLETED", "CANCELLED"] as const),
+  })
+  .refine((data) => !data.dateStart || !data.dateEnd || data.dateEnd >= data.dateStart, {
+    message: "Tanggal berakhir tidak boleh sebelum tanggal mulai.",
+    path: ["dateEnd"],
+  })
+  .refine((data) => !data.timeStart || !data.timeEnd || data.timeEnd > data.timeStart, {
+    message: "Waktu selesai harus setelah waktu mulai.",
+    path: ["timeEnd"],
+  });
+
 export default function Event() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,23 +148,13 @@ export default function Event() {
   }, [fetchEvents]);
 
   function validate() {
-    const e: Partial<Record<keyof typeof emptyForm, string>> = {};
-    if (!form.title.trim()) e.title = "Nama event wajib diisi.";
-    if (!form.location.trim()) e.location = "Lokasi wajib diisi.";
-    if (!form.dateStart) e.dateStart = "Tanggal mulai wajib diisi.";
-    if (!form.dateEnd) e.dateEnd = "Tanggal berakhir wajib diisi.";
-    if (form.dateStart && form.dateEnd && form.dateEnd < form.dateStart)
-      e.dateEnd = "Tanggal berakhir tidak boleh sebelum tanggal mulai.";
-    if (!form.timeStart) e.timeStart = "Waktu mulai wajib diisi.";
-    if (!form.timeEnd) e.timeEnd = "Waktu selesai wajib diisi.";
-    if (form.timeStart && form.timeEnd && form.timeEnd <= form.timeStart)
-      e.timeEnd = "Waktu selesai harus setelah waktu mulai.";
-    if (!form.total_seats || isNaN(Number(form.total_seats)) || Number(form.total_seats) <= 0)
-      e.total_seats = "Kapasitas venue harus lebih dari 0.";
-    if (!form.price || isNaN(Number(form.price)) || Number(form.price) < 0)
-      e.price = "Harga tidak valid.";
-    if (!form.description.trim()) e.description = "Deskripsi wajib diisi.";
-    return e;
+    const result = eventFormSchema.safeParse(form);
+    if (result.success) return {};
+    const flat = result.error.flatten();
+    // Pick the first message per field
+    return Object.fromEntries(
+      Object.entries(flat.fieldErrors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
+    ) as Partial<Record<keyof typeof emptyForm, string>>;
   }
 
   async function handleSubmit(e: React.FormEvent) {

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
+import { z } from "zod";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
 
 type PromoType = "FLASH_SALE" | "VOUCHER" | "BUNDLE" | "LAINNYA";
 const PROMO_TYPES: PromoType[] = ["FLASH_SALE", "VOUCHER", "BUNDLE", "LAINNYA"];
@@ -44,6 +46,26 @@ const emptyPromoForm = {
   max_usage: "",
   expires_at: "",
 };
+
+const promoFormSchema = z.object({
+  event_id: z.string().min(1, "Event wajib dipilih."),
+  name: z.string().min(1, "Nama promo wajib diisi."),
+  type: z.enum(["FLASH_SALE", "VOUCHER", "BUNDLE", "LAINNYA"] as const),
+  promotion_code: z
+    .string()
+    .min(1, "Kode kupon wajib diisi.")
+    .max(50, "Kode kupon maksimal 50 karakter.")
+    .regex(/^[A-Z0-9_-]+$/i, "Kode kupon hanya boleh berisi huruf, angka, - dan _."),
+  discount_amount: z
+    .string()
+    .min(1, "Nominal diskon wajib diisi.")
+    .refine((v) => !isNaN(Number(v)) && Number(v) > 0, "Nominal diskon harus lebih dari 0."),
+  max_usage: z
+    .string()
+    .min(1, "Maks. penggunaan wajib diisi.")
+    .refine((v) => !isNaN(Number(v)) && Number(v) > 0 && Number.isInteger(Number(v)), "Maks. penggunaan harus bilangan bulat lebih dari 0."),
+  expires_at: z.string().min(1, "Tanggal kedaluwarsa wajib diisi."),
+});
 
 function generateCode(eventId: string, events: EventItem[]): string {
   const ev = events.find((e) => e.id === eventId);
@@ -91,16 +113,12 @@ export default function Promos() {
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   function validatePromo() {
-    const e: Record<string, string> = {};
-    if (!promoForm.event_id) e.event_id = "Event wajib dipilih.";
-    if (!promoForm.name.trim()) e.name = "Nama promo wajib diisi.";
-    if (!promoForm.promotion_code.trim()) e.promotion_code = "Kode kupon wajib diisi.";
-    if (!promoForm.discount_amount || Number(promoForm.discount_amount) <= 0)
-      e.discount_amount = "Nominal diskon harus lebih dari 0.";
-    if (!promoForm.max_usage || Number(promoForm.max_usage) <= 0)
-      e.max_usage = "Maks. penggunaan wajib diisi.";
-    if (!promoForm.expires_at) e.expires_at = "Tanggal kedaluwarsa wajib diisi.";
-    return e;
+    const result = promoFormSchema.safeParse(promoForm);
+    if (result.success) return {};
+    const flat = result.error.flatten();
+    return Object.fromEntries(
+      Object.entries(flat.fieldErrors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
+    ) as Record<string, string>;
   }
 
   async function handlePromoSubmit(e: React.FormEvent) {

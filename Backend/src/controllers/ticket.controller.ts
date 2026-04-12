@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ticketService } from "../services/ticket.service";
-import { TicketType } from "../../generated/prisma/enums";
-
-const VALID_TYPES = Object.values(TicketType) as string[];
+import { createTicketSchema, updateTicketSchema } from "../validators/ticket.validator";
 
 export const ticketController = {
   async getAllByEvent(req: Request, res: Response, next: NextFunction) {
@@ -22,22 +20,13 @@ export const ticketController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { event_id, type, description, price, quota } = req.body;
-      if (!event_id || !type || !description || price === undefined || !quota) {
-        res.status(400).json({ success: false, message: "event_id, type, description, price, dan quota wajib diisi" });
+      const parsed = createTicketSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const fieldErrors = parsed.error.flatten().fieldErrors;
+        res.status(400).json({ success: false, message: "Validasi gagal", errors: fieldErrors });
         return;
       }
-      if (!VALID_TYPES.includes(type)) {
-        res.status(400).json({ success: false, message: `type tidak valid. Pilih: ${VALID_TYPES.join(", ")}` });
-        return;
-      }
-      const ticket = await ticketService.create({
-        event_id,
-        type: type as TicketType,
-        description,
-        price: Number(price),
-        quota: Number(quota),
-      });
+      const ticket = await ticketService.create(parsed.data);
       res.status(201).json({ success: true, message: "Tiket berhasil dibuat", data: ticket });
     } catch (error) {
       next(error);
@@ -46,8 +35,13 @@ export const ticketController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id as string;
-      const ticket = await ticketService.update(id, req.body);
+      const parsed = updateTicketSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const fieldErrors = parsed.error.flatten().fieldErrors;
+        res.status(400).json({ success: false, message: "Validasi gagal", errors: fieldErrors });
+        return;
+      }
+      const ticket = await ticketService.update(req.params.id as string, parsed.data);
       res.status(200).json({ success: true, message: "Tiket berhasil diupdate", data: ticket });
     } catch (error) {
       next(error);

@@ -28,7 +28,8 @@ const funnelData = [
 ];
 
 
-
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
 
 
 const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9", "#f0abfc"];
@@ -97,8 +98,8 @@ export default function Report() {
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
     const organizerId: string = user?.id ?? "";
     const url = organizerId
-      ? `http://localhost:8000/api/bookings?organizer_id=${organizerId}`
-      : "http://localhost:8000/api/bookings";
+      ? `${API_BASE}/bookings?organizer_id=${organizerId}`
+      : `${API_BASE}/api/bookings`;
     fetch(url)
       .then((r) => r.json())
       .then((data) => {

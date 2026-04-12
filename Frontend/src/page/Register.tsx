@@ -2,6 +2,10 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
+
 interface RegisterForm {
   full_name: string;
   email: string;
@@ -38,7 +42,7 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      await axios.post("http://localhost:8000/api/users", form);
+      await axios.post(`${API_BASE}/users`, form);
       navigate("/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Register gagal, coba lagi.");

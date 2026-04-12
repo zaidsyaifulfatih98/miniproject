@@ -2,6 +2,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
+
 interface UserProfile {
   id: string;
   full_name: string;
@@ -37,7 +40,7 @@ export default function Admin() {
     const { id } = JSON.parse(storedUser);
 
     axios
-      .get(`http://localhost:8000/api/users/${id}`)
+      .get(`${API_BASE}/users/${id}`)
       .then((res) => {
         const data: UserProfile = res.data.data;
         setProfile(data);
@@ -73,7 +76,7 @@ export default function Admin() {
     if (!profile) return;
     setSaving(true);
     try {
-      const res = await axios.put(`http://localhost:8000/api/users/${profile.id}`, {
+      const res = await axios.put(`${API_BASE}users/${profile.id}`, {
         ...draft,
         birth_date: new Date(draft.birth_date).toISOString(),
       });

@@ -1,7 +1,9 @@
 ﻿
 import { useState, useEffect, useCallback } from "react";
+import { z } from "zod";
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
 
 type TicketType = "FREE" | "EARLY_BIRD" | "REGULAR" | "VIP" | "VVIP";
 const TICKET_TYPES: TicketType[] = ["FREE", "EARLY_BIRD", "REGULAR", "VIP", "VVIP"];
@@ -45,6 +47,20 @@ const emptyTicketForm = {
   description: "",
 };
 
+const ticketFormSchema = z.object({
+  event_id: z.string().min(1, "Event wajib dipilih."),
+  type: z.enum(["FREE", "EARLY_BIRD", "REGULAR", "VIP", "VVIP"] as const),
+  price: z
+    .string()
+    .min(1, "Harga wajib diisi.")
+    .refine((v) => !isNaN(Number(v)) && Number(v) >= 0, "Harga tidak boleh negatif."),
+  quota: z
+    .string()
+    .min(1, "Kuota wajib diisi.")
+    .refine((v) => !isNaN(Number(v)) && Number(v) > 0 && Number.isInteger(Number(v)), "Kuota harus bilangan bulat lebih dari 0."),
+  description: z.string().min(1, "Deskripsi wajib diisi."),
+});
+
 export default function Ticket() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [tickets, setTickets] = useState<TicketItem[]>([]);
@@ -84,12 +100,12 @@ export default function Ticket() {
 
   // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function validateTicket() {
-    const e: Record<string, string> = {};
-    if (!ticketForm.event_id) e.event_id = "Event wajib dipilih.";
-    if (!ticketForm.price || Number(ticketForm.price) <= 0) e.price = "Harga harus lebih dari 0.";
-    if (!ticketForm.quota || Number(ticketForm.quota) <= 0) e.quota = "Kuota harus lebih dari 0.";
-    if (!ticketForm.description.trim()) e.description = "Deskripsi wajib diisi.";
-    return e;
+    const result = ticketFormSchema.safeParse(ticketForm);
+    if (result.success) return {};
+    const flat = result.error.flatten();
+    return Object.fromEntries(
+      Object.entries(flat.fieldErrors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
+    ) as Record<string, string>;
   }
 
   async function handleTicketSubmit(e: React.FormEvent) {

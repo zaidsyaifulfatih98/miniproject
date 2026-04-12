@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { promoService } from "../services/promo.service";
+import { createPromoSchema, updatePromoSchema } from "../validators/promo.validator";
 
 export const promoController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -19,19 +20,15 @@ export const promoController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const { event_id, name, promotion_code, type, discount_amount, max_usage, expires_at } = req.body;
-      if (!event_id || !name || !promotion_code || discount_amount === undefined) {
-        res.status(400).json({ success: false, message: "event_id, name, promotion_code, dan discount_amount wajib diisi" });
+      const parsed = createPromoSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const fieldErrors = parsed.error.flatten().fieldErrors;
+        res.status(400).json({ success: false, message: "Validasi gagal", errors: fieldErrors });
         return;
       }
       const promo = await promoService.create({
-        event_id,
-        name,
-        promotion_code: promotion_code.toUpperCase(),
-        type,
-        discount_amount: Number(discount_amount),
-        max_usage: max_usage ? Number(max_usage) : undefined,
-        expires_at,
+        ...parsed.data,
+        promotion_code: parsed.data.promotion_code.toUpperCase(),
       });
       res.status(201).json({ success: true, message: "Promo berhasil dibuat", data: promo });
     } catch (error) {
@@ -41,8 +38,16 @@ export const promoController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id = req.params.id as string;
-      const promo = await promoService.update(id, req.body);
+      const parsed = updatePromoSchema.safeParse(req.body);
+      if (!parsed.success) {
+        const fieldErrors = parsed.error.flatten().fieldErrors;
+        res.status(400).json({ success: false, message: "Validasi gagal", errors: fieldErrors });
+        return;
+      }
+      const promo = await promoService.update(req.params.id as string, {
+        ...parsed.data,
+        promotion_code: parsed.data.promotion_code?.toUpperCase(),
+      });
       res.status(200).json({ success: true, message: "Promo berhasil diupdate", data: promo });
     } catch (error) {
       next(error);

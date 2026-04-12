@@ -3,6 +3,9 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_BASE_KEY_DOT = import.meta.env.VITE_API_BASE_KEY
+const API_BASE = `${API_BASE_KEY_DOT}/api`;
+
 export default function LoginOrganizer() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
@@ -20,7 +23,7 @@ export default function LoginOrganizer() {
     setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/users/login/organizer",
+        `${API_BASE}/users/login/organizer`,
         form
       );
       localStorage.setItem("token", res.data.data.token);
