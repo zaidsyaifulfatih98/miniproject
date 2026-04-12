@@ -5,7 +5,7 @@ const isUUID = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 export const userController = {
-  async loginOrganizer(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
 
@@ -14,7 +14,7 @@ export const userController = {
         return;
       }
 
-      const result = await userService.loginOrganizer(email, password);
+      const result = await userService.login(email, password);
 
       res.status(200).json({
         success: true,

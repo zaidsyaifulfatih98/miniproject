@@ -95,7 +95,7 @@ export const userService = {
       },
     });
   },
-  async loginOrganizer(email: string, password: string) {
+  async login(email: string, password: string) {
     const user = await prisma.users.findUnique({
       where: { email },
       select: {
@@ -110,10 +110,6 @@ export const userService = {
 
     if (!user) {
       throw new Error("Email atau password salah");
-    }
-
-    if (!user.role.includes("ORGANIZER")) {
-      throw new Error("Akun ini bukan Organizer");
     }
 
     const isMatch = await bcrypt.compare(password, user.password);

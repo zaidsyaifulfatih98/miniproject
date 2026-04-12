@@ -5,6 +5,7 @@ const promoRouter = Router();
 
 promoRouter.get("/", promoController.getAll);
 promoRouter.post("/", promoController.create);
+promoRouter.post("/validate", promoController.validate);
 promoRouter.put("/:id", promoController.update);
 promoRouter.delete("/:id", promoController.delete);
 

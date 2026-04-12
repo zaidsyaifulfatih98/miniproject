@@ -57,4 +57,18 @@ export const promoController = {
       next(error);
     }
   },
+
+  async validate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { promotion_code, event_id } = req.body;
+      if (!promotion_code || !event_id) {
+        res.status(400).json({ success: false, message: "promotion_code dan event_id wajib diisi" });
+        return;
+      }
+      const promo = await promoService.validatePromo(promotion_code, event_id);
+      res.status(200).json({ success: true, data: promo });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

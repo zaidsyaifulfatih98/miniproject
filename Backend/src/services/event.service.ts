@@ -9,7 +9,16 @@ export const eventService = {
     category?: string;
     status?: string;
     search?: string;
+    location?: string;
     users_id?: string;
+    price?: number;
+    priceMin?: number;
+    priceMax?: number;
+    filter?: string;
+    type?: string;
+    page?: number;
+    limit?: number;
+    sort?: string; 
   }) {
     const where: any = {
       deletedAt: null,
@@ -19,25 +28,109 @@ export const eventService = {
       where.users_id = filters.users_id;
     }
 
-    if (filters?.category) {
-      const categoryUpper = filters.category.toUpperCase();
-      if (VALID_CATEGORIES.includes(categoryUpper)) {
-        where.category = categoryUpper as EventCategory;
+    // Location filter 
+    if (filters?.location) {
+      const locations = filters.location.split(',').map(l => l.trim()).filter(Boolean);
+      if (locations.length > 0) {
+        where.OR = locations.map(loc => ({
+          location: { contains: loc, mode: "insensitive" }
+        }));
       }
     }
+
+    // Category filter
+    if (filters?.category) {
+      const categories = filters.category.split(',').map(c => c.trim().toUpperCase()).filter(c => VALID_CATEGORIES.includes(c));
+      if (categories.length > 0) {
+        if (categories.length === 1) {
+          where.category = categories[0] as EventCategory;
+        } else {
+          where.category = { in: categories as EventCategory[] };
+        }
+      }
+    }
+
     if (filters?.status && VALID_STATUSES.includes(filters.status)) {
       where.status = filters.status as EventStatus;
     }
+
+    // Search filter
     if (filters?.search) {
-      where.OR = [
+      const searchConditions = [
         { title: { contains: filters.search, mode: "insensitive" } },
         { location: { contains: filters.search, mode: "insensitive" } },
       ];
+      
+      if (where.OR && Array.isArray(where.OR)) {
+        where.AND = { OR: searchConditions };
+      } else {
+        where.OR = searchConditions;
+      }
     }
 
-    return await prisma.events.findMany({
+    // Price filter
+    if (filters?.price === 0) {
+      where.price = 0;
+    } else if (filters?.priceMin !== undefined || filters?.priceMax !== undefined) {
+      where.price = {};
+      if (filters?.priceMin !== undefined) where.price.gte = filters.priceMin;
+      if (filters?.priceMax !== undefined) where.price.lte = filters.priceMax;
+    }
+
+    // Time filter
+    if (filters?.filter === 'today') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      where.start_event = { gte: today, lt: tomorrow };
+    } else if (filters?.filter === 'week') {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      where.start_event = { gte: today, lt: nextWeek };
+    }
+
+    // Type filter (online/offline)
+    if (filters?.type === 'online') {
+      where.description = { contains: 'online', mode: 'insensitive' };
+    }
+
+    // Sorting
+    const orderBy: any = {};
+    switch (filters?.sort) {
+      case 'latest':
+        orderBy.createdAt = 'desc';
+        break;
+      case 'oldest':
+        orderBy.createdAt = 'asc';
+        break;
+      case 'price_asc':
+        orderBy.price = 'asc';
+        break;
+      case 'price_desc':
+        orderBy.price = 'desc';
+        break;
+      default:
+        orderBy.createdAt = 'desc';
+    }
+
+    // Pagination
+    const page = Math.max(1, filters?.page || 1);
+    const limit = Math.max(1, filters?.limit || 12);
+    const skip = (page - 1) * limit;
+
+    // Get total count
+    const total = await prisma.events.count({ where });
+    const totalPages = Math.ceil(total / limit);
+
+    // Get paginated data
+    const data = await prisma.events.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
+      skip,
+      take: limit,
       select: {
         id: true,
         title: true,
@@ -55,6 +148,16 @@ export const eventService = {
         createdAt: true,
       },
     });
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   },
 
   async getById(id: string) {

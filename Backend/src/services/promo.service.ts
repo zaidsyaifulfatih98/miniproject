@@ -67,4 +67,28 @@ export const promoService = {
       data: { deletedAt: new Date() },
     });
   },
+
+  async validatePromo(promotion_code: string, event_id: string) {
+    const promo = await prisma.promotions.findFirst({
+      where: {
+        promotion_code: promotion_code.toUpperCase(),
+        event_id,
+        deletedAt: null,
+      },
+    });
+
+    if (!promo) {
+      throw new Error("Voucher tidak ditemukan untuk event ini");
+    }
+
+    if (promo.expires_at && new Date() > promo.expires_at) {
+      throw new Error("Voucher sudah kadaluarsa");
+    }
+
+    if (promo.max_usage && promo.used_count && promo.used_count >= promo.max_usage) {
+      throw new Error("Kuota voucher sudah habis");
+    }
+
+    return promo;
+  },
 };
