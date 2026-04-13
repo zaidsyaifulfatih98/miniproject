@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { bookingService } from "../services/booking.service";
 import { BookingStatus } from "../../generated/prisma/enums";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 const VALID_STATUSES = Object.values(BookingStatus) as string[];
 
 export const bookingController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { user_id, organizer_id } = req.query;
       if (user_id) {
@@ -20,7 +21,7 @@ export const bookingController = {
     }
   },
 
-  async getById(req: Request, res: Response, next: NextFunction) {
+  async getById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const booking = await bookingService.getById(req.params.id as string);
       if (!booking) {
@@ -33,14 +34,21 @@ export const bookingController = {
     }
   },
 
-  async create(req: Request, res: Response, next: NextFunction) {
+  async create(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { user_id, event_id, ticket_id, promotion_id, quantity, points_used } = req.body;
+      if (!req.user || !req.user.id) {
+        res.status(401).json({ success: false, message: "Unauthorized. Token tidak valid" });
+        return;
+      }
 
-      if (!user_id || !event_id || !ticket_id || !quantity) {
+      const user_id = req.user.id;
+      const { event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount } = req.body;
+
+      // Validasi required fields
+      if (!event_id || !ticket_id || !quantity) {
         res.status(400).json({
           success: false,
-          message: "user_id, event_id, ticket_id, dan quantity wajib diisi",
+          message: "event_id, ticket_id, dan quantity wajib diisi",
         });
         return;
       }
@@ -49,18 +57,26 @@ export const bookingController = {
         user_id,
         event_id,
         ticket_id,
-        promotion_id: promotion_id || undefined,
         quantity: Number(quantity),
-        points_used: points_used ? Number(points_used) : undefined,
+        voucherCode: voucherCode || undefined,
+        usePoints: usePoints || false,
+        pointsAmount: pointsAmount ? Number(pointsAmount) : 0,
       });
 
-      res.status(201).json({ success: true, message: "Booking berhasil dibuat", data: booking });
-    } catch (error) {
-      next(error);
+      res.status(201).json({
+        success: true,
+        message: "Booking berhasil dibuat",
+        data: booking,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Gagal membuat booking",
+      });
     }
   },
 
-  async updateStatus(req: Request, res: Response, next: NextFunction) {
+  async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
       const { status } = req.body;
@@ -74,13 +90,17 @@ export const bookingController = {
       }
 
       const booking = await bookingService.updateStatus(id, status as BookingStatus);
-      res.status(200).json({ success: true, message: "Status booking berhasil diupdate", data: booking });
+      res.status(200).json({
+        success: true,
+        message: "Status booking berhasil diupdate",
+        data: booking,
+      });
     } catch (error) {
       next(error);
     }
   },
 
-  async delete(req: Request, res: Response, next: NextFunction) {
+  async delete(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       await bookingService.softDelete(req.params.id as string);
       res.status(200).json({ success: true, message: "Booking berhasil dihapus" });
