@@ -24,7 +24,7 @@ interface Event {
   description?: string;
   organizer?: {
     id: string;
-    name: string;
+    full_name: string;
   };
   ratings?: {
     average: number;
@@ -381,7 +381,7 @@ export default function Home() {
                   date_start={event.start_event}
                   category={event.category}
                   price={event.price}
-                  organizer_name={event.organizer?.name}
+                  organizer_name={event.organizer?.full_name}
                   rating={event.ratings?.average}
                   review_count={event.ratings?.count}
                 />
@@ -606,7 +606,7 @@ export default function Home() {
                     date_start={event.start_event}
                     category={event.category}
                     price={event.price}
-                    organizer_name={event.organizer?.name}
+                    organizer_name={event.organizer?.full_name}
                     rating={event.ratings?.average}
                     review_count={event.ratings?.count}
                   />

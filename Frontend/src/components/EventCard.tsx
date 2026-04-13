@@ -8,7 +8,7 @@ interface EventCardProps {
   date_start: string;
   category?: string;
   price?: number | string;
-  organizer_name?: string;
+  organizer_name?: string | null;
   rating?: number;
   review_count?: number;
 }
@@ -28,7 +28,7 @@ export default function EventCard({
   date_start,
   category,
   price,
-  organizer_name = 'Unknown Organizer',
+  organizer_name,
   rating = 0,
   review_count = 0,
 }: EventCardProps) {
@@ -75,7 +75,7 @@ export default function EventCard({
           {/* Organizer */}
           <div className="flex items-center gap-1 sm:gap-1.5 text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
             <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="line-clamp-1">{organizer_name}</span>
+            <span className="line-clamp-1">{organizer_name || 'Unknown Organizer'}</span>
           </div>
 
           {/* Rating */}

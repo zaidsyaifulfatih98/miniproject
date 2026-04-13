@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { MapPin, Calendar, Layers, X } from "lucide-react";
 
 import DOMPurify from "dompurify";
+import CheckoutModal from "../components/CheckoutModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -56,6 +57,7 @@ export default function DetailEvent() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("deskripsi");
   const [toast, setToast] = useState<Toast | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Fetch event detail
   useEffect(() => {
@@ -375,6 +377,7 @@ export default function DetailEvent() {
 
                   {/* Buy Button */}
                   <button
+                    onClick={() => !buttonState.disabled && setIsCheckoutOpen(true)}
                     disabled={buttonState.disabled}
                     className={`w-full py-2.5 px-4 rounded-lg font-semibold text-white transition-all duration-200 text-sm relative z-10 pointer-events-auto ${
                       buttonState.disabled
@@ -458,6 +461,7 @@ export default function DetailEvent() {
         {/* Mobile Bottom Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
           <button
+            onClick={() => !buttonState.disabled && setIsCheckoutOpen(true)}
             disabled={buttonState.disabled}
             className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 relative z-10 pointer-events-auto ${
               buttonState.disabled
@@ -489,6 +493,21 @@ export default function DetailEvent() {
           animation: fadeIn 0.3s ease-in-out;
         }
       `}</style>
+
+      {/* Checkout Modal */}
+      {event && event.tickets && (
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          event={{
+            id: event.id,
+            title: event.title,
+            organizer: event.organizer,
+          }}
+          tickets={event.tickets}
+        />
+      )}
     </div>
   );
 }
+
