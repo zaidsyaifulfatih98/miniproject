@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, ChevronRight, ChevronLeft, Plus, Minus } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -65,6 +66,7 @@ export default function CheckoutModal({
   event,
   tickets,
 }: CheckoutModalProps) {
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -80,8 +82,31 @@ export default function CheckoutModal({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availableVouchers, setAvailableVouchers] = useState<any[]>([]);
 
-  // Calculate totals
+  useEffect(() => {
+    if (step === 3 && availableVouchers.length === 0) {
+      const fetchVouchers = async () => {
+        try {
+          const response = await fetch(`${API_BASE}/promotions?event_id=${event.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            const vouchers = data.data || [];
+            const validVouchers = vouchers.filter((v: any) => {
+              const notExpired = !v.expires_at || new Date(v.expires_at) > new Date();
+              const hasQuota = v.max_usage === null || v.used_count < v.max_usage;
+              return notExpired && hasQuota;
+            });
+            setAvailableVouchers(validVouchers);
+          }
+        } catch (err) {
+          console.error("Failed to fetch vouchers:", err);
+        }
+      };
+      fetchVouchers();
+    }
+  }, [step, event.id, availableVouchers.length]);
+
   const subtotal = selectedTickets.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -95,7 +120,6 @@ export default function CheckoutModal({
     : 0;
   const finalPrice = Math.max(0, subtotal + serviceCharge - discount - pointsReduction);
 
-  // Ticket selection handlers
   const handleTicketQuantityChange = (ticketId: string, delta: number) => {
     setSelectedTickets((prev) => {
       const existing = prev.find((t) => t.id === ticketId);
@@ -131,11 +155,11 @@ export default function CheckoutModal({
     });
   };
 
-  // Form validation
   const isPersonalInfoValid =
     personalInfo.name.trim() &&
     personalInfo.email.includes("@") &&
     personalInfo.phone.length >= 10;
+
 
   // Submit handler
   const handleSubmit = async () => {
@@ -149,18 +173,21 @@ export default function CheckoutModal({
       return;
     }
 
+    // Check if user is logged in
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const token = localStorage.getItem("token");
+
+    if (!user.id || !token) {
+      navigate(`/login?returnTo=/event/${event.id}?openCheckout=true`);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      // Get user from localStorage
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const token = localStorage.getItem("token");
 
-      if (!user.id || !token) {
-        setError("Silakan login terlebih dahulu");
-        return;
-      }
+      let firstBookingId = "";
 
       // API call untuk setiap tiket yang dipilih
       for (const ticket of selectedTickets) {
@@ -186,14 +213,18 @@ export default function CheckoutModal({
           setError(data.message || "Gagal membuat booking");
           return;
         }
-      }
 
-      // Success 
+        // Save first booking ID for redirect
+        if (!firstBookingId) {
+          firstBookingId = data.data.id;
+        }
+      }
       setError(null);
-      onClose();
-      // Reset state
       setStep(1);
       setSelectedTickets([]);
+      onClose();
+      
+      navigate(`/payment/${firstBookingId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
@@ -205,19 +236,18 @@ export default function CheckoutModal({
 
   return (
     <>
-      {/* Overlay */}
       <div
         className="fixed inset-0 bg-black/70 z-40 transition-opacity duration-200"
         onClick={onClose}
       />
 
-      {/* Modal Box */}
       <div className="fixed inset-0 flex items-end lg:items-center justify-center z-50 pointer-events-none">
         <div
           className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full h-[90vh] lg:h-auto lg:max-h-[90vh] lg:w-11/12 lg:max-w-5xl flex flex-col overflow-hidden"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         >
-          {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900">Checkout</h2>
             <button
@@ -228,12 +258,9 @@ export default function CheckoutModal({
             </button>
           </div>
 
-          {/* Main Content */}
           <div className="flex-1 flex overflow-hidden">
-            {/* Form Area (Scrollable) */}
             <div className="flex-1 overflow-y-auto">
               <div className="p-6 space-y-6">
-                {/* Step Indicator */}
                 <div className="flex gap-2">
                   {[1, 2, 3, 4].map((s) => (
                     <div
@@ -245,7 +272,6 @@ export default function CheckoutModal({
                   ))}
                 </div>
 
-                {/* Select Tickets */}
                 {step === 1 && (
                   <div className="space-y-4">
                     <div>
@@ -332,7 +358,6 @@ export default function CheckoutModal({
                   </div>
                 )}
 
-                {/* Personal Info */}
                 {step === 2 && (
                   <div className="space-y-4">
                     <div>
@@ -397,7 +422,6 @@ export default function CheckoutModal({
                   </div>
                 )}
 
-                {/* Payment & Promos */}
                 {step === 3 && (
                   <div className="space-y-4">
                     <div>
@@ -430,8 +454,7 @@ export default function CheckoutModal({
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Kode Voucher (Opsional)
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={paymentData.voucherCode}
                         onChange={(e) =>
                           setPaymentData({
@@ -440,8 +463,14 @@ export default function CheckoutModal({
                           })
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Masukkan kode voucher"
-                      />
+                      >
+                        <option value="">-- Pilih Voucher --</option>
+                        {availableVouchers.map((voucher: any) => (
+                          <option key={voucher.id} value={voucher.promotion_code}>
+                            {voucher.promotion_code} - {voucher.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="border-t border-gray-200 pt-4">
@@ -488,7 +517,6 @@ export default function CheckoutModal({
                   </div>
                 )}
 
-                {/* Final Invoice */}
                 {step === 4 && (
                   <div className="space-y-4">
                     <div>
@@ -576,7 +604,7 @@ export default function CheckoutModal({
                   </div>
                 )}
 
-                {/* Error Message */}
+
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <p className="text-sm text-red-600">{error}</p>

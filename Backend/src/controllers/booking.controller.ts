@@ -9,25 +9,73 @@ export const bookingController = {
   async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { user_id, organizer_id } = req.query;
+      const authenticatedUserId = req.user?.id;
+
+      let bookings;
+      
+      // Determine which user's bookings to fetch
       if (user_id) {
-        const bookings = await bookingService.getByUser(user_id as string);
-        res.status(200).json({ success: true, data: bookings });
+        const userIdString = String(user_id);
+        const authenticatedUserIdString = String(authenticatedUserId);
+        
+        if (userIdString !== authenticatedUserIdString) {
+          res.status(403).json({ success: false, message: "Anda tidak memiliki akses ke data user lain" });
+          return;
+        }
+        bookings = await bookingService.getByUser(userIdString);
+      } else if (authenticatedUserId) {
+        bookings = await bookingService.getByUser(authenticatedUserId);
+      } else if (organizer_id) {
+        bookings = await bookingService.getAll(organizer_id as string);
       } else {
-        const bookings = await bookingService.getAll(organizer_id as string | undefined);
-        res.status(200).json({ success: true, data: bookings });
+        res.status(400).json({ success: false, message: "Parameter user_id atau organizer_id diperlukan" });
+        return;
       }
+
+      // Check and auto-update expired bookings
+      for (const booking of bookings) {
+        if (
+          booking.status === 'WAITING_FOR_PAYMENTS' &&
+          booking.expires_at &&
+          new Date(booking.expires_at) < new Date()
+        ) {
+          await bookingService.updateStatus(booking.id, 'EXPIRED');
+        }
+      }
+
+      // Re-fetch to get updated statuses
+      if (user_id || authenticatedUserId) {
+        const finalUserId = user_id ? String(user_id) : String(authenticatedUserId);
+        bookings = await bookingService.getByUser(finalUserId);
+      } else if (organizer_id) {
+        bookings = await bookingService.getAll(organizer_id as string);
+      }
+
+      res.status(200).json({ success: true, data: bookings });
     } catch (error) {
+      console.error("[BOOKING.GETALL] Error:", error);
       next(error);
     }
   },
 
   async getById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const booking = await bookingService.getById(req.params.id as string);
+      let booking = await bookingService.getById(req.params.id as string);
       if (!booking) {
         res.status(404).json({ success: false, message: "Booking tidak ditemukan" });
         return;
       }
+
+      if (
+        booking.status === 'WAITING_FOR_PAYMENTS' &&
+        booking.expires_at &&
+        new Date(booking.expires_at) < new Date()
+      ) {
+
+        await bookingService.updateStatus(req.params.id as string, 'EXPIRED');
+        booking = await bookingService.getById(req.params.id as string);
+      }
+
       res.status(200).json({ success: true, data: booking });
     } catch (error) {
       next(error);
@@ -108,4 +156,50 @@ export const bookingController = {
       next(error);
     }
   },
-};
+
+  async uploadProof(req: any, res: Response, next: NextFunction) {
+    try {
+      const bookingId = req.params.id as string;
+      const file = req.file;
+
+      if (!file) {
+        res.status(400).json({
+          success: false,
+          message: "File tidak ditemukan",
+        });
+        return;
+      }
+
+      // Get booking to verify user owns it
+      const booking = await bookingService.getById(bookingId);
+      if (!booking) {
+        res.status(404).json({
+          success: false,
+          message: "Booking tidak ditemukan",
+        });
+        return;
+      }
+
+      if (booking.user_id !== req.user?.id) {
+        res.status(403).json({
+          success: false,
+          message: "Anda tidak memiliki akses ke booking ini",
+        });
+        return;
+      }
+
+      // Call service to handle proof upload and status update
+      const updatedBooking = await bookingService.uploadProof(bookingId, file);
+
+      res.status(200).json({
+        success: true,
+        message: "Bukti pembayaran berhasil diunggah",
+        data: updatedBooking,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Gagal upload bukti pembayaran",
+      });
+    }
+  },};

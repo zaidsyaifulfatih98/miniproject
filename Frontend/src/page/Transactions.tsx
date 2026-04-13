@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_BASE = "http://localhost:8000/api";
 
@@ -76,6 +77,7 @@ function formatDate(d: string) {
 }
 
 export default function Transactions() {
+  const navigate = useNavigate();
   const [bookings, setBookings]       = useState<BookingAPI[]>([]);
   const [loading, setLoading]         = useState(true);
   const [tab, setTab]                 = useState<"transaksi" | "statistik">("transaksi");
@@ -261,14 +263,15 @@ export default function Transactions() {
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Promo</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
-                  <tr><td colSpan={10} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td></tr>
+                  <tr><td colSpan={11} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td></tr>
                 ) : filteredTx.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="text-center py-12 text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td>
+                    <td colSpan={11} className="text-center py-12 text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td>
                   </tr>
                 ) : (
                   <>
@@ -310,6 +313,28 @@ export default function Transactions() {
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[uiStatus]}`}>
                           {uiStatus}
                         </span>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        {(b.status === "WAITING_FOR_PAYMENTS" || b.status === "WAITING_FOR_CONFIRMATION") && (
+                          <button
+                            onClick={() => navigate(`/payment/${b.id}`)}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-xs font-semibold transition"
+                          >
+                            <span>Lihat Status</span>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        )}
+                        {b.status === "DONE" && (
+                          <span className="text-xs text-gray-500 font-medium">Selesai</span>
+                        )}
+                        {b.status === "EXPIRED" && (
+                          <span className="text-xs text-gray-400 font-medium">Kadaluarsa</span>
+                        )}
+                        {(b.status === "REJECTED" || b.status === "CANCELLED") && (
+                          <span className="text-xs text-red-500 font-medium">Ditolak</span>
+                        )}
                       </td>
                     </tr>
                   );

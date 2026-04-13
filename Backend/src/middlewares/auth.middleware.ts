@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    role: string;
+    role: string | string[];
   };
 }
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction): void {
@@ -37,7 +37,13 @@ export function requireCustomerRole(req: AuthRequest, res: Response, next: NextF
     return;
   }
 
-  if (req.user.role !== "CUSTOMERS") {
+  // Check if it includes "CUSTOMERS"
+  const userRole = req.user.role;
+  const hasCustomerRole = 
+    (typeof userRole === "string" && userRole === "CUSTOMERS") ||
+    (Array.isArray(userRole) && userRole.includes("CUSTOMERS"));
+
+  if (!hasCustomerRole) {
     res.status(403).json({ success: false, message: "Akses ditolak. Hanya CUSTOMERS yang dapat melakukan booking" });
     return;
   }

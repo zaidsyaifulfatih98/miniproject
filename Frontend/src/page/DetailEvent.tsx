@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { MapPin, Calendar, Layers, X } from "lucide-react";
 
 import DOMPurify from "dompurify";
@@ -52,6 +52,7 @@ interface Toast {
 
 export default function DetailEvent() {
   const { eventId } = useParams<{ eventId: string }>();
+  const [searchParams] = useSearchParams();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,10 @@ export default function DetailEvent() {
         if (data.success) {
           setEvent(data.data);
           setError(null);
+          
+          if (searchParams.get("openCheckout") === "true") {
+            setIsCheckoutOpen(true);
+          }
         } else {
           throw new Error(data.message || "Failed to load event");
         }
@@ -83,16 +88,13 @@ export default function DetailEvent() {
     if (eventId) {
       fetchEvent();
     }
-  }, [eventId]);
+  }, [eventId, searchParams]);
 
-  // Check if event is sold out
   const isSoldOut = event && event.available_seats <= 0;
 
-  // Check if event has ended
   const isEventEnded =
     event && event.end_event && new Date(event.end_event) < new Date();
 
-  // Get button state
   const getButtonState = () => {
     if (isEventEnded) {
       return { disabled: true, text: "Event Ended", color: "bg-gray-400" };
@@ -365,7 +367,6 @@ export default function DetailEvent() {
 
                 {/* Content */}
                 <div className="p-4 space-y-4">
-                  {/* Price */}
                   <div>
                     <p className="text-xs text-gray-500 font-medium mb-1.5">
                       Harga mulai dari
@@ -375,7 +376,6 @@ export default function DetailEvent() {
                     </p>
                   </div>
 
-                  {/* Buy Button */}
                   <button
                     onClick={() => !buttonState.disabled && setIsCheckoutOpen(true)}
                     disabled={buttonState.disabled}

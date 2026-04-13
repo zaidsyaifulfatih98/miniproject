@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { User, Ticket, FileText, Edit2, Save, X, Home } from "lucide-react";
+import { User, Ticket, FileText, Edit2, Save, X, Home, ArrowRight, RefreshCw } from "lucide-react";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -21,18 +21,25 @@ interface UserProfile {
 interface TicketItem {
   id: string;
   event_title: string;
+  event_location?: string;
+  event_date?: Date;
   purchase_date: string;
   ticket_code: string;
+  ticket_type?: string;
+  ticket_price?: number;
+  quantity?: number;
   status: string;
+  eventStartDate?: Date;
 }
 
 interface Transaction {
   id: string;
   amount: number;
-  status: string;
+  status: "success" | "pending" | "failed";
   event_title: string;
   purchase_date: string;
   payment_method: string;
+  booking_status?: string;
 }
 
 type EditableDraft = Pick<UserProfile, "full_name" | "email" | "birth_date" | "gender" | "address">;
@@ -60,8 +67,8 @@ export default function CustomerProfile() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Load profile
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
@@ -87,12 +94,51 @@ export default function CustomerProfile() {
       .finally(() => setLoading(false));
   }, [navigate]);
 
-  // Load tickets
   const loadTickets = async () => {
     setTicketsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE}/tickets`);
-      setTickets(response.data.data || []);
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        setError("User tidak ditemukan");
+        return;
+      }
+      const { id: userId } = JSON.parse(storedUser);
+
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${API_BASE}/bookings?user_id=${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      const bookingData = response.data.data || [];
+      
+      const ticketData = bookingData
+        .filter((booking: any) => {
+          const isDone = booking.status === "DONE";
+          return isDone;
+        })
+        .map((booking: any) => {
+          const eventStartDate = booking.event?.start_event ? new Date(booking.event.start_event) : null;
+          const now = new Date();
+          const isActive = eventStartDate ? eventStartDate > now : true;
+          
+          return {
+            id: booking.id,
+            event_title: booking.event?.title || "Unknown Event",
+            event_location: booking.event?.location || "-",
+            event_date: eventStartDate,
+            purchase_date: booking.createdAt,
+            ticket_code: booking.display_id || booking.id.slice(0, 8).toUpperCase(),
+            ticket_type: booking.ticket?.type || "General",
+            ticket_price: booking.ticket?.price || 0,
+            quantity: booking.quantity || 1,
+            status: isActive ? "active" : "inactive",
+            eventStartDate: eventStartDate,
+          };
+        });
+      
+      setTickets(ticketData);
     } catch (err) {
       console.error("Failed to load tickets:", err);
     } finally {
@@ -100,27 +146,87 @@ export default function CustomerProfile() {
     }
   };
 
-  // Load transactions
   const loadTransactions = async () => {
     setTransactionsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE}/payments`);
-      setTransactions(response.data.data || []);
-    } catch (err) {
-      console.error("Failed to load transactions:", err);
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) {
+        setError("User tidak ditemukan");
+        return;
+      }
+      const { id: userId } = JSON.parse(storedUser);
+
+      const token = localStorage.getItem("token");
+      const url = `${API_BASE}/bookings?user_id=${userId}`;
+      
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      const bookingData = response.data.data || [];
+      
+      if (!Array.isArray(bookingData)) {
+        console.error("[loadTransactions] ERROR: bookingData is not an array:", typeof bookingData);
+        setTransactions([]);
+        return;
+      }
+
+      if (bookingData.length === 0) {
+        console.log("[loadTransactions] No bookings found for user");
+        setTransactions([]);
+        return;
+      }
+      
+      const transactionData = bookingData.map((booking: any) => {
+        let status: "success" | "pending" | "failed" = "failed";
+        if (booking.status === "DONE") {
+          status = "success";
+        } else if (booking.status === "PENDING" || booking.status === "WAITING_FOR_PAYMENTS" || booking.status === "WAITING_FOR_CONFIRMATION") {
+          status = "pending";
+        }
+        
+        return {
+          id: booking.id,
+          amount: parseFloat(booking.final_price || booking.total_price || 0),
+          status,
+          event_title: booking.event?.title || "Unknown Event",
+          purchase_date: booking.createdAt,
+          payment_method: "Bank Transfer",
+          booking_status: booking.status,
+        };
+      });
+      
+      setTransactions(transactionData);
+    } catch (err: any) {
+      console.error("[loadTransactions] Error:", err);
+      console.error("[loadTransactions] Error response:", err.response?.data);
+      console.error("[loadTransactions] Error message:", err.message);
+      setError(`Gagal memuat transaksi: ${err.response?.data?.message || err.message}`);
     } finally {
       setTransactionsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  // Load data when tab changes
+  const handleRefreshTransactions = async () => {
+    setIsRefreshing(true);
+    await loadTransactions();
+  };
+
+  const handleRefreshTickets = async () => {
+    setIsRefreshing(true);
+    await loadTickets();
+  };
+
   useEffect(() => {
-    if (activeTab === "tickets" && tickets.length === 0) {
+    if (activeTab === "tickets") {
       loadTickets();
-    } else if (activeTab === "transactions" && transactions.length === 0) {
+    } else if (activeTab === "transactions") {
       loadTransactions();
     }
-  }, [activeTab, tickets.length, transactions.length]);
+  }, [activeTab]);
 
   const handleEdit = () => {
     if (!profile) return;
@@ -222,7 +328,6 @@ export default function CustomerProfile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-gray-100">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -241,7 +346,6 @@ export default function CustomerProfile() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="border-b border-gray-200 bg-white sticky top-16 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-1">
@@ -431,7 +535,17 @@ export default function CustomerProfile() {
         {/* Tickets Tab */}
         {activeTab === "tickets" && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Tiket Saya</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Tiket Saya</h2>
+              <button
+                onClick={handleRefreshTickets}
+                disabled={isRefreshing}
+                className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+                title="Refresh"
+              >
+                <RefreshCw className={`w-5 h-5 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
+              </button>
+            </div>
             {ticketsLoading ? (
               <div className="text-center py-12">
                 <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
@@ -440,26 +554,102 @@ export default function CustomerProfile() {
             ) : tickets.length > 0 ? (
               <div className="grid gap-4">
                 {tickets.map((ticket) => (
-                  <div key={ticket.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition">
-                    <div className="flex items-start justify-between">
+                  <div key={ticket.id} className={`bg-white rounded-xl border-2 p-6 transition ${ticket.status === "inactive" ? "border-gray-200 opacity-60 bg-gray-50" : "border-orange-200 hover:shadow-lg"}`}>
+                    {/* Header dengan Event Title dan Status */}
+                    <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-200">
+                      <div className="flex-1">
+                        <h3 className={`text-xl font-bold ${ticket.status === "inactive" ? "text-gray-500" : "text-gray-900"}`}>
+                          {ticket.event_title}
+                        </h3>
+                        {ticket.event_location && (
+                          <p className="text-sm text-gray-600 mt-1">📍 {ticket.event_location}</p>
+                        )}
+                      </div>
+                      <span className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap ml-4 ${
+                        ticket.status === "active" 
+                          ? "bg-green-100 text-green-700" 
+                          : "bg-gray-200 text-gray-600"
+                      }`}>
+                        {ticket.status === "active" ? "✓ Aktif" : "✗ Tidak Aktif"}
+                      </span>
+                    </div>
+
+                    {/* Ticket Information Grid */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-500 font-semibold mb-1">KODE TIKET</p>
+                        <p className="font-mono font-bold text-orange-600 text-lg">{ticket.ticket_code}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-500 font-semibold mb-1">JENIS TIKET</p>
+                        <p className="font-semibold text-gray-900">{ticket.ticket_type}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-500 font-semibold mb-1">JUMLAH</p>
+                        <p className="font-semibold text-gray-900">{ticket.quantity} tiket</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-500 font-semibold mb-1">HARGA/TIKET</p>
+                        <p className="font-semibold text-gray-900">Rp{ticket.ticket_price?.toLocaleString("id-ID")}</p>
+                      </div>
+                    </div>
+
+                    {/* Event & Purchase Details */}
+                    <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{ticket.event_title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Kode Tiket: <span className="font-mono font-bold text-orange-600">{ticket.ticket_code}</span>
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          Dibeli: {new Date(ticket.purchase_date).toLocaleDateString("id-ID")}
+                        <p className="text-xs text-gray-500 font-semibold mb-1">📅 TANGGAL ACARA</p>
+                        {ticket.eventStartDate ? (
+                          <p className="text-sm text-gray-900 font-medium">
+                            {new Date(ticket.eventStartDate).toLocaleDateString("id-ID", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-500">-</p>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">🛒 TANGGAL PEMBELIAN</p>
+                        <p className="text-sm text-gray-900 font-medium">
+                          {new Date(ticket.purchase_date).toLocaleDateString("id-ID", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
                         </p>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          ticket.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
+                    </div>
+
+                    {/* Instructions */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                      <p className="text-xs font-semibold text-blue-900 mb-2">📋 CARA PENGGUNAAN:</p>
+                      <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
+                        <li>Tunjukkan kode tiket <span className="font-mono font-bold">{ticket.ticket_code}</span> saat check-in</li>
+                        <li>Bisa ditunjukkan via screenshot atau print</li>
+                        <li>Pastikan hadir 15 menit sebelum acara dimulai</li>
+                        <li>Siapkan identitas diri asli saat check-in</li>
+                      </ul>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => navigate(`/profile?tab=transactions`)}
+                        className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
                       >
-                        {ticket.status === "active" ? "Aktif" : "Tidak Aktif"}
-                      </span>
+                        Lihat Transaksi
+                      </button>
+                      {ticket.status === "active" && (
+                        <button
+                          className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition"
+                        >
+                          Simpan Tiket
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -477,7 +667,17 @@ export default function CustomerProfile() {
         {/* Transactions Tab */}
         {activeTab === "transactions" && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Riwayat Transaksi</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Riwayat Transaksi</h2>
+              <button
+                onClick={handleRefreshTransactions}
+                disabled={isRefreshing}
+                className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
+                title="Refresh"
+              >
+                <RefreshCw className={`w-5 h-5 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
+              </button>
+            </div>
             {transactionsLoading ? (
               <div className="text-center py-12">
                 <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
@@ -506,25 +706,44 @@ export default function CustomerProfile() {
                           })}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-orange-600">
-                          Rp{transaction.amount.toLocaleString("id-ID")}
-                        </p>
-                        <span
-                          className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                            transaction.status === "success"
-                              ? "bg-green-100 text-green-700"
+                      <div className="flex flex-col items-end gap-3">
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-orange-600">
+                            Rp{transaction.amount.toLocaleString("id-ID")}
+                          </p>
+                          <span
+                            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                              transaction.status === "success"
+                                ? "bg-green-100 text-green-700"
+                                : transaction.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {transaction.status === "success"
+                              ? "Berhasil"
                               : transaction.status === "pending"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {transaction.status === "success"
-                            ? "Berhasil"
-                            : transaction.status === "pending"
-                              ? "Menunggu"
-                              : "Gagal"}
-                        </span>
+                                ? "Menunggu"
+                                : "Gagal"}
+                          </span>
+                        </div>
+                        {transaction.status === "pending" && (
+                          <button
+                            onClick={() => navigate(`/payment/${transaction.id}`)}
+                            className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition text-sm font-semibold"
+                          >
+                            <span>Lanjutkan</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                        )}
+                        {transaction.status === "success" && (
+                          <button
+                            onClick={() => navigate(`/payment/${transaction.id}`)}
+                            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition text-xs font-semibold"
+                          >
+                            Lihat Detail
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -535,6 +754,11 @@ export default function CustomerProfile() {
                 <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-600 font-medium">Belum ada transaksi</p>
                 <p className="text-sm text-gray-500 mt-1">Transaksi Anda akan muncul di sini</p>
+                {error && (
+                  <p className="text-sm text-red-600 mt-3 px-4">
+                    <span className="font-semibold">Error:</span> {error}
+                  </p>
+                )}
               </div>
             )}
           </div>

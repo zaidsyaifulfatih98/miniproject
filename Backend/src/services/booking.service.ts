@@ -218,7 +218,7 @@ export const bookingService = {
           discount_amount,
           points_used: pointsDeduction,
           final_price,
-          expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 jam
+          expires_at: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
         },
       });
 
@@ -262,4 +262,73 @@ export const bookingService = {
       data: { deletedAt: new Date() },
     });
   },
-};
+
+  async uploadProof(bookingId: string, file: any) {
+    const booking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { payment: true },
+    });
+
+    if (!booking) {
+      throw new Error("Booking tidak ditemukan");
+    }
+
+    if (booking.status !== "WAITING_FOR_PAYMENTS") {
+      throw new Error("Booking tidak dalam status menunggu pembayaran");
+    }
+
+    if (!file) {
+      throw new Error("File tidak ditemukan");
+    }
+
+    const proofUrl = `/uploads/payments/${file.filename}`;
+
+    const payment = booking.payment;
+
+    if (payment) {
+      // Update existing payment
+      await prisma.payments.update({
+        where: { id: payment.id },
+        data: {
+          payment_proof_url: proofUrl,
+          status: "PENDING",
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.payments.create({
+        data: {
+          booking_id: bookingId,
+          payment_proof_url: proofUrl,
+          status: "PENDING",
+          amount: booking.final_price || booking.total_price,
+        },
+      });
+    }
+    
+    const updatedBooking = await prisma.bookings.update({
+      where: { id: bookingId },
+      data: {
+        status: "WAITING_FOR_CONFIRMATION",
+        updatedAt: new Date(),
+      },
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        ticket: {
+          select: {
+            id: true,
+            type: true,
+            price: true,
+          },
+        },
+        payment: true,
+      },
+    });
+
+    return updatedBooking;
+  },};
