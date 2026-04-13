@@ -66,6 +66,7 @@ export const PromoType = {
   FLASH_SALE: 'FLASH_SALE',
   VOUCHER: 'VOUCHER',
   BUNDLE: 'BUNDLE',
+  REFERRAL: 'REFERRAL',
   LAINNYA: 'LAINNYA'
 } as const
 

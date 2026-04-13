@@ -13,6 +13,7 @@ interface RegisterForm {
   gender: string;
   address: string;
   role: string[];
+  referral_code_used: string;
 }
 
 export default function Register() {
@@ -25,6 +26,7 @@ export default function Register() {
     gender: "",
     address: "",
     role: ["CUSTOMERS"],
+    referral_code_used: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,7 +43,9 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      await axios.post(`${API_BASE}/users`, form);
+      const payload = { ...form };
+      if (!payload.referral_code_used) delete (payload as any).referral_code_used;
+      await axios.post(`${API_BASE}/users`, payload);
       navigate("/login");
     } catch (err: any) {
       setError(err.response?.data?.message || "Register gagal, coba lagi.");
@@ -168,6 +172,23 @@ export default function Register() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition resize-none"
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+          </div>
+
+          {/* Referral Code */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              Kode Referral <span className="text-gray-400 font-normal">(opsional)</span>
+            </label>
+            <input
+              type="text"
+              name="referral_code_used"
+              value={form.referral_code_used}
+              onChange={handleChange}
+              placeholder="Masukkan kode referral teman"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition uppercase"
+              style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
+            />
+            <p className="text-xs text-gray-400 mt-1">Dapatkan diskon 10% untuk transaksi pertama Anda</p>
           </div>
 
           {/* Role */}

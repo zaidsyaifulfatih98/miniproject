@@ -8,5 +8,8 @@ userRouter.post("/", userController.create);
 userRouter.get("/", userController.getAll);
 userRouter.get("/:id", userController.getById);
 userRouter.put("/:id", userController.update);
+userRouter.get("/:id/points-history", userController.getPointsHistory);
+userRouter.get("/:id/coupons", userController.getMyCoupons);
+userRouter.get("/:id/referrals", userController.getReferralHistory);
 
 export default userRouter;

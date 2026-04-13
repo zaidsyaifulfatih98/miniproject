@@ -684,6 +684,11 @@ export type EventsScalarRelationFilter = {
   isNot?: Prisma.EventsWhereInput
 }
 
+export type EventsNullableScalarRelationFilter = {
+  is?: Prisma.EventsWhereInput | null
+  isNot?: Prisma.EventsWhereInput | null
+}
+
 export type EventsCreateNestedManyWithoutOrganizerInput = {
   create?: Prisma.XOR<Prisma.EventsCreateWithoutOrganizerInput, Prisma.EventsUncheckedCreateWithoutOrganizerInput> | Prisma.EventsCreateWithoutOrganizerInput[] | Prisma.EventsUncheckedCreateWithoutOrganizerInput[]
   connectOrCreate?: Prisma.EventsCreateOrConnectWithoutOrganizerInput | Prisma.EventsCreateOrConnectWithoutOrganizerInput[]
@@ -742,14 +747,6 @@ export type DecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type EnumEventStatusFieldUpdateOperationsInput = {
   set?: $Enums.EventStatus
 }
@@ -802,10 +799,12 @@ export type EventsCreateNestedOneWithoutPromotionsInput = {
   connect?: Prisma.EventsWhereUniqueInput
 }
 
-export type EventsUpdateOneRequiredWithoutPromotionsNestedInput = {
+export type EventsUpdateOneWithoutPromotionsNestedInput = {
   create?: Prisma.XOR<Prisma.EventsCreateWithoutPromotionsInput, Prisma.EventsUncheckedCreateWithoutPromotionsInput>
   connectOrCreate?: Prisma.EventsCreateOrConnectWithoutPromotionsInput
   upsert?: Prisma.EventsUpsertWithoutPromotionsInput
+  disconnect?: Prisma.EventsWhereInput | boolean
+  delete?: Prisma.EventsWhereInput | boolean
   connect?: Prisma.EventsWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.EventsUpdateToOneWithWhereWithoutPromotionsInput, Prisma.EventsUpdateWithoutPromotionsInput>, Prisma.EventsUncheckedUpdateWithoutPromotionsInput>
 }

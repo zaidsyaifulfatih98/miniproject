@@ -20,8 +20,18 @@ export type UsersModel = runtime.Types.Result.DefaultSelection<Prisma.$UsersPayl
 
 export type AggregateUsers = {
   _count: UsersCountAggregateOutputType | null
+  _avg: UsersAvgAggregateOutputType | null
+  _sum: UsersSumAggregateOutputType | null
   _min: UsersMinAggregateOutputType | null
   _max: UsersMaxAggregateOutputType | null
+}
+
+export type UsersAvgAggregateOutputType = {
+  points: number | null
+}
+
+export type UsersSumAggregateOutputType = {
+  points: number | null
 }
 
 export type UsersMinAggregateOutputType = {
@@ -36,6 +46,7 @@ export type UsersMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  points: number | null
 }
 
 export type UsersMaxAggregateOutputType = {
@@ -50,6 +61,7 @@ export type UsersMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
+  points: number | null
 }
 
 export type UsersCountAggregateOutputType = {
@@ -65,9 +77,18 @@ export type UsersCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   deletedAt: number
+  points: number
   _all: number
 }
 
+
+export type UsersAvgAggregateInputType = {
+  points?: true
+}
+
+export type UsersSumAggregateInputType = {
+  points?: true
+}
 
 export type UsersMinAggregateInputType = {
   id?: true
@@ -81,6 +102,7 @@ export type UsersMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  points?: true
 }
 
 export type UsersMaxAggregateInputType = {
@@ -95,6 +117,7 @@ export type UsersMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  points?: true
 }
 
 export type UsersCountAggregateInputType = {
@@ -110,6 +133,7 @@ export type UsersCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
+  points?: true
   _all?: true
 }
 
@@ -151,6 +175,18 @@ export type UsersAggregateArgs<ExtArgs extends runtime.Types.Extensions.Internal
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: UsersAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: UsersSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: UsersMinAggregateInputType
@@ -181,6 +217,8 @@ export type UsersGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   _count?: UsersCountAggregateInputType | true
+  _avg?: UsersAvgAggregateInputType
+  _sum?: UsersSumAggregateInputType
   _min?: UsersMinAggregateInputType
   _max?: UsersMaxAggregateInputType
 }
@@ -198,7 +236,10 @@ export type UsersGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
+  points: number
   _count: UsersCountAggregateOutputType | null
+  _avg: UsersAvgAggregateOutputType | null
+  _sum: UsersSumAggregateOutputType | null
   _min: UsersMinAggregateOutputType | null
   _max: UsersMaxAggregateOutputType | null
 }
@@ -234,12 +275,14 @@ export type UsersWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Users"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Users"> | Date | string | null
+  points?: Prisma.IntFilter<"Users"> | number
   events?: Prisma.EventsListRelationFilter
   bookings?: Prisma.BookingsListRelationFilter
   reviews?: Prisma.ReviewsListRelationFilter
   points_history?: Prisma.PointsHistoryListRelationFilter
   referrals_given?: Prisma.ReferralsListRelationFilter
   referrals_received?: Prisma.ReferralsListRelationFilter
+  received_promotions?: Prisma.PromotionsListRelationFilter
 }
 
 export type UsersOrderByWithRelationInput = {
@@ -255,12 +298,14 @@ export type UsersOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  points?: Prisma.SortOrder
   events?: Prisma.EventsOrderByRelationAggregateInput
   bookings?: Prisma.BookingsOrderByRelationAggregateInput
   reviews?: Prisma.ReviewsOrderByRelationAggregateInput
   points_history?: Prisma.PointsHistoryOrderByRelationAggregateInput
   referrals_given?: Prisma.ReferralsOrderByRelationAggregateInput
   referrals_received?: Prisma.ReferralsOrderByRelationAggregateInput
+  received_promotions?: Prisma.PromotionsOrderByRelationAggregateInput
 }
 
 export type UsersWhereUniqueInput = Prisma.AtLeast<{
@@ -279,12 +324,14 @@ export type UsersWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Users"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Users"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Users"> | Date | string | null
+  points?: Prisma.IntFilter<"Users"> | number
   events?: Prisma.EventsListRelationFilter
   bookings?: Prisma.BookingsListRelationFilter
   reviews?: Prisma.ReviewsListRelationFilter
   points_history?: Prisma.PointsHistoryListRelationFilter
   referrals_given?: Prisma.ReferralsListRelationFilter
   referrals_received?: Prisma.ReferralsListRelationFilter
+  received_promotions?: Prisma.PromotionsListRelationFilter
 }, "id" | "email" | "referral_code">
 
 export type UsersOrderByWithAggregationInput = {
@@ -300,9 +347,12 @@ export type UsersOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  points?: Prisma.SortOrder
   _count?: Prisma.UsersCountOrderByAggregateInput
+  _avg?: Prisma.UsersAvgOrderByAggregateInput
   _max?: Prisma.UsersMaxOrderByAggregateInput
   _min?: Prisma.UsersMinOrderByAggregateInput
+  _sum?: Prisma.UsersSumOrderByAggregateInput
 }
 
 export type UsersScalarWhereWithAggregatesInput = {
@@ -321,6 +371,7 @@ export type UsersScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Users"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Users"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Users"> | Date | string | null
+  points?: Prisma.IntWithAggregatesFilter<"Users"> | number
 }
 
 export type UsersCreateInput = {
@@ -336,12 +387,14 @@ export type UsersCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateInput = {
@@ -357,12 +410,14 @@ export type UsersUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUpdateInput = {
@@ -378,12 +433,14 @@ export type UsersUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateInput = {
@@ -399,12 +456,14 @@ export type UsersUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersCreateManyInput = {
@@ -420,6 +479,7 @@ export type UsersCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
 }
 
 export type UsersUpdateManyMutationInput = {
@@ -435,6 +495,7 @@ export type UsersUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type UsersUncheckedUpdateManyInput = {
@@ -450,6 +511,7 @@ export type UsersUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
 }
 
 export type EnumRolesNullableListFilter<$PrismaModel = never> = {
@@ -473,6 +535,11 @@ export type UsersCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  points?: Prisma.SortOrder
+}
+
+export type UsersAvgOrderByAggregateInput = {
+  points?: Prisma.SortOrder
 }
 
 export type UsersMaxOrderByAggregateInput = {
@@ -487,6 +554,7 @@ export type UsersMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  points?: Prisma.SortOrder
 }
 
 export type UsersMinOrderByAggregateInput = {
@@ -501,11 +569,21 @@ export type UsersMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
+  points?: Prisma.SortOrder
+}
+
+export type UsersSumOrderByAggregateInput = {
+  points?: Prisma.SortOrder
 }
 
 export type UsersScalarRelationFilter = {
   is?: Prisma.UsersWhereInput
   isNot?: Prisma.UsersWhereInput
+}
+
+export type UsersNullableScalarRelationFilter = {
+  is?: Prisma.UsersWhereInput | null
+  isNot?: Prisma.UsersWhereInput | null
 }
 
 export type UsersCreateroleInput = {
@@ -527,6 +605,14 @@ export type UsersUpdateroleInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type UsersCreateNestedOneWithoutEventsInput = {
@@ -569,6 +655,22 @@ export type UsersUpdateOneRequiredWithoutReviewsNestedInput = {
   upsert?: Prisma.UsersUpsertWithoutReviewsInput
   connect?: Prisma.UsersWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutReviewsInput, Prisma.UsersUpdateWithoutReviewsInput>, Prisma.UsersUncheckedUpdateWithoutReviewsInput>
+}
+
+export type UsersCreateNestedOneWithoutReceived_promotionsInput = {
+  create?: Prisma.XOR<Prisma.UsersCreateWithoutReceived_promotionsInput, Prisma.UsersUncheckedCreateWithoutReceived_promotionsInput>
+  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutReceived_promotionsInput
+  connect?: Prisma.UsersWhereUniqueInput
+}
+
+export type UsersUpdateOneWithoutReceived_promotionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UsersCreateWithoutReceived_promotionsInput, Prisma.UsersUncheckedCreateWithoutReceived_promotionsInput>
+  connectOrCreate?: Prisma.UsersCreateOrConnectWithoutReceived_promotionsInput
+  upsert?: Prisma.UsersUpsertWithoutReceived_promotionsInput
+  disconnect?: Prisma.UsersWhereInput | boolean
+  delete?: Prisma.UsersWhereInput | boolean
+  connect?: Prisma.UsersWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsersUpdateToOneWithWhereWithoutReceived_promotionsInput, Prisma.UsersUpdateWithoutReceived_promotionsInput>, Prisma.UsersUncheckedUpdateWithoutReceived_promotionsInput>
 }
 
 export type UsersCreateNestedOneWithoutReferrals_givenInput = {
@@ -626,11 +728,13 @@ export type UsersCreateWithoutEventsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateWithoutEventsInput = {
@@ -646,11 +750,13 @@ export type UsersUncheckedCreateWithoutEventsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersCreateOrConnectWithoutEventsInput = {
@@ -682,11 +788,13 @@ export type UsersUpdateWithoutEventsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutEventsInput = {
@@ -702,11 +810,13 @@ export type UsersUncheckedUpdateWithoutEventsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersCreateWithoutBookingsInput = {
@@ -722,11 +832,13 @@ export type UsersCreateWithoutBookingsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
   reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateWithoutBookingsInput = {
@@ -742,11 +854,13 @@ export type UsersUncheckedCreateWithoutBookingsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
   reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersCreateOrConnectWithoutBookingsInput = {
@@ -778,11 +892,13 @@ export type UsersUpdateWithoutBookingsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
   reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutBookingsInput = {
@@ -798,11 +914,13 @@ export type UsersUncheckedUpdateWithoutBookingsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
   reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersCreateWithoutReviewsInput = {
@@ -818,11 +936,13 @@ export type UsersCreateWithoutReviewsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateWithoutReviewsInput = {
@@ -838,11 +958,13 @@ export type UsersUncheckedCreateWithoutReviewsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersCreateOrConnectWithoutReviewsInput = {
@@ -874,11 +996,13 @@ export type UsersUpdateWithoutReviewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutReviewsInput = {
@@ -894,8 +1018,114 @@ export type UsersUncheckedUpdateWithoutReviewsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
+  points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
+  referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
+  referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
+}
+
+export type UsersCreateWithoutReceived_promotionsInput = {
+  id?: string
+  email: string
+  password: string
+  full_name: string
+  birth_date: Date | string
+  gender: string
+  address: string
+  role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
+  referral_code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  points?: number
+  events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
+  bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
+  points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
+  referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
+  referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+}
+
+export type UsersUncheckedCreateWithoutReceived_promotionsInput = {
+  id?: string
+  email: string
+  password: string
+  full_name: string
+  birth_date: Date | string
+  gender: string
+  address: string
+  role?: Prisma.UsersCreateroleInput | $Enums.Roles[]
+  referral_code: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  points?: number
+  events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
+  bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
+  reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
+  points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
+  referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
+  referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+}
+
+export type UsersCreateOrConnectWithoutReceived_promotionsInput = {
+  where: Prisma.UsersWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsersCreateWithoutReceived_promotionsInput, Prisma.UsersUncheckedCreateWithoutReceived_promotionsInput>
+}
+
+export type UsersUpsertWithoutReceived_promotionsInput = {
+  update: Prisma.XOR<Prisma.UsersUpdateWithoutReceived_promotionsInput, Prisma.UsersUncheckedUpdateWithoutReceived_promotionsInput>
+  create: Prisma.XOR<Prisma.UsersCreateWithoutReceived_promotionsInput, Prisma.UsersUncheckedCreateWithoutReceived_promotionsInput>
+  where?: Prisma.UsersWhereInput
+}
+
+export type UsersUpdateToOneWithWhereWithoutReceived_promotionsInput = {
+  where?: Prisma.UsersWhereInput
+  data: Prisma.XOR<Prisma.UsersUpdateWithoutReceived_promotionsInput, Prisma.UsersUncheckedUpdateWithoutReceived_promotionsInput>
+}
+
+export type UsersUpdateWithoutReceived_promotionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  full_name?: Prisma.StringFieldUpdateOperationsInput | string
+  birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
+  referral_code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
+  events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
+  bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
+  points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
+  referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
+  referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+}
+
+export type UsersUncheckedUpdateWithoutReceived_promotionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  full_name?: Prisma.StringFieldUpdateOperationsInput | string
+  birth_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  gender?: Prisma.StringFieldUpdateOperationsInput | string
+  address?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.UsersUpdateroleInput | $Enums.Roles[]
+  referral_code?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
+  events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
+  bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
+  reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
@@ -914,11 +1144,13 @@ export type UsersCreateWithoutReferrals_givenInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
   referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateWithoutReferrals_givenInput = {
@@ -934,11 +1166,13 @@ export type UsersUncheckedCreateWithoutReferrals_givenInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
   referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersCreateOrConnectWithoutReferrals_givenInput = {
@@ -959,11 +1193,13 @@ export type UsersCreateWithoutReferrals_receivedInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateWithoutReferrals_receivedInput = {
@@ -979,11 +1215,13 @@ export type UsersUncheckedCreateWithoutReferrals_receivedInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
   points_history?: Prisma.PointsHistoryUncheckedCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersCreateOrConnectWithoutReferrals_receivedInput = {
@@ -1015,11 +1253,13 @@ export type UsersUpdateWithoutReferrals_givenInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
   referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutReferrals_givenInput = {
@@ -1035,11 +1275,13 @@ export type UsersUncheckedUpdateWithoutReferrals_givenInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
   referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUpsertWithoutReferrals_receivedInput = {
@@ -1066,11 +1308,13 @@ export type UsersUpdateWithoutReferrals_receivedInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutReferrals_receivedInput = {
@@ -1086,11 +1330,13 @@ export type UsersUncheckedUpdateWithoutReferrals_receivedInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   points_history?: Prisma.PointsHistoryUncheckedUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersCreateWithoutPoints_historyInput = {
@@ -1106,11 +1352,13 @@ export type UsersCreateWithoutPoints_historyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersUncheckedCreateWithoutPoints_historyInput = {
@@ -1126,11 +1374,13 @@ export type UsersUncheckedCreateWithoutPoints_historyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
+  points?: number
   events?: Prisma.EventsUncheckedCreateNestedManyWithoutOrganizerInput
   bookings?: Prisma.BookingsUncheckedCreateNestedManyWithoutUserInput
   reviews?: Prisma.ReviewsUncheckedCreateNestedManyWithoutUserInput
   referrals_given?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferrerInput
   referrals_received?: Prisma.ReferralsUncheckedCreateNestedManyWithoutReferredInput
+  received_promotions?: Prisma.PromotionsUncheckedCreateNestedManyWithoutRecipientInput
 }
 
 export type UsersCreateOrConnectWithoutPoints_historyInput = {
@@ -1162,11 +1412,13 @@ export type UsersUpdateWithoutPoints_historyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUpdateManyWithoutRecipientNestedInput
 }
 
 export type UsersUncheckedUpdateWithoutPoints_historyInput = {
@@ -1182,11 +1434,13 @@ export type UsersUncheckedUpdateWithoutPoints_historyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  points?: Prisma.IntFieldUpdateOperationsInput | number
   events?: Prisma.EventsUncheckedUpdateManyWithoutOrganizerNestedInput
   bookings?: Prisma.BookingsUncheckedUpdateManyWithoutUserNestedInput
   reviews?: Prisma.ReviewsUncheckedUpdateManyWithoutUserNestedInput
   referrals_given?: Prisma.ReferralsUncheckedUpdateManyWithoutReferrerNestedInput
   referrals_received?: Prisma.ReferralsUncheckedUpdateManyWithoutReferredNestedInput
+  received_promotions?: Prisma.PromotionsUncheckedUpdateManyWithoutRecipientNestedInput
 }
 
 
@@ -1201,6 +1455,7 @@ export type UsersCountOutputType = {
   points_history: number
   referrals_given: number
   referrals_received: number
+  received_promotions: number
 }
 
 export type UsersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1210,6 +1465,7 @@ export type UsersCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.
   points_history?: boolean | UsersCountOutputTypeCountPoints_historyArgs
   referrals_given?: boolean | UsersCountOutputTypeCountReferrals_givenArgs
   referrals_received?: boolean | UsersCountOutputTypeCountReferrals_receivedArgs
+  received_promotions?: boolean | UsersCountOutputTypeCountReceived_promotionsArgs
 }
 
 /**
@@ -1264,6 +1520,13 @@ export type UsersCountOutputTypeCountReferrals_receivedArgs<ExtArgs extends runt
   where?: Prisma.ReferralsWhereInput
 }
 
+/**
+ * UsersCountOutputType without action
+ */
+export type UsersCountOutputTypeCountReceived_promotionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PromotionsWhereInput
+}
+
 
 export type UsersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1278,12 +1541,14 @@ export type UsersSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  points?: boolean
   events?: boolean | Prisma.Users$eventsArgs<ExtArgs>
   bookings?: boolean | Prisma.Users$bookingsArgs<ExtArgs>
   reviews?: boolean | Prisma.Users$reviewsArgs<ExtArgs>
   points_history?: boolean | Prisma.Users$points_historyArgs<ExtArgs>
   referrals_given?: boolean | Prisma.Users$referrals_givenArgs<ExtArgs>
   referrals_received?: boolean | Prisma.Users$referrals_receivedArgs<ExtArgs>
+  received_promotions?: boolean | Prisma.Users$received_promotionsArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["users"]>
 
@@ -1300,6 +1565,7 @@ export type UsersSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  points?: boolean
 }, ExtArgs["result"]["users"]>
 
 export type UsersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1315,6 +1581,7 @@ export type UsersSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  points?: boolean
 }, ExtArgs["result"]["users"]>
 
 export type UsersSelectScalar = {
@@ -1330,9 +1597,10 @@ export type UsersSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
+  points?: boolean
 }
 
-export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "birth_date" | "gender" | "address" | "role" | "referral_code" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["users"]>
+export type UsersOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "full_name" | "birth_date" | "gender" | "address" | "role" | "referral_code" | "createdAt" | "updatedAt" | "deletedAt" | "points", ExtArgs["result"]["users"]>
 export type UsersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   events?: boolean | Prisma.Users$eventsArgs<ExtArgs>
   bookings?: boolean | Prisma.Users$bookingsArgs<ExtArgs>
@@ -1340,6 +1608,7 @@ export type UsersInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   points_history?: boolean | Prisma.Users$points_historyArgs<ExtArgs>
   referrals_given?: boolean | Prisma.Users$referrals_givenArgs<ExtArgs>
   referrals_received?: boolean | Prisma.Users$referrals_receivedArgs<ExtArgs>
+  received_promotions?: boolean | Prisma.Users$received_promotionsArgs<ExtArgs>
   _count?: boolean | Prisma.UsersCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsersIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1354,6 +1623,7 @@ export type $UsersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     points_history: Prisma.$PointsHistoryPayload<ExtArgs>[]
     referrals_given: Prisma.$ReferralsPayload<ExtArgs>[]
     referrals_received: Prisma.$ReferralsPayload<ExtArgs>[]
+    received_promotions: Prisma.$PromotionsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1368,6 +1638,7 @@ export type $UsersPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
+    points: number
   }, ExtArgs["result"]["users"]>
   composites: {}
 }
@@ -1768,6 +2039,7 @@ export interface Prisma__UsersClient<T, Null = never, ExtArgs extends runtime.Ty
   points_history<T extends Prisma.Users$points_historyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$points_historyArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PointsHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   referrals_given<T extends Prisma.Users$referrals_givenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$referrals_givenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReferralsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   referrals_received<T extends Prisma.Users$referrals_receivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$referrals_receivedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReferralsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  received_promotions<T extends Prisma.Users$received_promotionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Users$received_promotionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PromotionsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1809,6 +2081,7 @@ export interface UsersFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Users", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Users", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Users", 'DateTime'>
+  readonly points: Prisma.FieldRef<"Users", 'Int'>
 }
     
 
@@ -2338,6 +2611,30 @@ export type Users$referrals_receivedArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.ReferralsScalarFieldEnum | Prisma.ReferralsScalarFieldEnum[]
+}
+
+/**
+ * Users.received_promotions
+ */
+export type Users$received_promotionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Promotions
+   */
+  select?: Prisma.PromotionsSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Promotions
+   */
+  omit?: Prisma.PromotionsOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PromotionsInclude<ExtArgs> | null
+  where?: Prisma.PromotionsWhereInput
+  orderBy?: Prisma.PromotionsOrderByWithRelationInput | Prisma.PromotionsOrderByWithRelationInput[]
+  cursor?: Prisma.PromotionsWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PromotionsScalarFieldEnum | Prisma.PromotionsScalarFieldEnum[]
 }
 
 /**

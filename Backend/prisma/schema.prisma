@@ -21,13 +21,15 @@ model Users {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
+  points        Int       @default(0)
 
-  events             Events[]
-  bookings           Bookings[]
-  reviews            Reviews[]
-  points_history     PointsHistory[]
-  referrals_given    Referrals[]     @relation("ReferrerUser")
-  referrals_received Referrals[]     @relation("ReferredUser")
+  events              Events[]
+  bookings            Bookings[]
+  reviews             Reviews[]
+  points_history      PointsHistory[]
+  referrals_given     Referrals[]     @relation("ReferrerUser")
+  referrals_received  Referrals[]     @relation("ReferredUser")
+  received_promotions Promotions[]    @relation("ReceivedPromotions")
 }
 
 model Events {
@@ -131,21 +133,23 @@ model Reviews {
 }
 
 model Promotions {
-  id              String    @id @default(uuid())
-  event_id        String
-  name            String    @db.VarChar(50)
-  type            PromoType
-  promotion_code  String    @db.VarChar(30)
-  discount_amount Decimal
-  max_usage       Int?
-  used_count      Int?
-  expires_at      DateTime?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  deletedAt   DateTime?
+  id                String    @id @default(uuid())
+  event_id          String?
+  recipient_user_id String?
+  name              String    @db.VarChar(50)
+  type              PromoType
+  promotion_code    String    @db.VarChar(50)
+  discount_amount   Decimal
+  max_usage         Int?
+  used_count        Int       @default(0)
+  expires_at        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
 
-  event    Events     @relation(fields: [event_id], references: [id])
-  bookings Bookings[]
+  event     Events? @relation(fields: [event_id], references: [id])
+  recipient Users?  @relation("ReceivedPromotions", fields: [recipient_user_id], references: [id])
+  bookings  Bookings[]
 }
 
 model Referrals {
@@ -246,6 +250,7 @@ enum PromoType {
   FLASH_SALE
   VOUCHER
   BUNDLE
+  REFERRAL
   LAINNYA
 }
 

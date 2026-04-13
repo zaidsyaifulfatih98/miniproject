@@ -93,7 +93,8 @@ export const UsersScalarFieldEnum = {
   referral_code: 'referral_code',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  deletedAt: 'deletedAt'
+  deletedAt: 'deletedAt',
+  points: 'points'
 } as const
 
 export type UsersScalarFieldEnum = (typeof UsersScalarFieldEnum)[keyof typeof UsersScalarFieldEnum]
@@ -192,6 +193,7 @@ export type ReviewsScalarFieldEnum = (typeof ReviewsScalarFieldEnum)[keyof typeo
 export const PromotionsScalarFieldEnum = {
   id: 'id',
   event_id: 'event_id',
+  recipient_user_id: 'recipient_user_id',
   name: 'name',
   type: 'type',
   promotion_code: 'promotion_code',

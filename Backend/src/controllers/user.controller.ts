@@ -98,4 +98,52 @@ export const userController = {
       next(error);
     }
   },
+
+  async getPointsHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      if (!isUUID(id)) {
+        res.status(400).json({ success: false, message: "invalid id" });
+        return;
+      }
+      const [history, available] = await Promise.all([
+        userService.getPointsHistory(id),
+        userService.getAvailablePoints(id),
+      ]);
+      res.status(200).json({
+        success: true,
+        data: { available_points: available, history },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getMyCoupons(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      if (!isUUID(id)) {
+        res.status(400).json({ success: false, message: "invalid id" });
+        return;
+      }
+      const coupons = await userService.getMyCoupons(id);
+      res.status(200).json({ success: true, data: coupons });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getReferralHistory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      if (!isUUID(id)) {
+        res.status(400).json({ success: false, message: "invalid id" });
+        return;
+      }
+      const referrals = await userService.getReferralHistory(id);
+      res.status(200).json({ success: true, data: referrals });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
