@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Edit2, Trash2, Search, AlertCircle, CheckCircle } from "lucide-react";
+import { createPromoSchema, updatePromoSchema } from "../schemas/promo.schema";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -52,6 +53,7 @@ export default function OrganizerPromos() {
     expires_at: "",
     event_id: "",
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
 
@@ -106,30 +108,31 @@ export default function OrganizerPromos() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors({});
 
-    // Validasi
-    if (
-      !formData.name ||
-      !formData.promotion_code ||
-      !formData.discount_amount ||
-      !formData.type ||
-      !formData.event_id
-    ) {
-      showMessage("error", "Harap isi semua field yang diperlukan");
-      return;
+    // Zod validation
+    const schema = editingId ? updatePromoSchema : createPromoSchema;
+    const payload = {
+      event_id: formData.event_id || undefined,
+      name: formData.name,
+      promotion_code: formData.promotion_code,
+      type: formData.type,
+      discount_amount: formData.discount_amount ? Number(formData.discount_amount) : undefined,
+      max_usage: formData.max_usage ? Number(formData.max_usage) : undefined,
+      expires_at: formData.expires_at || undefined,
+    };
+    const result = schema.safeParse(payload);
+    const errs: Record<string, string> = {};
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const key = issue.path[0] as string;
+        if (!errs[key]) errs[key] = issue.message;
+      });
     }
-
-    if (Number(formData.max_usage) < 1 && formData.max_usage) {
-      showMessage("error", "Kuota minimal harus 1");
+    if (!editingId && !formData.event_id) errs.event_id = "Event wajib dipilih";
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
-    }
-
-    if (formData.expires_at) {
-      const expiryDate = new Date(formData.expires_at);
-      if (expiryDate < new Date()) {
-        showMessage("error", "Tanggal kadaluarsa tidak boleh di masa lalu");
-        return;
-      }
     }
 
     try {
@@ -182,6 +185,7 @@ export default function OrganizerPromos() {
       expires_at: promo.expires_at ? promo.expires_at.split("T")[0] : "",
       event_id: promo.event_id,
     });
+    setFormErrors({});
     setEditingId(promo.id);
     setShowForm(true);
   };
@@ -281,7 +285,7 @@ export default function OrganizerPromos() {
                   name="event_id"
                   value={formData.event_id}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${formErrors.event_id ? "border-red-400" : "border-gray-300"}`}
                 >
                   <option value="">Pilih Event...</option>
                   {events.map((event) => (
@@ -290,6 +294,7 @@ export default function OrganizerPromos() {
                     </option>
                   ))}
                 </select>
+                {formErrors.event_id && <p className="text-xs text-red-500 mt-1">{formErrors.event_id}</p>}
               </div>
 
               <div>
@@ -302,8 +307,9 @@ export default function OrganizerPromos() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Misal: Diskon Member Baru"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${formErrors.name ? "border-red-400" : "border-gray-300"}`}
                 />
+                {formErrors.name && <p className="text-xs text-red-500 mt-1">{formErrors.name}</p>}
               </div>
 
               <div>
@@ -316,8 +322,9 @@ export default function OrganizerPromos() {
                   value={formData.promotion_code}
                   onChange={handleInputChange}
                   placeholder="PROMO2024 (auto UPPERCASE)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent uppercase"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent uppercase ${formErrors.promotion_code ? "border-red-400" : "border-gray-300"}`}
                 />
+                {formErrors.promotion_code && <p className="text-xs text-red-500 mt-1">{formErrors.promotion_code}</p>}
               </div>
 
               <div>
@@ -347,8 +354,9 @@ export default function OrganizerPromos() {
                   value={formData.discount_amount}
                   onChange={handleInputChange}
                   placeholder="Contoh: 50000"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${formErrors.discount_amount ? "border-red-400" : "border-gray-300"}`}
                 />
+                {formErrors.discount_amount && <p className="text-xs text-red-500 mt-1">{formErrors.discount_amount}</p>}
               </div>
 
               <div>

@@ -1,5 +1,5 @@
-﻿
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
+import { createTicketSchema, updateTicketSchema } from "../schemas/ticket.schema";
 
 const API_BASE = "http://localhost:8000/api";
 
@@ -84,11 +84,23 @@ export default function Ticket() {
 
   // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function validateTicket() {
+    const schema = editTicketId ? updateTicketSchema : createTicketSchema;
+    const payload = {
+      event_id: ticketForm.event_id || undefined,
+      type: ticketForm.type,
+      description: ticketForm.description,
+      price: ticketForm.price !== "" ? Number(ticketForm.price) : undefined,
+      quota: ticketForm.quota !== "" ? Number(ticketForm.quota) : undefined,
+    };
+    const result = schema.safeParse(payload);
     const e: Record<string, string> = {};
-    if (!ticketForm.event_id) e.event_id = "Event wajib dipilih.";
-    if (!ticketForm.price || Number(ticketForm.price) <= 0) e.price = "Harga harus lebih dari 0.";
-    if (!ticketForm.quota || Number(ticketForm.quota) <= 0) e.quota = "Kuota harus lebih dari 0.";
-    if (!ticketForm.description.trim()) e.description = "Deskripsi wajib diisi.";
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        const key = issue.path[0] as string;
+        if (!e[key]) e[key] = issue.message;
+      });
+    }
+    if (!editTicketId && !ticketForm.event_id) e.event_id = "Event wajib dipilih.";
     return e;
   }
 

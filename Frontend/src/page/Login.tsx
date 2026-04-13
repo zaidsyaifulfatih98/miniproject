@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
+import { loginSchema } from "../schemas/user.schema";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -9,6 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   // Check if user is already logged in
@@ -38,6 +40,19 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+
+    const result = loginSchema.safeParse(form);
+    if (!result.success) {
+      const errs: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const key = issue.path[0] as string;
+        if (!errs[key]) errs[key] = issue.message;
+      });
+      setFieldErrors(errs);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -117,9 +132,10 @@ export default function Login() {
               onChange={handleChange}
               required
               placeholder="nama@example.com"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+              className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.email ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+            {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
           </div>
 
           <div>
@@ -133,9 +149,10 @@ export default function Login() {
               onChange={handleChange}
               required
               placeholder="••••••••"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+              className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.password ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+            {fieldErrors.password && <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>}
           </div>
 
           <button

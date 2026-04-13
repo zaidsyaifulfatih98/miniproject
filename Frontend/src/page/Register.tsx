@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
+import { registerSchema } from "../schemas/user.schema";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -29,6 +30,7 @@ export default function Register() {
     referral_code_used: "",
   });
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   const handleChange = (
@@ -41,6 +43,25 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+
+    // Client-side zod validation
+    const result = registerSchema.safeParse({
+      ...form,
+      role: form.role as ("CUSTOMERS" | "ORGANIZER")[],
+      gender: form.gender as "Male" | "Female",
+    });
+    if (!result.success) {
+      const errs: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const key = issue.path[0] as string;
+        if (!errs[key]) errs[key] = issue.message;
+      });
+      setFieldErrors(errs);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = { ...form };
@@ -92,9 +113,10 @@ export default function Register() {
               onChange={handleChange}
               required
               placeholder="John Doe"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.full_name ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+            {fieldErrors.full_name && <p className="text-xs text-red-500 mt-1">{fieldErrors.full_name}</p>}
           </div>
 
           {/* Email */}
@@ -107,9 +129,10 @@ export default function Register() {
               onChange={handleChange}
               required
               placeholder="john@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.email ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+            {fieldErrors.email && <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>}
           </div>
 
           {/* Password */}
@@ -122,9 +145,10 @@ export default function Register() {
               onChange={handleChange}
               required
               placeholder="Minimal 6 karakter"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.password ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+            {fieldErrors.password && <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>}
           </div>
 
           {/* Birth Date & Gender (2 Columns) */}
@@ -137,9 +161,10 @@ export default function Register() {
                 value={form.birth_date}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.birth_date ? "border-red-400" : "border-gray-300"}`}
                 style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
               />
+              {fieldErrors.birth_date && <p className="text-xs text-red-500 mt-1">{fieldErrors.birth_date}</p>}
             </div>
 
             <div>
@@ -149,13 +174,14 @@ export default function Register() {
                 value={form.gender}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
+                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.gender ? "border-red-400" : "border-gray-300"}`}
                 style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
               >
                 <option value="">Pilih</option>
                 <option value="Male">Laki-laki</option>
                 <option value="Female">Perempuan</option>
               </select>
+              {fieldErrors.gender && <p className="text-xs text-red-500 mt-1">{fieldErrors.gender}</p>}
             </div>
           </div>
 
@@ -169,9 +195,10 @@ export default function Register() {
               required
               rows={2}
               placeholder="Jl. Contoh No. 1, Jakarta"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition resize-none"
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition resize-none ${fieldErrors.address ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
+            {fieldErrors.address && <p className="text-xs text-red-500 mt-1">{fieldErrors.address}</p>}
           </div>
 
           {/* Referral Code */}
@@ -185,10 +212,13 @@ export default function Register() {
               value={form.referral_code_used}
               onChange={handleChange}
               placeholder="Masukkan kode referral teman"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition uppercase"
+              className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition uppercase ${fieldErrors.referral_code_used ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
-            <p className="text-xs text-gray-400 mt-1">Dapatkan diskon 10% untuk transaksi pertama Anda</p>
+            {fieldErrors.referral_code_used
+              ? <p className="text-xs text-red-500 mt-1">{fieldErrors.referral_code_used}</p>
+              : <p className="text-xs text-gray-400 mt-1">Dapatkan diskon 10% untuk transaksi pertama Anda</p>
+            }
           </div>
 
           {/* Role */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 import axios from "axios";
+import { createEventSchema } from "../schemas/event.schema";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -97,58 +98,52 @@ export default function CreateEvent() {
     checkAuth();
   }, [navigate]);
 
-  // Validate form
+  // Validate form using Zod
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!formData.title.trim() || formData.title.length < 5) {
-      newErrors.title = "Judul event minimal 5 karakter";
+    // Zod validates core numeric/enum fields
+    const result = createEventSchema.safeParse({
+      title: formData.title,
+      location: formData.location || undefined,
+      description: formData.description || undefined,
+      category: formData.category,
+      status: formData.status,
+      price: formData.price,
+      total_seats: formData.totalSeats,
+      start_event: formData.startDate || undefined,
+      end_event: formData.endDate || undefined,
+    });
+
+    if (!result.success) {
+      const fieldMap: Record<string, string> = {
+        total_seats: "totalSeats",
+        start_event: "startDate",
+        end_event: "endDate",
+      };
+      result.error.issues.forEach((issue) => {
+        const zodKey = issue.path[0] as string;
+        const formKey = fieldMap[zodKey] ?? zodKey;
+        if (!newErrors[formKey]) newErrors[formKey] = issue.message;
+      });
     }
 
-    if (!formData.location.trim()) {
-      newErrors.location = "Lokasi harus diisi";
+    // Extra checks not covered by schema
+    if (!formData.location.trim()) newErrors.location = "Lokasi harus diisi";
+    if (!formData.startDate) newErrors.startDate = "Tanggal mulai harus diisi";
+    if (!formData.endDate) newErrors.endDate = "Tanggal berakhir harus diisi";
+    if (formData.startDate && formData.endDate && new Date(formData.endDate) <= new Date(formData.startDate)) {
+      newErrors.endDate = "Tanggal berakhir harus setelah tanggal mulai";
     }
-
-    if (!formData.startDate) {
-      newErrors.startDate = "Tanggal mulai harus diisi";
-    }
-    if (!formData.endDate) {
-      newErrors.endDate = "Tanggal berakhir harus diisi";
-    }
-
-    if (formData.startDate && formData.endDate) {
-      const startDate = new Date(formData.startDate);
-      const endDate = new Date(formData.endDate);
-      if (endDate <= startDate) {
-        newErrors.endDate = "Tanggal berakhir harus setelah tanggal mulai";
-      }
-    }
-
-    if (!formData.startTime) {
-      newErrors.startTime = "Waktu mulai harus diisi";
-    }
-    if (!formData.endTime) {
-      newErrors.endTime = "Waktu berakhir harus diisi";
-    }
-
-    if (!formData.totalSeats || formData.totalSeats <= 0) {
-      newErrors.totalSeats = "Kapasitas venue harus lebih dari 0";
-    }
-
-    if (formData.price < 0) {
-      newErrors.price = "Harga tidak boleh negatif";
+    if (!formData.startTime) newErrors.startTime = "Waktu mulai harus diisi";
+    if (!formData.endTime) newErrors.endTime = "Waktu berakhir harus diisi";
+    if (!formData.description.trim() || formData.description.length < 20) {
+      newErrors.description = "Deskripsi minimal 20 karakter";
     }
     if (formData.price > 0 && formData.price < 10000) {
       newErrors.price = "Harga minimal Rp 10.000";
     }
-
-    if (!formData.description.trim() || formData.description.length < 20) {
-      newErrors.description = "Deskripsi minimal 20 karakter";
-    }
-
-    if (!formData.image) {
-      newErrors.image = "Gambar event harus diunggah";
-    }
+    if (!formData.image) newErrors.image = "Gambar event harus diunggah";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
