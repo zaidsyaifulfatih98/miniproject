@@ -16,6 +16,8 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 const MONTH_ID = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 const BAR_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9", "#f0abfc"];
 
@@ -92,9 +94,9 @@ export default function Dashboard() {
     const organizerId: string = user?.id ?? "";
     const qs = organizerId ? `?organizer_id=${organizerId}` : "";
     Promise.all([
-      fetch(`http://localhost:8000/api/bookings${qs}`).then((r) => r.json()),
-      fetch(`http://localhost:8000/api/events${qs}`).then((r) => r.json()),
-      fetch("http://localhost:8000/api/users").then((r) => r.json()),
+      fetch(`${API_BASE}/bookings${qs}`).then((r) => r.json()),
+      fetch(`${API_BASE}/events${qs}`).then((r) => r.json()),
+      fetch(`${API_BASE}/users`).then((r) => r.json()),
     ])
       .then(([bData, eData, uData]) => {
         setBookings(Array.isArray(bData) ? bData : (bData.data ?? []));

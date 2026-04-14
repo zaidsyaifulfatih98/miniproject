@@ -19,6 +19,8 @@ import {
   LabelList,
 } from "recharts";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const funnelData = [
@@ -116,8 +118,8 @@ export default function Report() {
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
     const organizerId: string = user?.id ?? "";
     const url = organizerId
-      ? `http://localhost:8000/api/bookings?organizer_id=${organizerId}`
-      : "http://localhost:8000/api/bookings";
+      ? `${API_BASE}/bookings?organizer_id=${organizerId}`
+      : `${API_BASE}/bookings`;
     fetch(url)
       .then((r) => r.json())
       .then((data) => {

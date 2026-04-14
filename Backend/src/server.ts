@@ -9,10 +9,11 @@ import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+const ORIGIN_PORT = process.env.ORIGIN_PORT
 
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:5173", // blog web
+  origin: ORIGIN_PORT, // blog web
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }))
