@@ -331,4 +331,170 @@ export const bookingService = {
     });
 
     return updatedBooking;
-  },};
+  },
+
+  async approveBooking(bookingId: string, organizerId: string) {
+    const booking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { event: true },
+    });
+
+    if (!booking) {
+      throw new Error(`Booking ${bookingId} not found`);
+    }
+
+    if (booking.status !== BookingStatus.WAITING_FOR_CONFIRMATION) {
+      throw new Error(
+        `Cannot approve booking with status ${booking.status}. Expected WAITING_FOR_CONFIRMATION`
+      );
+    }
+
+    if (booking.event.users_id !== organizerId) {
+      throw new Error("Organizer does not own this event");
+    }
+
+    const updated = await prisma.bookings.update({
+      where: { id: bookingId },
+      data: {
+        status: BookingStatus.DONE,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+          },
+        },
+        event: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        ticket: {
+          select: {
+            id: true,
+            type: true,
+            price: true,
+          },
+        },
+        payment: true,
+      },
+    });
+
+    return updated;
+  },
+
+  async rejectBooking(bookingId: string, reason: string, organizerId: string) {
+    const booking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { event: true, promotion: true, user: true },
+    });
+
+    if (!booking) {
+      throw new Error(`Booking ${bookingId} not found`);
+    }
+
+    if (booking.status !== BookingStatus.WAITING_FOR_CONFIRMATION) {
+      throw new Error(
+        `Cannot reject booking with status ${booking.status}. Expected WAITING_FOR_CONFIRMATION`
+      );
+    }
+
+    if (booking.event.users_id !== organizerId) {
+      throw new Error("Organizer does not own this event");
+    }
+
+    if (booking.has_rollback) {
+      throw new Error(`Booking ${bookingId} sudah di-rollback sebelumnya`);
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      if (booking.quantity && booking.quantity > 0) {
+        await tx.events.update({
+          where: { id: booking.event_id },
+          data: {
+            available_seats: {
+              increment: booking.quantity,
+            },
+          },
+        });
+
+        await tx.tickets.update({
+          where: { id: booking.ticket_id },
+          data: {
+            used_ticket: {
+              decrement: booking.quantity,
+            },
+          },
+        });
+      }
+
+      if (booking.points_used && booking.points_used > 0) {
+        await tx.users.update({
+          where: { id: booking.user_id },
+          data: {
+            points: {
+              increment: booking.points_used,
+            },
+          },
+        });
+
+        await tx.pointsHistory.create({
+          data: {
+            user_id: booking.user_id,
+            points: booking.points_used,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          },
+        });
+      }
+
+      if (booking.promotion_id) {
+        await tx.promotions.update({
+          where: { id: booking.promotion_id },
+          data: {
+            used_count: {
+              decrement: 1,
+            },
+          },
+        });
+      }
+
+      return await tx.bookings.update({
+        where: { id: bookingId },
+        data: {
+          status: BookingStatus.REJECTED,
+          has_rollback: true,
+          rollback_reason: reason,
+          updatedAt: new Date(),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              full_name: true,
+            },
+          },
+          event: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          ticket: {
+            select: {
+              id: true,
+              type: true,
+              price: true,
+            },
+          },
+        },
+      });
+    });
+
+    return updated;
+  },
+};

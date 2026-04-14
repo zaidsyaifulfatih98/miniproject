@@ -241,7 +241,7 @@ export default function CheckoutModal({
         onClick={onClose}
       />
 
-      <div className="fixed inset-0 flex items-end lg:items-center justify-center z-50 pointer-events-none">
+      <div className="fixed inset-0 flex items-end lg:items-center justify-center z-50 pointer-events-none backdrop-blur-md">
         <div
           className="pointer-events-auto bg-white rounded-2xl shadow-2xl w-full h-[90vh] lg:h-auto lg:max-h-[90vh] lg:w-11/12 lg:max-w-5xl flex flex-col overflow-hidden"
           onClick={(e) => {

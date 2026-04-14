@@ -37,7 +37,6 @@ export function requireCustomerRole(req: AuthRequest, res: Response, next: NextF
     return;
   }
 
-  // Check if it includes "CUSTOMERS"
   const userRole = req.user.role;
   const hasCustomerRole = 
     (typeof userRole === "string" && userRole === "CUSTOMERS") ||
@@ -50,3 +49,23 @@ export function requireCustomerRole(req: AuthRequest, res: Response, next: NextF
 
   next();
 }
+
+export function requireOrganizerRole(req: AuthRequest, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({ success: false, message: "Unauthorized" });
+    return;
+  }
+
+  const userRole = req.user.role;
+  const hasOrganizerRole = 
+    (typeof userRole === "string" && userRole === "ORGANIZER") ||
+    (Array.isArray(userRole) && userRole.includes("ORGANIZER"));
+
+  if (!hasOrganizerRole) {
+    res.status(403).json({ success: false, message: "Akses ditolak. Hanya ORGANIZER yang dapat melakukan aksi ini" });
+    return;
+  }
+
+  next();
+}
+

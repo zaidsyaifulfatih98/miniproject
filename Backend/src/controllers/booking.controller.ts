@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { bookingService } from "../services/booking.service";
+import { restoreTransactionAssets, checkAndExpireBookings, checkAndCancelPendingConfirmations } from "../services/rollback.service";
 import { BookingStatus } from "../../generated/prisma/enums";
 import { AuthRequest } from "../middlewares/auth.middleware";
 
@@ -202,4 +203,70 @@ export const bookingController = {
         message: error.message || "Gagal upload bukti pembayaran",
       });
     }
-  },};
+  },
+
+  async approveBooking(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const bookingId = Array.isArray(req.params.bookingId) ? req.params.bookingId[0] : req.params.bookingId;
+      const organizerId = req.user?.id;
+
+      if (!organizerId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized - User ID tidak ditemukan",
+        });
+        return;
+      }
+
+      const approved = await bookingService.approveBooking(bookingId, String(organizerId));
+
+      res.status(200).json({
+        success: true,
+        message: "Booking berhasil diapprove",
+        data: approved,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Gagal approve booking",
+      });
+    }
+  },
+
+  async rejectBooking(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const bookingId = Array.isArray(req.params.bookingId) ? req.params.bookingId[0] : req.params.bookingId;
+      const { reason } = req.body;
+      const organizerId = req.user?.id;
+
+      if (!organizerId) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized - User ID tidak ditemukan",
+        });
+        return;
+      }
+
+      if (!reason) {
+        res.status(400).json({
+          success: false,
+          message: "Reason diperlukan untuk reject booking",
+        });
+        return;
+      }
+
+      const rejected = await bookingService.rejectBooking(bookingId, reason, String(organizerId));
+
+      res.status(200).json({
+        success: true,
+        message: "Booking berhasil di-reject dan aset dikembalikan",
+        data: rejected,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Gagal reject booking",
+      });
+    }
+  },
+};

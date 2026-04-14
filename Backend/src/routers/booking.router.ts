@@ -2,7 +2,7 @@ import { Router } from "express";
 import { bookingController } from "../controllers/booking.controller";
 import { validate } from "../middlewares/validate.middleware";
 import { createBookingSchema, updateBookingStatusSchema } from "../schemas/booking.schema";
-import { authenticateToken, requireCustomerRole } from "../middlewares/auth.middleware";
+import { authenticateToken, requireCustomerRole, requireOrganizerRole } from "../middlewares/auth.middleware";
 import { uploadProofMiddleware } from "../middlewares/upload.middleware";
 
 const bookingRouter = Router();
@@ -24,6 +24,18 @@ bookingRouter.post(
   bookingController.uploadProof
 );
 bookingRouter.put("/:id/status", validate(updateBookingStatusSchema), bookingController.updateStatus);
+bookingRouter.post(
+  "/:bookingId/approve",
+  authenticateToken,
+  requireOrganizerRole,
+  bookingController.approveBooking
+);
+bookingRouter.post(
+  "/:bookingId/reject",
+  authenticateToken,
+  requireOrganizerRole,
+  bookingController.rejectBooking
+);
 bookingRouter.delete("/:id", bookingController.delete);
 
 export default bookingRouter;
