@@ -1,7 +1,25 @@
 import prisma from "../configs/pool-coonection.config";
 import { BookingStatus, PromoType } from "../../generated/prisma/enums";
 
-/** Deduct `pointsToSpend` from user's PointsHistory FIFO and update users.points */
+/* Generate unique display_id */
+function generateDisplayId(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const dateStr = `${year}${month}${day}`;
+
+  // Generate 6 chars alphanumeric
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let randomStr = "";
+  for (let i = 0; i < 6; i++) {
+    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return `INV/${dateStr}/${randomStr}`;
+}
+
+/** Deduct `pointsToSpend` */
 async function spendPoints(
   tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
   user_id: string,
@@ -17,14 +35,12 @@ async function spendPoints(
     if (remaining <= 0) break;
 
     if (record.points <= remaining) {
-      // Consume entire record
       await tx.pointsHistory.update({
         where: { id: record.id },
         data: { deletedAt: new Date() },
       });
       remaining -= record.points;
     } else {
-      // Consume part: mark original as deleted, create remainder record
       await tx.pointsHistory.update({
         where: { id: record.id },
         data: { deletedAt: new Date() },
@@ -95,77 +111,103 @@ export const bookingService = {
     user_id: string;
     event_id: string;
     ticket_id: string;
-    promotion_id?: string;
     quantity: number;
-    points_used?: number;
+    voucherCode?: string;
+    usePoints: boolean;
+    pointsAmount: number;
   }) {
-    const { user_id, event_id, ticket_id, promotion_id, quantity, points_used } = data;
+    const { user_id, event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount } = data;
 
     return await prisma.$transaction(async (tx) => {
       // 1. Validasi event
-      const event = await tx.events.findUnique({ where: { id: event_id, deletedAt: null } });
+      const event = await tx.events.findUnique({ 
+        where: { id: event_id, deletedAt: null } 
+      });
       if (!event) throw new Error("Event tidak ditemukan");
       if (event.status !== "ACTIVE") throw new Error("Event tidak dalam status ACTIVE");
       if (event.available_seats < quantity) throw new Error("Kursi tidak tersedia cukup");
 
-      // 2. Validasi ticket
-      const ticket = await tx.tickets.findUnique({ where: { id: ticket_id, deletedAt: null } });
+      // 2. Validasi tiket
+      const ticket = await tx.tickets.findUnique({ 
+        where: { id: ticket_id, deletedAt: null } 
+      });
       if (!ticket) throw new Error("Tiket tidak ditemukan");
       if (ticket.event_id !== event_id) throw new Error("Tiket tidak milik event ini");
       if (ticket.quota - ticket.used_ticket < quantity) throw new Error("Kuota tiket tidak cukup");
 
-      // 3. Hitung harga
+      // 3. Hitung total harga
       const total_price = Number(ticket.price) * quantity;
       let discount_amount = 0;
       let finalPromoId: string | undefined = undefined;
 
-      // 4. Validasi dan ambil diskon dari promotion
-      if (promotion_id) {
-        const promo = await tx.promotions.findUnique({ where: { id: promotion_id, deletedAt: null } });
-        if (!promo) throw new Error("Promosi tidak ditemukan");
+      // 4. Validasi dan ambil diskon dari voucher
+      if (voucherCode) {
+        const promo = await tx.promotions.findFirst({ 
+          where: { promotion_code: voucherCode, deletedAt: null }
+        });
+        if (!promo) throw new Error("Kode voucher tidak valid");
 
-        // Global promos (referral coupons) have no event_id restriction
         if (promo.event_id && promo.event_id !== event_id) {
-          throw new Error("Promosi tidak berlaku untuk event ini");
-        }
-        if (promo.expires_at && promo.expires_at < new Date()) throw new Error("Promosi sudah expired");
-        if (promo.max_usage !== null && promo.used_count >= promo.max_usage) {
-          throw new Error("Kuota promosi sudah habis");
+          throw new Error("Voucher tidak berlaku untuk event ini");
         }
 
-        // REFERRAL type: discount_amount stores the percentage (e.g. 10 = 10%)
+        // Validasi referral coupon
+        if (promo.type === PromoType.REFERRAL) {
+          if (promo.recipient_user_id !== user_id) {
+            throw new Error("Voucher referral ini bukan milik Anda");
+          }
+        }
+
+        // Cek expired
+        if (promo.expires_at && promo.expires_at < new Date()) {
+          throw new Error("Voucher sudah expired");
+        }
+
+        // Cek max usage
+        if (promo.max_usage !== null && promo.used_count >= promo.max_usage) {
+          throw new Error("Kuota voucher sudah habis");
+        }
+
+        // Hitung discount berdasarkan tipe
         if (promo.type === PromoType.REFERRAL) {
           discount_amount = Math.floor((total_price * Number(promo.discount_amount)) / 100);
         } else {
           discount_amount = Number(promo.discount_amount);
         }
-        finalPromoId = promotion_id;
+
+        finalPromoId = promo.id;
 
         // Increment used_count
         await tx.promotions.update({
-          where: { id: promotion_id },
+          where: { id: promo.id },
           data: { used_count: { increment: 1 } },
         });
       }
 
       // 5. Validasi dan hitung penggunaan poin
-      const pointsDeduction = points_used ?? 0;
-      if (pointsDeduction > 0) {
+      let pointsDeduction = 0;
+      if (usePoints && pointsAmount > 0) {
         const validPointsResult = await tx.pointsHistory.aggregate({
           where: { user_id, deletedAt: null, expires_at: { gt: new Date() } },
           _sum: { points: true },
         });
         const availablePoints = validPointsResult._sum.points ?? 0;
-        if (pointsDeduction > availablePoints) {
-          throw new Error(`Poin tidak cukup. Tersedia: ${availablePoints}, diminta: ${pointsDeduction}`);
+        if (pointsAmount > availablePoints) {
+          throw new Error(`Poin tidak cukup. Tersedia: ${availablePoints}, diminta: ${pointsAmount}`);
         }
+        pointsDeduction = pointsAmount;
       }
 
+      // 6. Hitung final price
       const final_price = Math.max(0, total_price - discount_amount - pointsDeduction);
 
-      // 6. Buat booking
+      // 7. Generate unique display_id
+      const display_id = generateDisplayId();
+
+      // 8. Buat booking dengan status WAITING_FOR_PAYMENTS
       const booking = await tx.bookings.create({
         data: {
+          display_id,
           user_id,
           event_id,
           ticket_id,
@@ -176,11 +218,11 @@ export const bookingService = {
           discount_amount,
           points_used: pointsDeduction,
           final_price,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 jam
+          expires_at: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
         },
       });
 
-      // 7. Buat payment record kosong
+      // 9. Buat payment record kosong
       await tx.payments.create({
         data: {
           booking_id: booking.id,
@@ -188,7 +230,7 @@ export const bookingService = {
         },
       });
 
-      // 8. Kurangi available_seats event dan used_ticket tiket
+      // 10. Kurangi available_seats event dan tambah used_ticket tiket
       await tx.events.update({
         where: { id: event_id },
         data: { available_seats: { decrement: quantity } },
@@ -198,7 +240,7 @@ export const bookingService = {
         data: { used_ticket: { increment: quantity } },
       });
 
-      // 9. Deduct points from PointsHistory (FIFO) and users.points
+      // 11. Deduct points dari PointsHistory dan update users.points
       if (pointsDeduction > 0) {
         await spendPoints(tx, user_id, pointsDeduction);
       }
@@ -219,5 +261,240 @@ export const bookingService = {
       where: { id },
       data: { deletedAt: new Date() },
     });
+  },
+
+  async uploadProof(bookingId: string, file: any) {
+    const booking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { payment: true },
+    });
+
+    if (!booking) {
+      throw new Error("Booking tidak ditemukan");
+    }
+
+    if (booking.status !== "WAITING_FOR_PAYMENTS") {
+      throw new Error("Booking tidak dalam status menunggu pembayaran");
+    }
+
+    if (!file) {
+      throw new Error("File tidak ditemukan");
+    }
+
+    const proofUrl = `/uploads/payments/${file.filename}`;
+
+    const payment = booking.payment;
+
+    if (payment) {
+      // Update existing payment
+      await prisma.payments.update({
+        where: { id: payment.id },
+        data: {
+          payment_proof_url: proofUrl,
+          status: "PENDING",
+          updatedAt: new Date(),
+        },
+      });
+    } else {
+      await prisma.payments.create({
+        data: {
+          booking_id: bookingId,
+          payment_proof_url: proofUrl,
+          status: "PENDING",
+          amount: booking.final_price || booking.total_price,
+        },
+      });
+    }
+    
+    const updatedBooking = await prisma.bookings.update({
+      where: { id: bookingId },
+      data: {
+        status: "WAITING_FOR_CONFIRMATION",
+        updatedAt: new Date(),
+      },
+      include: {
+        event: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        ticket: {
+          select: {
+            id: true,
+            type: true,
+            price: true,
+          },
+        },
+        payment: true,
+      },
+    });
+
+    return updatedBooking;
+  },
+
+  async approveBooking(bookingId: string, organizerId: string) {
+    const booking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { event: true },
+    });
+
+    if (!booking) {
+      throw new Error(`Booking ${bookingId} not found`);
+    }
+
+    if (booking.status !== BookingStatus.WAITING_FOR_CONFIRMATION) {
+      throw new Error(
+        `Cannot approve booking with status ${booking.status}. Expected WAITING_FOR_CONFIRMATION`
+      );
+    }
+
+    if (booking.event.users_id !== organizerId) {
+      throw new Error("Organizer does not own this event");
+    }
+
+    const updated = await prisma.bookings.update({
+      where: { id: bookingId },
+      data: {
+        status: BookingStatus.DONE,
+        updatedAt: new Date(),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            full_name: true,
+          },
+        },
+        event: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        ticket: {
+          select: {
+            id: true,
+            type: true,
+            price: true,
+          },
+        },
+        payment: true,
+      },
+    });
+
+    return updated;
+  },
+
+  async rejectBooking(bookingId: string, reason: string, organizerId: string) {
+    const booking = await prisma.bookings.findUnique({
+      where: { id: bookingId },
+      include: { event: true, promotion: true, user: true },
+    });
+
+    if (!booking) {
+      throw new Error(`Booking ${bookingId} not found`);
+    }
+
+    if (booking.status !== BookingStatus.WAITING_FOR_CONFIRMATION) {
+      throw new Error(
+        `Cannot reject booking with status ${booking.status}. Expected WAITING_FOR_CONFIRMATION`
+      );
+    }
+
+    if (booking.event.users_id !== organizerId) {
+      throw new Error("Organizer does not own this event");
+    }
+
+    if (booking.has_rollback) {
+      throw new Error(`Booking ${bookingId} sudah di-rollback sebelumnya`);
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      if (booking.quantity && booking.quantity > 0) {
+        await tx.events.update({
+          where: { id: booking.event_id },
+          data: {
+            available_seats: {
+              increment: booking.quantity,
+            },
+          },
+        });
+
+        await tx.tickets.update({
+          where: { id: booking.ticket_id },
+          data: {
+            used_ticket: {
+              decrement: booking.quantity,
+            },
+          },
+        });
+      }
+
+      if (booking.points_used && booking.points_used > 0) {
+        await tx.users.update({
+          where: { id: booking.user_id },
+          data: {
+            points: {
+              increment: booking.points_used,
+            },
+          },
+        });
+
+        await tx.pointsHistory.create({
+          data: {
+            user_id: booking.user_id,
+            points: booking.points_used,
+            expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          },
+        });
+      }
+
+      if (booking.promotion_id) {
+        await tx.promotions.update({
+          where: { id: booking.promotion_id },
+          data: {
+            used_count: {
+              decrement: 1,
+            },
+          },
+        });
+      }
+
+      return await tx.bookings.update({
+        where: { id: bookingId },
+        data: {
+          status: BookingStatus.REJECTED,
+          has_rollback: true,
+          rollback_reason: reason,
+          updatedAt: new Date(),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              full_name: true,
+            },
+          },
+          event: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          ticket: {
+            select: {
+              id: true,
+              type: true,
+              price: true,
+            },
+          },
+        },
+      });
+    });
+
+    return updated;
   },
 };

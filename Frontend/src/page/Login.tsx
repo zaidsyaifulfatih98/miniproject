@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { loginSchema } from "../schemas/user.schema";
 
@@ -8,19 +8,20 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
+  
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
-  // Check if user is already logged in
   useEffect(() => {
     try {
       const token = localStorage.getItem("token");
       const user = localStorage.getItem("user");
       if (token && user) {
         const parsedUser = JSON.parse(user);
-        // Redirect based on role
         if (parsedUser.role?.includes("ORGANIZER")) {
           navigate("/dashboard", { replace: true });
         } else {
@@ -56,13 +57,11 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Try generic login endpoint first
       let response = await axios.post(
         `${API_BASE}/users/login`,
         form
       );
 
-      // If it fails because endpoint doesn't exist, try organizer endpoint
       if (!response.data.success) {
         response = await axios.post(
           `${API_BASE}/users/login/organizer`,
@@ -72,12 +71,12 @@ export default function Login() {
 
       const { token, user } = response.data.data;
 
-      // Store token and user data
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // Smart redirect based on user role
-      if (user.role?.includes("ORGANIZER")) {
+      if (returnTo) {
+        navigate(returnTo, { replace: true });
+      } else if (user.role?.includes("ORGANIZER")) {
         navigate("/dashboard", { replace: true });
       } else {
         navigate("/", { replace: true });
@@ -108,7 +107,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-none mt-0.5" />
@@ -119,7 +117,6 @@ export default function Login() {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -175,14 +172,12 @@ export default function Login() {
           </button>
         </form>
 
-        {/* Divider */}
         <div className="my-5 flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-200"></div>
           <span className="text-xs text-gray-500">atau</span>
           <div className="flex-1 h-px bg-gray-200"></div>
         </div>
 
-        {/* Register Link */}
         <p className="text-center text-sm text-gray-600">
           Belum punya akun?{" "}
           <a

@@ -56,6 +56,8 @@ export type BookingsMinAggregateOutputType = {
   points_used: number | null
   final_price: runtime.Decimal | null
   expires_at: Date | null
+  has_rollback: boolean | null
+  rollback_reason: string | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -75,6 +77,8 @@ export type BookingsMaxAggregateOutputType = {
   points_used: number | null
   final_price: runtime.Decimal | null
   expires_at: Date | null
+  has_rollback: boolean | null
+  rollback_reason: string | null
   createdAt: Date | null
   updatedAt: Date | null
   deletedAt: Date | null
@@ -94,6 +98,8 @@ export type BookingsCountAggregateOutputType = {
   points_used: number
   final_price: number
   expires_at: number
+  has_rollback: number
+  rollback_reason: number
   createdAt: number
   updatedAt: number
   deletedAt: number
@@ -131,6 +137,8 @@ export type BookingsMinAggregateInputType = {
   points_used?: true
   final_price?: true
   expires_at?: true
+  has_rollback?: true
+  rollback_reason?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -150,6 +158,8 @@ export type BookingsMaxAggregateInputType = {
   points_used?: true
   final_price?: true
   expires_at?: true
+  has_rollback?: true
+  rollback_reason?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -169,6 +179,8 @@ export type BookingsCountAggregateInputType = {
   points_used?: true
   final_price?: true
   expires_at?: true
+  has_rollback?: true
+  rollback_reason?: true
   createdAt?: true
   updatedAt?: true
   deletedAt?: true
@@ -275,6 +287,8 @@ export type BookingsGroupByOutputType = {
   points_used: number | null
   final_price: runtime.Decimal | null
   expires_at: Date | null
+  has_rollback: boolean
+  rollback_reason: string | null
   createdAt: Date
   updatedAt: Date
   deletedAt: Date | null
@@ -317,6 +331,8 @@ export type BookingsWhereInput = {
   points_used?: Prisma.IntNullableFilter<"Bookings"> | number | null
   final_price?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.DateTimeNullableFilter<"Bookings"> | Date | string | null
+  has_rollback?: Prisma.BoolFilter<"Bookings"> | boolean
+  rollback_reason?: Prisma.StringNullableFilter<"Bookings"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Bookings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Bookings"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Bookings"> | Date | string | null
@@ -342,6 +358,8 @@ export type BookingsOrderByWithRelationInput = {
   points_used?: Prisma.SortOrderInput | Prisma.SortOrder
   final_price?: Prisma.SortOrderInput | Prisma.SortOrder
   expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  has_rollback?: Prisma.SortOrder
+  rollback_reason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -370,6 +388,8 @@ export type BookingsWhereUniqueInput = Prisma.AtLeast<{
   points_used?: Prisma.IntNullableFilter<"Bookings"> | number | null
   final_price?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.DateTimeNullableFilter<"Bookings"> | Date | string | null
+  has_rollback?: Prisma.BoolFilter<"Bookings"> | boolean
+  rollback_reason?: Prisma.StringNullableFilter<"Bookings"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Bookings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Bookings"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Bookings"> | Date | string | null
@@ -395,6 +415,8 @@ export type BookingsOrderByWithAggregationInput = {
   points_used?: Prisma.SortOrderInput | Prisma.SortOrder
   final_price?: Prisma.SortOrderInput | Prisma.SortOrder
   expires_at?: Prisma.SortOrderInput | Prisma.SortOrder
+  has_rollback?: Prisma.SortOrder
+  rollback_reason?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -422,6 +444,8 @@ export type BookingsScalarWhereWithAggregatesInput = {
   points_used?: Prisma.IntNullableWithAggregatesFilter<"Bookings"> | number | null
   final_price?: Prisma.DecimalNullableWithAggregatesFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.DateTimeNullableWithAggregatesFilter<"Bookings"> | Date | string | null
+  has_rollback?: Prisma.BoolWithAggregatesFilter<"Bookings"> | boolean
+  rollback_reason?: Prisma.StringNullableWithAggregatesFilter<"Bookings"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Bookings"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Bookings"> | Date | string
   deletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Bookings"> | Date | string | null
@@ -437,6 +461,8 @@ export type BookingsCreateInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -462,6 +488,8 @@ export type BookingsUncheckedCreateInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -479,6 +507,8 @@ export type BookingsUpdateInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -504,6 +534,8 @@ export type BookingsUncheckedUpdateInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -525,6 +557,8 @@ export type BookingsCreateManyInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -540,6 +574,8 @@ export type BookingsUpdateManyMutationInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -559,6 +595,8 @@ export type BookingsUncheckedUpdateManyInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -588,6 +626,8 @@ export type BookingsCountOrderByAggregateInput = {
   points_used?: Prisma.SortOrder
   final_price?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
+  has_rollback?: Prisma.SortOrder
+  rollback_reason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -615,6 +655,8 @@ export type BookingsMaxOrderByAggregateInput = {
   points_used?: Prisma.SortOrder
   final_price?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
+  has_rollback?: Prisma.SortOrder
+  rollback_reason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -634,6 +676,8 @@ export type BookingsMinOrderByAggregateInput = {
   points_used?: Prisma.SortOrder
   final_price?: Prisma.SortOrder
   expires_at?: Prisma.SortOrder
+  has_rollback?: Prisma.SortOrder
+  rollback_reason?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   deletedAt?: Prisma.SortOrder
@@ -798,6 +842,10 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 export type BookingsCreateNestedOneWithoutPaymentInput = {
   create?: Prisma.XOR<Prisma.BookingsCreateWithoutPaymentInput, Prisma.BookingsUncheckedCreateWithoutPaymentInput>
   connectOrCreate?: Prisma.BookingsCreateOrConnectWithoutPaymentInput
@@ -878,6 +926,8 @@ export type BookingsCreateWithoutUserInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -901,6 +951,8 @@ export type BookingsUncheckedCreateWithoutUserInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -951,6 +1003,8 @@ export type BookingsScalarWhereInput = {
   points_used?: Prisma.IntNullableFilter<"Bookings"> | number | null
   final_price?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.DateTimeNullableFilter<"Bookings"> | Date | string | null
+  has_rollback?: Prisma.BoolFilter<"Bookings"> | boolean
+  rollback_reason?: Prisma.StringNullableFilter<"Bookings"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Bookings"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Bookings"> | Date | string
   deletedAt?: Prisma.DateTimeNullableFilter<"Bookings"> | Date | string | null
@@ -966,6 +1020,8 @@ export type BookingsCreateWithoutEventInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -989,6 +1045,8 @@ export type BookingsUncheckedCreateWithoutEventInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1032,6 +1090,8 @@ export type BookingsCreateWithoutTicketInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1055,6 +1115,8 @@ export type BookingsUncheckedCreateWithoutTicketInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1098,6 +1160,8 @@ export type BookingsCreateWithoutPaymentInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1122,6 +1186,8 @@ export type BookingsUncheckedCreateWithoutPaymentInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1154,6 +1220,8 @@ export type BookingsUpdateWithoutPaymentInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1178,6 +1246,8 @@ export type BookingsUncheckedUpdateWithoutPaymentInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1194,6 +1264,8 @@ export type BookingsCreateWithoutReviewInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1218,6 +1290,8 @@ export type BookingsUncheckedCreateWithoutReviewInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1250,6 +1324,8 @@ export type BookingsUpdateWithoutReviewInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1274,6 +1350,8 @@ export type BookingsUncheckedUpdateWithoutReviewInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1290,6 +1368,8 @@ export type BookingsCreateWithoutPromotionInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1313,6 +1393,8 @@ export type BookingsUncheckedCreateWithoutPromotionInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1359,6 +1441,8 @@ export type BookingsCreateManyUserInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1374,6 +1458,8 @@ export type BookingsUpdateWithoutUserInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1397,6 +1483,8 @@ export type BookingsUncheckedUpdateWithoutUserInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1417,6 +1505,8 @@ export type BookingsUncheckedUpdateManyWithoutUserInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1435,6 +1525,8 @@ export type BookingsCreateManyEventInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1450,6 +1542,8 @@ export type BookingsUpdateWithoutEventInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1473,6 +1567,8 @@ export type BookingsUncheckedUpdateWithoutEventInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1493,6 +1589,8 @@ export type BookingsUncheckedUpdateManyWithoutEventInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1511,6 +1609,8 @@ export type BookingsCreateManyTicketInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1526,6 +1626,8 @@ export type BookingsUpdateWithoutTicketInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1549,6 +1651,8 @@ export type BookingsUncheckedUpdateWithoutTicketInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1569,6 +1673,8 @@ export type BookingsUncheckedUpdateManyWithoutTicketInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1587,6 +1693,8 @@ export type BookingsCreateManyPromotionInput = {
   points_used?: number | null
   final_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Date | string | null
+  has_rollback?: boolean
+  rollback_reason?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   deletedAt?: Date | string | null
@@ -1602,6 +1710,8 @@ export type BookingsUpdateWithoutPromotionInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1625,6 +1735,8 @@ export type BookingsUncheckedUpdateWithoutPromotionInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1645,6 +1757,8 @@ export type BookingsUncheckedUpdateManyWithoutPromotionInput = {
   points_used?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   final_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   expires_at?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  has_rollback?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  rollback_reason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1666,6 +1780,8 @@ export type BookingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   points_used?: boolean
   final_price?: boolean
   expires_at?: boolean
+  has_rollback?: boolean
+  rollback_reason?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1691,6 +1807,8 @@ export type BookingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   points_used?: boolean
   final_price?: boolean
   expires_at?: boolean
+  has_rollback?: boolean
+  rollback_reason?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1714,6 +1832,8 @@ export type BookingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   points_used?: boolean
   final_price?: boolean
   expires_at?: boolean
+  has_rollback?: boolean
+  rollback_reason?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
@@ -1737,12 +1857,14 @@ export type BookingsSelectScalar = {
   points_used?: boolean
   final_price?: boolean
   expires_at?: boolean
+  has_rollback?: boolean
+  rollback_reason?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   deletedAt?: boolean
 }
 
-export type BookingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "display_id" | "user_id" | "event_id" | "ticket_id" | "promotion_id" | "quantity" | "status" | "total_price" | "discount_amount" | "points_used" | "final_price" | "expires_at" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bookings"]>
+export type BookingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "display_id" | "user_id" | "event_id" | "ticket_id" | "promotion_id" | "quantity" | "status" | "total_price" | "discount_amount" | "points_used" | "final_price" | "expires_at" | "has_rollback" | "rollback_reason" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bookings"]>
 export type BookingsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
@@ -1788,6 +1910,8 @@ export type $BookingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     points_used: number | null
     final_price: runtime.Decimal | null
     expires_at: Date | null
+    has_rollback: boolean
+    rollback_reason: string | null
     createdAt: Date
     updatedAt: Date
     deletedAt: Date | null
@@ -2233,6 +2357,8 @@ export interface BookingsFieldRefs {
   readonly points_used: Prisma.FieldRef<"Bookings", 'Int'>
   readonly final_price: Prisma.FieldRef<"Bookings", 'Decimal'>
   readonly expires_at: Prisma.FieldRef<"Bookings", 'DateTime'>
+  readonly has_rollback: Prisma.FieldRef<"Bookings", 'Boolean'>
+  readonly rollback_reason: Prisma.FieldRef<"Bookings", 'String'>
   readonly createdAt: Prisma.FieldRef<"Bookings", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Bookings", 'DateTime'>
   readonly deletedAt: Prisma.FieldRef<"Bookings", 'DateTime'>

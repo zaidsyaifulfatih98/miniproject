@@ -91,6 +91,8 @@ model Bookings {
   points_used     Int?
   final_price     Decimal?
   expires_at      DateTime?
+  has_rollback    Boolean       @default(false)
+  rollback_reason String?       @db.VarChar(255)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   deletedAt       DateTime?

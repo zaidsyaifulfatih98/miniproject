@@ -131,21 +131,13 @@ export const eventService = {
       orderBy,
       skip,
       take: limit,
-      select: {
-        id: true,
-        title: true,
-        location: true,
-        start_event: true,
-        end_event: true,
-        start_time: true,
-        end_time: true,
-        total_seats: true,
-        available_seats: true,
-        description: true,
-        category: true,
-        status: true,
-        price: true,
-        createdAt: true,
+      include: {
+        organizer: {
+          select: {
+            id: true,
+            full_name: true,
+          },
+        },
       },
     });
 

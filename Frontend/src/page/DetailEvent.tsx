@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { MapPin, Calendar, Layers, X } from "lucide-react";
 
 import DOMPurify from "dompurify";
+import CheckoutModal from "../components/CheckoutModal";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -51,11 +52,13 @@ interface Toast {
 
 export default function DetailEvent() {
   const { eventId } = useParams<{ eventId: string }>();
+  const [searchParams] = useSearchParams();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("deskripsi");
   const [toast, setToast] = useState<Toast | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   // Fetch event detail
   useEffect(() => {
@@ -68,6 +71,10 @@ export default function DetailEvent() {
         if (data.success) {
           setEvent(data.data);
           setError(null);
+          
+          if (searchParams.get("openCheckout") === "true") {
+            setIsCheckoutOpen(true);
+          }
         } else {
           throw new Error(data.message || "Failed to load event");
         }
@@ -81,16 +88,13 @@ export default function DetailEvent() {
     if (eventId) {
       fetchEvent();
     }
-  }, [eventId]);
+  }, [eventId, searchParams]);
 
-  // Check if event is sold out
   const isSoldOut = event && event.available_seats <= 0;
 
-  // Check if event has ended
   const isEventEnded =
     event && event.end_event && new Date(event.end_event) < new Date();
 
-  // Get button state
   const getButtonState = () => {
     if (isEventEnded) {
       return { disabled: true, text: "Event Ended", color: "bg-gray-400" };
@@ -363,7 +367,6 @@ export default function DetailEvent() {
 
                 {/* Content */}
                 <div className="p-4 space-y-4">
-                  {/* Price */}
                   <div>
                     <p className="text-xs text-gray-500 font-medium mb-1.5">
                       Harga mulai dari
@@ -373,8 +376,8 @@ export default function DetailEvent() {
                     </p>
                   </div>
 
-                  {/* Buy Button */}
                   <button
+                    onClick={() => !buttonState.disabled && setIsCheckoutOpen(true)}
                     disabled={buttonState.disabled}
                     className={`w-full py-2.5 px-4 rounded-lg font-semibold text-white transition-all duration-200 text-sm relative z-10 pointer-events-auto ${
                       buttonState.disabled
@@ -458,6 +461,7 @@ export default function DetailEvent() {
         {/* Mobile Bottom Button */}
         <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40">
           <button
+            onClick={() => !buttonState.disabled && setIsCheckoutOpen(true)}
             disabled={buttonState.disabled}
             className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-all duration-200 relative z-10 pointer-events-auto ${
               buttonState.disabled
@@ -489,6 +493,21 @@ export default function DetailEvent() {
           animation: fadeIn 0.3s ease-in-out;
         }
       `}</style>
+
+      {/* Checkout Modal */}
+      {event && event.tickets && (
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          event={{
+            id: event.id,
+            title: event.title,
+            organizer: event.organizer,
+          }}
+          tickets={event.tickets}
+        />
+      )}
     </div>
   );
 }
+

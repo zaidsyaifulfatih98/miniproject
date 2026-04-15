@@ -17,6 +17,7 @@ import Login from './page/Login'
 import Home from './page/Home'
 import Explore from './page/Explore'
 import DetailEvent from './page/DetailEvent'
+import PaymentPortal from './page/PaymentPortal'
 import CreateEvent from './page/CreateEvent'
 import BecomeOrganizer from './page/BecomeOrganizer'
 import Profile from './page/Profile'
@@ -83,6 +84,10 @@ const router = createBrowserRouter([
           {
             path: '/events/:eventId',
             Component: DetailEvent,
+          },
+          {
+            path: '/payment/:bookingId',
+            Component: PaymentPortal,
           },
           {
             path: '/become-organizer',
