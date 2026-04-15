@@ -103,7 +103,7 @@ export async function checkAndExpireBookings() {
       where: {
         status: BookingStatus.WAITING_FOR_PAYMENTS,
         expires_at: {
-          lt: now,
+          lte: now,
         },
         has_rollback: false,
       },
