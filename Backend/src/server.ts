@@ -6,6 +6,7 @@ import ticketRouter from "./routers/ticket.router";
 import promoRouter from "./routers/promo.router";
 import bookingRouter from "./routers/booking.router";
 import cors from 'cors';
+import percobaanRouter from "./routers/percobaan.router";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -24,6 +25,7 @@ app.use("/api/tickets", ticketRouter);
 app.use("/api/promos", promoRouter);
 app.use("/api/bookings", bookingRouter);
 
+app.use('/api/percobaan', percobaanRouter)
 
 // Global error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
