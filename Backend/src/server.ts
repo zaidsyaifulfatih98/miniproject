@@ -25,8 +25,6 @@ app.use("/api/tickets", ticketRouter);
 app.use("/api/promos", promoRouter);
 app.use("/api/bookings", bookingRouter);
 
-app.use('/api/percobaan', percobaanRouter)
-
 // Global error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.message);
