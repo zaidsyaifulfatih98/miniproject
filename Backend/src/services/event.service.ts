@@ -153,7 +153,7 @@ export const eventService = {
   },
 
   async getById(id: string) {
-    return await prisma.events.findUnique({
+    const event = await prisma.events.findUnique({
       where: { id, deletedAt: null },
       select: {
         id: true,
@@ -174,6 +174,45 @@ export const eventService = {
         createdAt: true,
       },
     });
+
+    if (!event) return null;
+
+    if (event.tickets.length === 0) {
+      await prisma.tickets.create({
+        data: {
+          event_id: id,
+          type: "REGULAR" as any,
+          description: "Tiket " + event.title,
+          price: event.price,
+          quota: event.total_seats,
+          used_ticket: 0,
+        },
+      });
+
+      return await prisma.events.findUnique({
+        where: { id, deletedAt: null },
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          start_event: true,
+          end_event: true,
+          start_time: true,
+          end_time: true,
+          total_seats: true,
+          available_seats: true,
+          description: true,
+          category: true,
+          status: true,
+          price: true,
+          organizer: { select: { id: true, full_name: true, email: true } },
+          tickets: { where: { deletedAt: null } },
+          createdAt: true,
+        },
+      });
+    }
+
+    return event;
   },
 
   async create(data: {
@@ -191,7 +230,7 @@ export const eventService = {
     start_event?: string;
     end_event?: string;
   }) {
-    return await prisma.events.create({
+    const event = await prisma.events.create({
       data: {
         ...data,
         price: data.price,
@@ -202,6 +241,20 @@ export const eventService = {
         status: data.status ?? EventStatus.DRAFT,
       },
     });
+
+    // Create default ticket for this event
+    await prisma.tickets.create({
+      data: {
+        event_id: event.id,
+        type: "REGULAR" as any,
+        description: "Tiket " + event.title,
+        price: data.price,
+        quota: data.total_seats,
+        used_ticket: 0,
+      },
+    });
+
+    return event;
   },
 
   async update(

@@ -91,7 +91,7 @@ export const bookingController = {
       }
 
       const user_id = req.user.id;
-      const { event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount } = req.body;
+      const { event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount, isFree } = req.body;
 
       // Validasi required fields
       if (!event_id || !ticket_id || !quantity) {
@@ -110,6 +110,7 @@ export const bookingController = {
         voucherCode: voucherCode || undefined,
         usePoints: usePoints || false,
         pointsAmount: pointsAmount ? Number(pointsAmount) : 0,
+        isFree: isFree || false,
       });
 
       res.status(201).json({

@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { User, Ticket, FileText, Edit2, Save, X, Home, ArrowRight, RefreshCw } from "lucide-react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { loadAndRenderTicketTemplate } from "../templates/ticketRenderer";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -274,6 +277,81 @@ export default function CustomerProfile() {
 
   const handleGoHome = () => {
     navigate("/");
+  };
+
+  const handleSaveTicket = async (ticket: TicketItem) => {
+    let container: HTMLElement | null = null;
+    try {
+      const htmlContent = await loadAndRenderTicketTemplate({
+        ticket_code: ticket.ticket_code,
+        event_title: ticket.event_title,
+        event_location: ticket.event_location,
+        eventStartDate: ticket.eventStartDate,
+        purchase_date: ticket.purchase_date,
+        ticket_type: ticket.ticket_type,
+        ticket_price: ticket.ticket_price,
+        status: ticket.status,
+        id: ticket.id,
+      });
+
+      container = document.createElement('div');
+      container.innerHTML = htmlContent;
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '-9999px';
+      container.style.width = '800px';
+      container.style.backgroundColor = 'white';
+      document.body.appendChild(container);
+
+      const canvas = await html2canvas(container, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        allowTaint: true
+      });
+
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const imgData = canvas.toDataURL('image/png');
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pageWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Tiket_${ticket.ticket_code}_${new Date().getTime()}.pdf`);
+
+      await navigator.clipboard.writeText(ticket.ticket_code);
+
+      setError(`✓ Tiket berhasil disimpan! Kode '${ticket.ticket_code}' sudah dicopy ke clipboard.`);
+      setTimeout(() => setError(''), 3500);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[handleSaveTicket] Error:', errorMsg);
+      setError(`Gagal: ${errorMsg}`);
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      if (container && container.parentNode) {
+        document.body.removeChild(container);
+      }
+    }
   };
 
   const avatarInitials = profile
@@ -578,7 +656,7 @@ export default function CustomerProfile() {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="bg-gray-50 rounded-lg p-3">
                         <p className="text-xs text-gray-500 font-semibold mb-1">KODE TIKET</p>
-                        <p className="font-mono font-bold text-orange-600 text-lg">{ticket.ticket_code}</p>
+                        <p className="font-mono font-bold text-orange-600 text-sm md:text-lg break-words">{ticket.ticket_code}</p>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
                         <p className="text-xs text-gray-500 font-semibold mb-1">JENIS TIKET</p>
@@ -637,16 +715,16 @@ export default function CustomerProfile() {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => navigate(`/profile?tab=transactions`)}
-                        className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
-                      >
-                        Lihat Transaksi
-                      </button>
                       {ticket.status === "active" && (
                         <button
-                          className="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition"
+                          onClick={() => handleSaveTicket(ticket)}
+                          className="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                          title="Download dan simpan tiket digital ke perangkat Anda"
+                          aria-label="Simpan tiket digital"
                         >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
                           Simpan Tiket
                         </button>
                       )}
