@@ -571,33 +571,14 @@ export default function CheckoutModal({
                     </div>
 
                     {!isFreeTicket && (
-                      <>
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                          <p className="text-sm text-gray-600 mb-2">
-                            Nomor Virtual Account:
-                          </p>
-                          <p className="text-2xl font-bold text-orange-600 font-mono">
-                            123456789000
-                          </p>
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <p className="text-sm font-medium text-blue-900 mb-2">
-                            📋 Instruksi Pembayaran:
-                          </p>
-                          <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
-                            <li>Buka aplikasi atau website bank Anda</li>
-                            <li>
-                              Masukkan nomor VA di atas sebagai nomor tujuan transfer
-                            </li>
-                            <li>Masukkan nominal sesuai jumlah di bawah</li>
-                            <li>Selesaikan proses transfer</li>
-                            <li>
-                              Tiket akan langsung dikirim setelah pembayaran terverifikasi
-                            </li>
-                          </ol>
-                        </div>
-                      </>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm font-medium text-blue-900 mb-2">
+                          📋 Catatan:
+                        </p>
+                        <p className="text-xs text-blue-800">
+                          Nomor Virtual Account akan ditampilkan setelah Anda mengklik tombol "Konfirmasi Pembayaran"
+                        </p>
+                      </div>
                     )}
 
                     <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
@@ -638,34 +619,17 @@ export default function CheckoutModal({
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Konfirmasi Pembayaran
+                        Konfirmasi Pemesanan
                       </h3>
-                    </div>
-
-                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-2">
-                        Nomor Virtual Account:
-                      </p>
-                      <p className="text-2xl font-bold text-orange-600 font-mono">
-                        123456789000
-                      </p>
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-sm font-medium text-blue-900 mb-2">
-                        📋 Instruksi Pembayaran:
+                        ℹ️ Informasi Penting:
                       </p>
-                      <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
-                        <li>Buka aplikasi atau website bank Anda</li>
-                        <li>
-                          Masukkan nomor VA di atas sebagai nomor tujuan transfer
-                        </li>
-                        <li>Masukkan nominal sesuai jumlah di bawah</li>
-                        <li>Selesaikan proses transfer</li>
-                        <li>
-                          Tiket akan langsung dikirim setelah pembayaran terverifikasi
-                        </li>
-                      </ol>
+                      <p className="text-xs text-blue-800">
+                        Nomor Virtual Account dan instruksi pembayaran akan ditampilkan di halaman pembayaran setelah Anda mengklik tombol Konfirmasi.
+                      </p>
                     </div>
 
                     <div>
