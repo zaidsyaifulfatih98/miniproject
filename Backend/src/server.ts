@@ -6,6 +6,7 @@ import ticketRouter from "./routers/ticket.router";
 import promoRouter from "./routers/promo.router";
 import bookingRouter from "./routers/booking.router";
 import cors from 'cors';
+import { initializeBookingSchedulers } from "./schedulers/booking.scheduler";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -13,7 +14,7 @@ const ORIGIN_PORT = process.env.ORIGIN_PORT
 
 app.use(express.json());
 app.use(cors({
-  origin: ORIGIN_PORT, // blog web
+  origin: ORIGIN_PORT,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }))
@@ -32,4 +33,5 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  initializeBookingSchedulers();
 });

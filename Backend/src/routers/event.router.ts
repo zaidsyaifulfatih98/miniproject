@@ -7,7 +7,9 @@ const eventRouter = Router();
 
 eventRouter.get("/", eventController.getAll);
 eventRouter.get("/:id", eventController.getById);
+eventRouter.get("/:id/stats", eventController.getStats);
 eventRouter.post("/", validate(createEventSchema), eventController.create);
+eventRouter.post("/:id/track", eventController.trackStat);
 eventRouter.put("/:id", validate(updateEventSchema), eventController.update);
 eventRouter.delete("/:id", eventController.delete);
 

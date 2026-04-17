@@ -27,6 +27,7 @@ export function authenticateToken(req: AuthRequest, res: Response, next: NextFun
 
     next();
   } catch (error: any) {
+    console.error("JWT Verification Error:", error.message);
     res.status(403).json({ success: false, message: "Token tidak valid atau expired" });
   }
 }

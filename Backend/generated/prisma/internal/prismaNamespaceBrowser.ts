@@ -238,11 +238,14 @@ export type DailySalesSnapshotsScalarFieldEnum = (typeof DailySalesSnapshotsScal
 export const EventPerformanceStatsScalarFieldEnum = {
   id: 'id',
   event_id: 'event_id',
-  total_views: 'total_views',
+  detail_views: 'detail_views',
+  checkout_views: 'checkout_views',
+  finalized_views: 'finalized_views',
   tickets_sold: 'tickets_sold',
   revenue_gross: 'revenue_gross',
   revenue_net: 'revenue_net',
-  referral_conversion: 'referral_conversion'
+  referral_conversion: 'referral_conversion',
+  updatedAt: 'updatedAt'
 } as const
 
 export type EventPerformanceStatsScalarFieldEnum = (typeof EventPerformanceStatsScalarFieldEnum)[keyof typeof EventPerformanceStatsScalarFieldEnum]

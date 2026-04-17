@@ -41,6 +41,10 @@ export const createBookingSchema = z.object({
     .int("Poin harus bilangan bulat")
     .min(0, "Poin tidak boleh negatif")
     .default(0),
+
+  isFree: z
+    .boolean({ error: "isFree harus boolean" })
+    .default(false),
 });
 
 export const updateBookingStatusSchema = z.object({

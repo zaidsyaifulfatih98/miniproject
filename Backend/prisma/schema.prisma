@@ -180,11 +180,14 @@ model DailySalesSnapshots {
 model EventPerformanceStats {
   id                  String  @id @default(uuid())
   event_id            String  @unique
-  total_views         Int
-  tickets_sold        Int
-  revenue_gross       Decimal @db.Decimal(15, 2)
-  revenue_net         Decimal @db.Decimal(15, 2)
-  referral_conversion Int
+  detail_views        Int     @default(0)
+  checkout_views      Int     @default(0)
+  finalized_views     Int     @default(0)
+  tickets_sold        Int     @default(0)
+  revenue_gross       Decimal @default(0) @db.Decimal(15, 2)
+  revenue_net         Decimal @default(0) @db.Decimal(15, 2)
+  referral_conversion Int     @default(0)
+  updatedAt           DateTime @updatedAt
 
   event Events @relation(fields: [event_id], references: [id])
 }

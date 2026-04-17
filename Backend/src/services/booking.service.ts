@@ -72,7 +72,7 @@ export const bookingService = {
       },
       orderBy: { createdAt: "desc" },
       include: {
-        user: { select: { id: true, full_name: true, email: true } },
+        user: { select: { id: true, full_name: true, email: true, birth_date: true } },
         event: { select: { id: true, title: true } },
         ticket: { select: { id: true, type: true, price: true } },
         promotion: { select: { id: true, name: true, discount_amount: true } },
@@ -115,8 +115,9 @@ export const bookingService = {
     voucherCode?: string;
     usePoints: boolean;
     pointsAmount: number;
+    isFree?: boolean;
   }) {
-    const { user_id, event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount } = data;
+    const { user_id, event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount, isFree } = data;
 
     return await prisma.$transaction(async (tx) => {
       // 1. Validasi event
@@ -127,16 +128,24 @@ export const bookingService = {
       if (event.status !== "ACTIVE") throw new Error("Event tidak dalam status ACTIVE");
       if (event.available_seats < quantity) throw new Error("Kursi tidak tersedia cukup");
 
-      // 2. Validasi tiket
-      const ticket = await tx.tickets.findUnique({ 
-        where: { id: ticket_id, deletedAt: null } 
-      });
-      if (!ticket) throw new Error("Tiket tidak ditemukan");
-      if (ticket.event_id !== event_id) throw new Error("Tiket tidak milik event ini");
-      if (ticket.quota - ticket.used_ticket < quantity) throw new Error("Kuota tiket tidak cukup");
+      // 2. Validasi tiket 
+      const isDefaultTicket = ticket_id.startsWith("default-");
+      let ticket: any;
+      let total_price: number;
 
-      // 3. Hitung total harga
-      const total_price = Number(ticket.price) * quantity;
+      if (isDefaultTicket) {
+        total_price = Number(event.price) * quantity;
+      } else {
+        ticket = await tx.tickets.findUnique({ 
+          where: { id: ticket_id, deletedAt: null } 
+        });
+        if (!ticket) throw new Error("Tiket tidak ditemukan");
+        if (ticket.event_id !== event_id) throw new Error("Tiket tidak milik event ini");
+        if (ticket.quota - ticket.used_ticket < quantity) throw new Error("Kuota tiket tidak cukup");
+        total_price = Number(ticket.price) * quantity;
+      }
+
+      // 3. Hitung total harga (sudah dikalkulasi di atas)
       let discount_amount = 0;
       let finalPromoId: string | undefined = undefined;
 
@@ -204,7 +213,11 @@ export const bookingService = {
       // 7. Generate unique display_id
       const display_id = generateDisplayId();
 
-      // 8. Buat booking dengan status WAITING_FOR_PAYMENTS
+      // 8. Determine status based on whether it's a free ticket
+      const bookingStatus = isFree ? BookingStatus.DONE : BookingStatus.WAITING_FOR_PAYMENTS;
+      const expiresAt = isFree ? null : new Date(new Date().getTime() + 2 * 60 * 60 * 1000);
+
+      // 9. Buat booking status
       const booking = await tx.bookings.create({
         data: {
           display_id,
@@ -213,34 +226,40 @@ export const bookingService = {
           ticket_id,
           promotion_id: finalPromoId,
           quantity,
-          status: BookingStatus.WAITING_FOR_PAYMENTS,
+          status: bookingStatus,
           total_price,
           discount_amount,
           points_used: pointsDeduction,
           final_price,
-          expires_at: new Date(new Date().getTime() + 2 * 60 * 60 * 1000),
+          expires_at: expiresAt,
         },
       });
 
-      // 9. Buat payment record kosong
-      await tx.payments.create({
-        data: {
-          booking_id: booking.id,
-          amount: final_price,
-        },
-      });
+      // 10. Create payment record hanya untuk tiket yang bukan gratis
+      if (!isFree) {
+        await tx.payments.create({
+          data: {
+            booking_id: booking.id,
+            amount: final_price,
+          },
+        });
+      }
 
-      // 10. Kurangi available_seats event dan tambah used_ticket tiket
+      // 11. Kurangi available_seats event dan tambah used_ticket tiket
       await tx.events.update({
         where: { id: event_id },
         data: { available_seats: { decrement: quantity } },
       });
-      await tx.tickets.update({
-        where: { id: ticket_id },
-        data: { used_ticket: { increment: quantity } },
-      });
 
-      // 11. Deduct points dari PointsHistory dan update users.points
+      // Update used_ticket hanya jika ini bukan default ticket
+      if (!isDefaultTicket) {
+        await tx.tickets.update({
+          where: { id: ticket_id },
+          data: { used_ticket: { increment: quantity } },
+        });
+      }
+
+      // 12. Deduct points dari PointsHistory dan update users.points
       if (pointsDeduction > 0) {
         await spendPoints(tx, user_id, pointsDeduction);
       }
@@ -281,7 +300,8 @@ export const bookingService = {
       throw new Error("File tidak ditemukan");
     }
 
-    const proofUrl = `/uploads/payments/${file.filename}`;
+    // Cloudinary file URL dari multer
+    const proofUrl = file.secure_url || file.path;
 
     const payment = booking.payment;
 
@@ -291,7 +311,7 @@ export const bookingService = {
         where: { id: payment.id },
         data: {
           payment_proof_url: proofUrl,
-          status: "PENDING",
+          status: "SUCCESS",
           updatedAt: new Date(),
         },
       });
@@ -300,7 +320,7 @@ export const bookingService = {
         data: {
           booking_id: bookingId,
           payment_proof_url: proofUrl,
-          status: "PENDING",
+          status: "SUCCESS",
           amount: booking.final_price || booking.total_price,
         },
       });
@@ -309,7 +329,7 @@ export const bookingService = {
     const updatedBooking = await prisma.bookings.update({
       where: { id: bookingId },
       data: {
-        status: "WAITING_FOR_CONFIRMATION",
+        status: "DONE",
         updatedAt: new Date(),
       },
       include: {
@@ -328,6 +348,18 @@ export const bookingService = {
         },
         payment: true,
       },
+    });
+
+    // Track finalized_views in performance stats
+    await prisma.eventPerformanceStats.upsert({
+      where: { event_id: booking.event_id },
+      create: {
+        event_id: booking.event_id,
+        detail_views: 0,
+        checkout_views: 0,
+        finalized_views: 1,
+      },
+      update: { finalized_views: { increment: 1 } },
     });
 
     return updatedBooking;

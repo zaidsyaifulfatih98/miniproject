@@ -13,21 +13,26 @@ export const bookingController = {
       const authenticatedUserId = req.user?.id;
 
       let bookings;
+      const isOrganizerQuery = !!organizer_id;
       
       // Determine which user's bookings to fetch
-      if (user_id) {
+      if (organizer_id) {
+        // Organizer querying their own events' bookings
+        const orgIdString = String(organizer_id);
+        if (orgIdString !== String(authenticatedUserId)) {
+          res.status(403).json({ success: false, message: "Anda tidak memiliki akses ke data organizer lain" });
+          return;
+        }
+        bookings = await bookingService.getAll(orgIdString);
+      } else if (user_id) {
         const userIdString = String(user_id);
-        const authenticatedUserIdString = String(authenticatedUserId);
-        
-        if (userIdString !== authenticatedUserIdString) {
+        if (userIdString !== String(authenticatedUserId)) {
           res.status(403).json({ success: false, message: "Anda tidak memiliki akses ke data user lain" });
           return;
         }
         bookings = await bookingService.getByUser(userIdString);
       } else if (authenticatedUserId) {
         bookings = await bookingService.getByUser(authenticatedUserId);
-      } else if (organizer_id) {
-        bookings = await bookingService.getAll(organizer_id as string);
       } else {
         res.status(400).json({ success: false, message: "Parameter user_id atau organizer_id diperlukan" });
         return;
@@ -45,11 +50,11 @@ export const bookingController = {
       }
 
       // Re-fetch to get updated statuses
-      if (user_id || authenticatedUserId) {
+      if (isOrganizerQuery) {
+        bookings = await bookingService.getAll(String(organizer_id));
+      } else {
         const finalUserId = user_id ? String(user_id) : String(authenticatedUserId);
         bookings = await bookingService.getByUser(finalUserId);
-      } else if (organizer_id) {
-        bookings = await bookingService.getAll(organizer_id as string);
       }
 
       res.status(200).json({ success: true, data: bookings });
@@ -91,7 +96,7 @@ export const bookingController = {
       }
 
       const user_id = req.user.id;
-      const { event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount } = req.body;
+      const { event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount, isFree } = req.body;
 
       // Validasi required fields
       if (!event_id || !ticket_id || !quantity) {
@@ -110,6 +115,7 @@ export const bookingController = {
         voucherCode: voucherCode || undefined,
         usePoints: usePoints || false,
         pointsAmount: pointsAmount ? Number(pointsAmount) : 0,
+        isFree: isFree || false,
       });
 
       res.status(201).json({

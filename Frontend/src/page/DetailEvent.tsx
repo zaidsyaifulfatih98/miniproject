@@ -4,6 +4,7 @@ import { MapPin, Calendar, Layers, X } from "lucide-react";
 
 import DOMPurify from "dompurify";
 import CheckoutModal from "../components/CheckoutModal";
+import { trackFunnel } from "../utils/tracker";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -71,7 +72,8 @@ export default function DetailEvent() {
         if (data.success) {
           setEvent(data.data);
           setError(null);
-          
+          trackFunnel(eventId!, "detail");
+
           if (searchParams.get("openCheckout") === "true") {
             setIsCheckoutOpen(true);
           }

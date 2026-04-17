@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Upload, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Clock, Upload, AlertCircle, CheckCircle, XCircle, RotateCw } from 'lucide-react';
 import { formatCurrency, calculateCountdown, formatCountdown, type CountdownTime } from '../utils/dateFormatter';
+import { trackFinalized } from '../utils/tracker';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -61,6 +62,7 @@ export default function PaymentPortal() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -80,6 +82,9 @@ export default function PaymentPortal() {
         if (data.success) {
           setBooking(data.data);
           setError(null);
+          if (data.data.status === 'DONE' && data.data.event_id) {
+            trackFinalized(data.data.event_id);
+          }
         } else {
           throw new Error(data.message || 'Failed to load booking');
         }
@@ -124,6 +129,7 @@ export default function PaymentPortal() {
 
   const handleRefreshStatus = async () => {
     try {
+      setRefreshing(true);
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE}/bookings/${bookingId}`, {
         headers: {
@@ -134,11 +140,20 @@ export default function PaymentPortal() {
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
+          if (data.data.status === 'DONE' && data.data.event_id) {
+            trackFinalized(data.data.event_id);
+          }
           setBooking(data.data);
+          showToast('Status berhasil diperbarui', 'success');
         }
+      } else {
+        showToast('Gagal memperbarui status', 'error');
       }
     } catch (err) {
       console.error('Failed to refresh status:', err);
+      showToast('Terjadi kesalahan saat memperbarui status', 'error');
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -198,7 +213,7 @@ export default function PaymentPortal() {
         setBooking(data.data);
         setUploadFile(null);
         setUploadPreview(null);
-        showToast('Bukti pembayaran berhasil diunggah. Menunggu konfirmasi admin', 'success');
+        showToast('Pembayaran berhasil dikonfirmasi. Transaksi selesai!', 'success');
       } else {
         throw new Error(data.message || 'Failed to upload proof');
       }
@@ -463,7 +478,7 @@ export default function PaymentPortal() {
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Pilih File (JPG, PNG, atau PDF - Max 5MB)
+                    Pilih File (JPG, PNG, atau PDF - Max 2MB)
                   </label>
                   <div className="relative">
                     <input
@@ -654,9 +669,11 @@ export default function PaymentPortal() {
                 ) : (
                   <button
                     onClick={handleRefreshStatus}
-                    className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-colors"
+                    disabled={refreshing}
+                    className="w-full px-4 py-2 bg-gray-500 hover:bg-orange-500 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
-                    Perbarui Status
+                    <RotateCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                    <span>{refreshing ? 'Memperbarui...' : 'Perbarui Status'}</span>
                   </button>
                 )}
               </div>

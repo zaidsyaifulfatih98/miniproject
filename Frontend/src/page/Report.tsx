@@ -21,38 +21,6 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const funnelData = [
-  { name: "Halaman Detail Tiket", value: 8420, fill: "#6366f1" },
-  { name: "Halaman Checkout", value: 4350, fill: "#8b5cf6" },
-  { name: "Pembayaran Selesai", value: 2180, fill: "#a855f7" },
-];
-
-const hourlyTrend = [
-  { jam: "08:00", pembelian: 42 },
-  { jam: "09:00", pembelian: 78 },
-  { jam: "10:00", pembelian: 130 },
-  { jam: "11:00", pembelian: 190 },
-  { jam: "12:00", pembelian: 240 },
-  { jam: "13:00", pembelian: 210 },
-  { jam: "14:00", pembelian: 175 },
-  { jam: "15:00", pembelian: 155 },
-  { jam: "16:00", pembelian: 200 },
-  { jam: "17:00", pembelian: 265 },
-  { jam: "18:00", pembelian: 310 },
-  { jam: "19:00", pembelian: 280 },
-  { jam: "20:00", pembelian: 195 },
-];
-
-const demographicsData = [
-  { name: "18–24 tahun", value: 34 },
-  { name: "25–34 tahun", value: 42 },
-  { name: "35–44 tahun", value: 15 },
-  { name: "45–54 tahun", value: 6 },
-  { name: "55+ tahun", value: 3 },
-];
-
 const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9"];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -69,6 +37,12 @@ interface BookingAPI {
   createdAt: string;
   event: { id: string; title: string };
   ticket: { id: string; type: DBTicketType; price: string };
+  user: { id: string; full_name: string; email: string; birth_date: string | null } | null;
+}
+
+interface OrganizerEvent {
+  id: string;
+  title: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -113,23 +87,93 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 export default function Report() {
   const [bookings, setBookings] = useState<BookingAPI[]>([]);
   const [loading, setLoading] = useState(true);
+  const [organizerEvents, setOrganizerEvents] = useState<OrganizerEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [dbStats, setDbStats] = useState<{ detail_views: number; checkout_views: number; finalized_views: number } | null>(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const token = localStorage.getItem("token");
     const organizerId: string = user?.id ?? "";
     const url = organizerId
       ? `${API_BASE}/bookings?organizer_id=${organizerId}`
       : `${API_BASE}/bookings`;
-    fetch(url)
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then((data) => {
         setBookings(Array.isArray(data) ? data : (data.data ?? []));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    if (organizerId) {
+      fetch(`${API_BASE}/events?organizer_id=${organizerId}&limit=100`)
+        .then((r) => r.json())
+        .then((data) => {
+          const events: OrganizerEvent[] = (data.data ?? []).map((e: any) => ({
+            id: e.id,
+            title: e.title,
+          }));
+          setOrganizerEvents(events);
+          if (events.length > 0) setSelectedEventId(events[0].id);
+        })
+        .catch(console.error);
+    }
   }, []);
 
+  // Fetch funnel stats from DB whenever selected event changes
+  useEffect(() => {
+    if (!selectedEventId) return;
+    setDbStats(null);
+    fetch(`${API_BASE}/events/${selectedEventId}/stats`)
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) setDbStats(res.data);
+      })
+      .catch(console.error);
+  }, [selectedEventId]);
+
   const doneBookings = bookings.filter((b) => b.status === "DONE");
+
+  // ─── Real demographics from birth_date ────────────────────────────────────
+  const currentYear = new Date().getFullYear();
+  const ageGroupDefs = [
+    { name: "< 18 tahun",  min: 0,  max: 17  },
+    { name: "18–24 tahun", min: 18, max: 24  },
+    { name: "25–34 tahun", min: 25, max: 34  },
+    { name: "35–44 tahun", min: 35, max: 44  },
+    { name: "45–54 tahun", min: 45, max: 54  },
+    { name: "55+ tahun",   min: 55, max: 999 },
+  ];
+  const demographicsData = (() => {
+    const seenUsers = new Set<string>();
+    const counts: Record<string, number> = {};
+    bookings.forEach((b) => {
+      if (!b.user?.id || seenUsers.has(b.user.id)) return;
+      seenUsers.add(b.user.id);
+      if (!b.user.birth_date) return;
+      const age = currentYear - new Date(b.user.birth_date).getFullYear();
+      const group = ageGroupDefs.find((g) => age >= g.min && age <= g.max);
+      if (group) counts[group.name] = (counts[group.name] ?? 0) + 1;
+    });
+    const total = Object.values(counts).reduce((s, v) => s + v, 0);
+    return ageGroupDefs
+      .filter((g) => counts[g.name])
+      .map((g) => ({ name: g.name, value: total > 0 ? Math.round((counts[g.name] / total) * 100) : 0 }));
+  })();
+
+  // ─── Real hourly trend from bookings.createdAt ────────────────────────────
+  const hourlyTrend = (() => {
+    const counts: Record<number, number> = {};
+    bookings.forEach((b) => {
+      const hour = new Date(b.createdAt).getHours();
+      counts[hour] = (counts[hour] ?? 0) + 1;
+    });
+    return Array.from({ length: 24 }, (_, h) => ({
+      jam: `${String(h).padStart(2, "0")}:00`,
+      pembelian: counts[h] ?? 0,
+    })).filter((d) => d.pembelian > 0);
+  })();
 
   const salesData = doneBookings.map((b) => ({
     id: b.display_id ?? b.id.slice(0, 8).toUpperCase(),
@@ -154,6 +198,34 @@ export default function Report() {
     { name: "Pendapatan Bersih", value: financialData.netRevenue },
   ];
 
+  // ─── Real funnel data for selected event (from DB) ──────────────────────────
+  const funnelStats = {
+    detail: dbStats?.detail_views ?? 0,
+    checkout: dbStats?.checkout_views ?? 0,
+    done: dbStats?.finalized_views ?? 0,
+  };
+
+  const funnelData = [
+    { name: "Halaman Detail Tiket", value: funnelStats.detail, fill: "#6366f1" },
+    { name: "Halaman Checkout", value: funnelStats.checkout, fill: "#8b5cf6" },
+    { name: "Pembayaran Selesai", value: funnelStats.done, fill: "#a855f7" },
+  ];
+
+  const pctFmt = (num: number, den: number) =>
+    den > 0 ? `${((num / den) * 100).toFixed(1)}%` : "–";
+
+  const conversionRates = [
+    { label: "Konversi Detail → Checkout", pct: pctFmt(funnelStats.checkout, funnelStats.detail) },
+    { label: "Konversi Checkout → Bayar", pct: pctFmt(funnelStats.done, funnelStats.checkout) },
+    { label: "Konversi Overall", pct: pctFmt(funnelStats.done, funnelStats.detail) },
+    {
+      label: "Drop-off Total",
+      pct: funnelStats.detail > 0
+        ? `${(((funnelStats.detail - funnelStats.done) / funnelStats.detail) * 100).toFixed(1)}%`
+        : "–",
+    },
+  ];
+
   function exportToCSV() {
     const headers = ["ID Transaksi", "Event", "Jenis Tiket", "Qty", "Total (Rp)", "Tanggal"];
     const rows = salesData.map((r) => [r.id, r.event, r.tiket, r.qty, r.total, r.tanggal]);
@@ -176,26 +248,44 @@ export default function Report() {
 
       {/* ── INSIGHT ─────────────────────────────────────────────────────────── */}
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-        <SectionHeader
-          title="Insight — Funnel Pengunjung"
-          subtitle="Tracking halaman: Detail Tiket → Checkout → Pembayaran Selesai"
-        />
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <SectionHeader
+            title="Insight — Funnel Pengunjung"
+            subtitle="Tracking halaman: Detail Tiket → Checkout → Pembayaran Selesai"
+          />
+          {/* Event selector */}
+          <div className="flex-shrink-0">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+              Pilih Event
+            </label>
+            {organizerEvents.length === 0 ? (
+              <p className="text-xs text-gray-400 italic">Belum ada event</p>
+            ) : (
+              <select
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[200px] max-w-xs"
+              >
+                {organizerEvents.map((ev) => (
+                  <option key={ev.id} value={ev.id}>
+                    {ev.title}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
 
         {/* Stat cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Detail Tiket Dilihat" value="8.420" color="bg-indigo-50 text-indigo-800" />
-          <StatCard label="Masuk Checkout" value="4.350" color="bg-purple-50 text-purple-800" />
-          <StatCard label="Pembayaran Selesai" value="2.180" color="bg-fuchsia-50 text-fuchsia-800" />
+          <StatCard label="Detail Tiket Dilihat" value={funnelStats.detail.toLocaleString("id-ID")} color="bg-indigo-50 text-indigo-800" />
+          <StatCard label="Masuk Checkout" value={funnelStats.checkout.toLocaleString("id-ID")} color="bg-purple-50 text-purple-800" />
+          <StatCard label="Pembayaran Selesai" value={funnelStats.done.toLocaleString("id-ID")} color="bg-fuchsia-50 text-fuchsia-800" />
         </div>
 
         {/* Conversion rates */}
         <div className="grid grid-cols-2 gap-4 mb-8 sm:grid-cols-4">
-          {[
-            { label: "Konversi Detail → Checkout", pct: "51.7%" },
-            { label: "Konversi Checkout → Bayar", pct: "50.1%" },
-            { label: "Konversi Overall", pct: "25.9%" },
-            { label: "Drop-off Total", pct: "74.1%" },
-          ].map((item) => (
+          {conversionRates.map((item) => (
             <div key={item.label} className="bg-gray-50 rounded-2xl p-4 text-center">
               <p className="text-2xl font-bold text-gray-800">{item.pct}</p>
               <p className="text-xs text-gray-500 mt-1">{item.label}</p>

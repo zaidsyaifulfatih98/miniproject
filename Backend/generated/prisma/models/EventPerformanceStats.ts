@@ -27,7 +27,9 @@ export type AggregateEventPerformanceStats = {
 }
 
 export type EventPerformanceStatsAvgAggregateOutputType = {
-  total_views: number | null
+  detail_views: number | null
+  checkout_views: number | null
+  finalized_views: number | null
   tickets_sold: number | null
   revenue_gross: runtime.Decimal | null
   revenue_net: runtime.Decimal | null
@@ -35,7 +37,9 @@ export type EventPerformanceStatsAvgAggregateOutputType = {
 }
 
 export type EventPerformanceStatsSumAggregateOutputType = {
-  total_views: number | null
+  detail_views: number | null
+  checkout_views: number | null
+  finalized_views: number | null
   tickets_sold: number | null
   revenue_gross: runtime.Decimal | null
   revenue_net: runtime.Decimal | null
@@ -45,37 +49,48 @@ export type EventPerformanceStatsSumAggregateOutputType = {
 export type EventPerformanceStatsMinAggregateOutputType = {
   id: string | null
   event_id: string | null
-  total_views: number | null
+  detail_views: number | null
+  checkout_views: number | null
+  finalized_views: number | null
   tickets_sold: number | null
   revenue_gross: runtime.Decimal | null
   revenue_net: runtime.Decimal | null
   referral_conversion: number | null
+  updatedAt: Date | null
 }
 
 export type EventPerformanceStatsMaxAggregateOutputType = {
   id: string | null
   event_id: string | null
-  total_views: number | null
+  detail_views: number | null
+  checkout_views: number | null
+  finalized_views: number | null
   tickets_sold: number | null
   revenue_gross: runtime.Decimal | null
   revenue_net: runtime.Decimal | null
   referral_conversion: number | null
+  updatedAt: Date | null
 }
 
 export type EventPerformanceStatsCountAggregateOutputType = {
   id: number
   event_id: number
-  total_views: number
+  detail_views: number
+  checkout_views: number
+  finalized_views: number
   tickets_sold: number
   revenue_gross: number
   revenue_net: number
   referral_conversion: number
+  updatedAt: number
   _all: number
 }
 
 
 export type EventPerformanceStatsAvgAggregateInputType = {
-  total_views?: true
+  detail_views?: true
+  checkout_views?: true
+  finalized_views?: true
   tickets_sold?: true
   revenue_gross?: true
   revenue_net?: true
@@ -83,7 +98,9 @@ export type EventPerformanceStatsAvgAggregateInputType = {
 }
 
 export type EventPerformanceStatsSumAggregateInputType = {
-  total_views?: true
+  detail_views?: true
+  checkout_views?: true
+  finalized_views?: true
   tickets_sold?: true
   revenue_gross?: true
   revenue_net?: true
@@ -93,31 +110,40 @@ export type EventPerformanceStatsSumAggregateInputType = {
 export type EventPerformanceStatsMinAggregateInputType = {
   id?: true
   event_id?: true
-  total_views?: true
+  detail_views?: true
+  checkout_views?: true
+  finalized_views?: true
   tickets_sold?: true
   revenue_gross?: true
   revenue_net?: true
   referral_conversion?: true
+  updatedAt?: true
 }
 
 export type EventPerformanceStatsMaxAggregateInputType = {
   id?: true
   event_id?: true
-  total_views?: true
+  detail_views?: true
+  checkout_views?: true
+  finalized_views?: true
   tickets_sold?: true
   revenue_gross?: true
   revenue_net?: true
   referral_conversion?: true
+  updatedAt?: true
 }
 
 export type EventPerformanceStatsCountAggregateInputType = {
   id?: true
   event_id?: true
-  total_views?: true
+  detail_views?: true
+  checkout_views?: true
+  finalized_views?: true
   tickets_sold?: true
   revenue_gross?: true
   revenue_net?: true
   referral_conversion?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -210,11 +236,14 @@ export type EventPerformanceStatsGroupByArgs<ExtArgs extends runtime.Types.Exten
 export type EventPerformanceStatsGroupByOutputType = {
   id: string
   event_id: string
-  total_views: number
+  detail_views: number
+  checkout_views: number
+  finalized_views: number
   tickets_sold: number
   revenue_gross: runtime.Decimal
   revenue_net: runtime.Decimal
   referral_conversion: number
+  updatedAt: Date
   _count: EventPerformanceStatsCountAggregateOutputType | null
   _avg: EventPerformanceStatsAvgAggregateOutputType | null
   _sum: EventPerformanceStatsSumAggregateOutputType | null
@@ -243,22 +272,28 @@ export type EventPerformanceStatsWhereInput = {
   NOT?: Prisma.EventPerformanceStatsWhereInput | Prisma.EventPerformanceStatsWhereInput[]
   id?: Prisma.StringFilter<"EventPerformanceStats"> | string
   event_id?: Prisma.StringFilter<"EventPerformanceStats"> | string
-  total_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  detail_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  checkout_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  finalized_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
   tickets_sold?: Prisma.IntFilter<"EventPerformanceStats"> | number
   revenue_gross?: Prisma.DecimalFilter<"EventPerformanceStats"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFilter<"EventPerformanceStats"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  updatedAt?: Prisma.DateTimeFilter<"EventPerformanceStats"> | Date | string
   event?: Prisma.XOR<Prisma.EventsScalarRelationFilter, Prisma.EventsWhereInput>
 }
 
 export type EventPerformanceStatsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
   referral_conversion?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   event?: Prisma.EventsOrderByWithRelationInput
 }
 
@@ -268,22 +303,28 @@ export type EventPerformanceStatsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.EventPerformanceStatsWhereInput | Prisma.EventPerformanceStatsWhereInput[]
   OR?: Prisma.EventPerformanceStatsWhereInput[]
   NOT?: Prisma.EventPerformanceStatsWhereInput | Prisma.EventPerformanceStatsWhereInput[]
-  total_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  detail_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  checkout_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  finalized_views?: Prisma.IntFilter<"EventPerformanceStats"> | number
   tickets_sold?: Prisma.IntFilter<"EventPerformanceStats"> | number
   revenue_gross?: Prisma.DecimalFilter<"EventPerformanceStats"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFilter<"EventPerformanceStats"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFilter<"EventPerformanceStats"> | number
+  updatedAt?: Prisma.DateTimeFilter<"EventPerformanceStats"> | Date | string
   event?: Prisma.XOR<Prisma.EventsScalarRelationFilter, Prisma.EventsWhereInput>
 }, "id" | "event_id">
 
 export type EventPerformanceStatsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
   referral_conversion?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.EventPerformanceStatsCountOrderByAggregateInput
   _avg?: Prisma.EventPerformanceStatsAvgOrderByAggregateInput
   _max?: Prisma.EventPerformanceStatsMaxOrderByAggregateInput
@@ -297,80 +338,104 @@ export type EventPerformanceStatsScalarWhereWithAggregatesInput = {
   NOT?: Prisma.EventPerformanceStatsScalarWhereWithAggregatesInput | Prisma.EventPerformanceStatsScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"EventPerformanceStats"> | string
   event_id?: Prisma.StringWithAggregatesFilter<"EventPerformanceStats"> | string
-  total_views?: Prisma.IntWithAggregatesFilter<"EventPerformanceStats"> | number
+  detail_views?: Prisma.IntWithAggregatesFilter<"EventPerformanceStats"> | number
+  checkout_views?: Prisma.IntWithAggregatesFilter<"EventPerformanceStats"> | number
+  finalized_views?: Prisma.IntWithAggregatesFilter<"EventPerformanceStats"> | number
   tickets_sold?: Prisma.IntWithAggregatesFilter<"EventPerformanceStats"> | number
   revenue_gross?: Prisma.DecimalWithAggregatesFilter<"EventPerformanceStats"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalWithAggregatesFilter<"EventPerformanceStats"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntWithAggregatesFilter<"EventPerformanceStats"> | number
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"EventPerformanceStats"> | Date | string
 }
 
 export type EventPerformanceStatsCreateInput = {
   id?: string
-  total_views: number
-  tickets_sold: number
-  revenue_gross: runtime.Decimal | runtime.DecimalJsLike | number | string
-  revenue_net: runtime.Decimal | runtime.DecimalJsLike | number | string
-  referral_conversion: number
+  detail_views?: number
+  checkout_views?: number
+  finalized_views?: number
+  tickets_sold?: number
+  revenue_gross?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  revenue_net?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  referral_conversion?: number
+  updatedAt?: Date | string
   event: Prisma.EventsCreateNestedOneWithoutPerformance_statsInput
 }
 
 export type EventPerformanceStatsUncheckedCreateInput = {
   id?: string
   event_id: string
-  total_views: number
-  tickets_sold: number
-  revenue_gross: runtime.Decimal | runtime.DecimalJsLike | number | string
-  revenue_net: runtime.Decimal | runtime.DecimalJsLike | number | string
-  referral_conversion: number
+  detail_views?: number
+  checkout_views?: number
+  finalized_views?: number
+  tickets_sold?: number
+  revenue_gross?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  revenue_net?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  referral_conversion?: number
+  updatedAt?: Date | string
 }
 
 export type EventPerformanceStatsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  total_views?: Prisma.IntFieldUpdateOperationsInput | number
+  detail_views?: Prisma.IntFieldUpdateOperationsInput | number
+  checkout_views?: Prisma.IntFieldUpdateOperationsInput | number
+  finalized_views?: Prisma.IntFieldUpdateOperationsInput | number
   tickets_sold?: Prisma.IntFieldUpdateOperationsInput | number
   revenue_gross?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   event?: Prisma.EventsUpdateOneRequiredWithoutPerformance_statsNestedInput
 }
 
 export type EventPerformanceStatsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
-  total_views?: Prisma.IntFieldUpdateOperationsInput | number
+  detail_views?: Prisma.IntFieldUpdateOperationsInput | number
+  checkout_views?: Prisma.IntFieldUpdateOperationsInput | number
+  finalized_views?: Prisma.IntFieldUpdateOperationsInput | number
   tickets_sold?: Prisma.IntFieldUpdateOperationsInput | number
   revenue_gross?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EventPerformanceStatsCreateManyInput = {
   id?: string
   event_id: string
-  total_views: number
-  tickets_sold: number
-  revenue_gross: runtime.Decimal | runtime.DecimalJsLike | number | string
-  revenue_net: runtime.Decimal | runtime.DecimalJsLike | number | string
-  referral_conversion: number
+  detail_views?: number
+  checkout_views?: number
+  finalized_views?: number
+  tickets_sold?: number
+  revenue_gross?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  revenue_net?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  referral_conversion?: number
+  updatedAt?: Date | string
 }
 
 export type EventPerformanceStatsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  total_views?: Prisma.IntFieldUpdateOperationsInput | number
+  detail_views?: Prisma.IntFieldUpdateOperationsInput | number
+  checkout_views?: Prisma.IntFieldUpdateOperationsInput | number
+  finalized_views?: Prisma.IntFieldUpdateOperationsInput | number
   tickets_sold?: Prisma.IntFieldUpdateOperationsInput | number
   revenue_gross?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EventPerformanceStatsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
-  total_views?: Prisma.IntFieldUpdateOperationsInput | number
+  detail_views?: Prisma.IntFieldUpdateOperationsInput | number
+  checkout_views?: Prisma.IntFieldUpdateOperationsInput | number
+  finalized_views?: Prisma.IntFieldUpdateOperationsInput | number
   tickets_sold?: Prisma.IntFieldUpdateOperationsInput | number
   revenue_gross?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EventPerformanceStatsNullableScalarRelationFilter = {
@@ -381,15 +446,20 @@ export type EventPerformanceStatsNullableScalarRelationFilter = {
 export type EventPerformanceStatsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
   referral_conversion?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EventPerformanceStatsAvgOrderByAggregateInput = {
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
@@ -399,25 +469,33 @@ export type EventPerformanceStatsAvgOrderByAggregateInput = {
 export type EventPerformanceStatsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
   referral_conversion?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EventPerformanceStatsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   event_id?: Prisma.SortOrder
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
   referral_conversion?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type EventPerformanceStatsSumOrderByAggregateInput = {
-  total_views?: Prisma.SortOrder
+  detail_views?: Prisma.SortOrder
+  checkout_views?: Prisma.SortOrder
+  finalized_views?: Prisma.SortOrder
   tickets_sold?: Prisma.SortOrder
   revenue_gross?: Prisma.SortOrder
   revenue_net?: Prisma.SortOrder
@@ -458,20 +536,26 @@ export type EventPerformanceStatsUncheckedUpdateOneWithoutEventNestedInput = {
 
 export type EventPerformanceStatsCreateWithoutEventInput = {
   id?: string
-  total_views: number
-  tickets_sold: number
-  revenue_gross: runtime.Decimal | runtime.DecimalJsLike | number | string
-  revenue_net: runtime.Decimal | runtime.DecimalJsLike | number | string
-  referral_conversion: number
+  detail_views?: number
+  checkout_views?: number
+  finalized_views?: number
+  tickets_sold?: number
+  revenue_gross?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  revenue_net?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  referral_conversion?: number
+  updatedAt?: Date | string
 }
 
 export type EventPerformanceStatsUncheckedCreateWithoutEventInput = {
   id?: string
-  total_views: number
-  tickets_sold: number
-  revenue_gross: runtime.Decimal | runtime.DecimalJsLike | number | string
-  revenue_net: runtime.Decimal | runtime.DecimalJsLike | number | string
-  referral_conversion: number
+  detail_views?: number
+  checkout_views?: number
+  finalized_views?: number
+  tickets_sold?: number
+  revenue_gross?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  revenue_net?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  referral_conversion?: number
+  updatedAt?: Date | string
 }
 
 export type EventPerformanceStatsCreateOrConnectWithoutEventInput = {
@@ -492,20 +576,26 @@ export type EventPerformanceStatsUpdateToOneWithWhereWithoutEventInput = {
 
 export type EventPerformanceStatsUpdateWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  total_views?: Prisma.IntFieldUpdateOperationsInput | number
+  detail_views?: Prisma.IntFieldUpdateOperationsInput | number
+  checkout_views?: Prisma.IntFieldUpdateOperationsInput | number
+  finalized_views?: Prisma.IntFieldUpdateOperationsInput | number
   tickets_sold?: Prisma.IntFieldUpdateOperationsInput | number
   revenue_gross?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type EventPerformanceStatsUncheckedUpdateWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  total_views?: Prisma.IntFieldUpdateOperationsInput | number
+  detail_views?: Prisma.IntFieldUpdateOperationsInput | number
+  checkout_views?: Prisma.IntFieldUpdateOperationsInput | number
+  finalized_views?: Prisma.IntFieldUpdateOperationsInput | number
   tickets_sold?: Prisma.IntFieldUpdateOperationsInput | number
   revenue_gross?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   revenue_net?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   referral_conversion?: Prisma.IntFieldUpdateOperationsInput | number
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -513,47 +603,59 @@ export type EventPerformanceStatsUncheckedUpdateWithoutEventInput = {
 export type EventPerformanceStatsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   event_id?: boolean
-  total_views?: boolean
+  detail_views?: boolean
+  checkout_views?: boolean
+  finalized_views?: boolean
   tickets_sold?: boolean
   revenue_gross?: boolean
   revenue_net?: boolean
   referral_conversion?: boolean
+  updatedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["eventPerformanceStats"]>
 
 export type EventPerformanceStatsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   event_id?: boolean
-  total_views?: boolean
+  detail_views?: boolean
+  checkout_views?: boolean
+  finalized_views?: boolean
   tickets_sold?: boolean
   revenue_gross?: boolean
   revenue_net?: boolean
   referral_conversion?: boolean
+  updatedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["eventPerformanceStats"]>
 
 export type EventPerformanceStatsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   event_id?: boolean
-  total_views?: boolean
+  detail_views?: boolean
+  checkout_views?: boolean
+  finalized_views?: boolean
   tickets_sold?: boolean
   revenue_gross?: boolean
   revenue_net?: boolean
   referral_conversion?: boolean
+  updatedAt?: boolean
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["eventPerformanceStats"]>
 
 export type EventPerformanceStatsSelectScalar = {
   id?: boolean
   event_id?: boolean
-  total_views?: boolean
+  detail_views?: boolean
+  checkout_views?: boolean
+  finalized_views?: boolean
   tickets_sold?: boolean
   revenue_gross?: boolean
   revenue_net?: boolean
   referral_conversion?: boolean
+  updatedAt?: boolean
 }
 
-export type EventPerformanceStatsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "total_views" | "tickets_sold" | "revenue_gross" | "revenue_net" | "referral_conversion", ExtArgs["result"]["eventPerformanceStats"]>
+export type EventPerformanceStatsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "event_id" | "detail_views" | "checkout_views" | "finalized_views" | "tickets_sold" | "revenue_gross" | "revenue_net" | "referral_conversion" | "updatedAt", ExtArgs["result"]["eventPerformanceStats"]>
 export type EventPerformanceStatsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
 }
@@ -572,11 +674,14 @@ export type $EventPerformanceStatsPayload<ExtArgs extends runtime.Types.Extensio
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     event_id: string
-    total_views: number
+    detail_views: number
+    checkout_views: number
+    finalized_views: number
     tickets_sold: number
     revenue_gross: runtime.Decimal
     revenue_net: runtime.Decimal
     referral_conversion: number
+    updatedAt: Date
   }, ExtArgs["result"]["eventPerformanceStats"]>
   composites: {}
 }
@@ -1003,11 +1108,14 @@ export interface Prisma__EventPerformanceStatsClient<T, Null = never, ExtArgs ex
 export interface EventPerformanceStatsFieldRefs {
   readonly id: Prisma.FieldRef<"EventPerformanceStats", 'String'>
   readonly event_id: Prisma.FieldRef<"EventPerformanceStats", 'String'>
-  readonly total_views: Prisma.FieldRef<"EventPerformanceStats", 'Int'>
+  readonly detail_views: Prisma.FieldRef<"EventPerformanceStats", 'Int'>
+  readonly checkout_views: Prisma.FieldRef<"EventPerformanceStats", 'Int'>
+  readonly finalized_views: Prisma.FieldRef<"EventPerformanceStats", 'Int'>
   readonly tickets_sold: Prisma.FieldRef<"EventPerformanceStats", 'Int'>
   readonly revenue_gross: Prisma.FieldRef<"EventPerformanceStats", 'Decimal'>
   readonly revenue_net: Prisma.FieldRef<"EventPerformanceStats", 'Decimal'>
   readonly referral_conversion: Prisma.FieldRef<"EventPerformanceStats", 'Int'>
+  readonly updatedAt: Prisma.FieldRef<"EventPerformanceStats", 'DateTime'>
 }
     
 

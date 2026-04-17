@@ -88,4 +88,29 @@ export const eventController = {
       next(error);
     }
   },
+
+  async trackStat(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const { step } = req.body as { step: string };
+      if (!["detail", "checkout", "finalized"].includes(step)) {
+        res.status(400).json({ success: false, message: "step tidak valid" });
+        return;
+      }
+      const stats = await eventService.trackStat(id, step as "detail" | "checkout" | "finalized");
+      res.status(200).json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async getStats(req: Request, res: Response, next: NextFunction) {
+    try {
+      const id = req.params.id as string;
+      const stats = await eventService.getStats(id);
+      res.status(200).json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
