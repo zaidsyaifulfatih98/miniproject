@@ -37,7 +37,13 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ success: false, message: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  initializeBookingSchedulers();
-});
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    initializeBookingSchedulers();
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;
