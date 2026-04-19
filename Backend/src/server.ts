@@ -1,59 +1,73 @@
 import "dotenv/config";
 import express from "express";
-import userRouter from "./routers/user.router";
-import eventRouter from "./routers/event.router";
-import ticketRouter from "./routers/ticket.router";
-import promoRouter from "./routers/promo.router";
-import bookingRouter from "./routers/booking.router";
 import cors from 'cors';
-import { initializeBookingSchedulers } from "./schedulers/booking.scheduler";
 
-const app = express();
-const PORT = process.env.PORT;
-const allowedOrigins = (process.env.ORIGIN_PORT || "http://localhost:5173")
-  .split(",")
-  .map((o) => o.trim());
-
-console.log("Allowed CORS origins:", allowedOrigins);
-
-app.use(express.json());
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile, curl, server-to-server)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      // Fallback: allow any vercel.app subdomain
-      if (origin.endsWith(".vercel.app")) return callback(null, true);
-      callback(new Error(`CORS: origin ${origin} not allowed`));
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
-
-// Handle preflight requests
-app.options("*", cors());
-
-app.use("/api/users", userRouter);
-app.use("/api/events", eventRouter);
-app.use("/api/tickets", ticketRouter);
-app.use("/api/promos", promoRouter);
-app.use("/api/bookings", bookingRouter);
-
-// Global error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.message);
-  res.status(500).json({ success: false, message: err.message });
+// Catch any crash during module initialization
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err.message, err.stack);
+});
+process.on('unhandledRejection', (reason: any) => {
+  console.error('UNHANDLED REJECTION:', reason?.message || reason);
 });
 
-// For local development
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    initializeBookingSchedulers();
+let app: express.Application;
+
+try {
+  const userRouter = require("./routers/user.router").default;
+  const eventRouter = require("./routers/event.router").default;
+  const ticketRouter = require("./routers/ticket.router").default;
+  const promoRouter = require("./routers/promo.router").default;
+  const bookingRouter = require("./routers/booking.router").default;
+  const { initializeBookingSchedulers } = require("./schedulers/booking.scheduler");
+
+  app = express();
+  const PORT = process.env.PORT;
+  const allowedOrigins = (process.env.ORIGIN_PORT || "http://localhost:5173")
+    .split(",")
+    .map((o: string) => o.trim());
+
+  console.log("Allowed CORS origins:", allowedOrigins);
+
+  app.use(express.json());
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        if (origin.endsWith(".vercel.app")) return callback(null, true);
+        callback(new Error(`CORS: origin ${origin} not allowed`));
+      },
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      credentials: true,
+    })
+  );
+
+  app.options("*", cors());
+
+  app.use("/api/users", userRouter);
+  app.use("/api/events", eventRouter);
+  app.use("/api/tickets", ticketRouter);
+  app.use("/api/promos", promoRouter);
+  app.use("/api/bookings", bookingRouter);
+
+  app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error(err.message);
+    res.status(500).json({ success: false, message: err.message });
+  });
+
+  if (process.env.NODE_ENV !== "production") {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      initializeBookingSchedulers();
+    });
+  }
+} catch (err: any) {
+  console.error('STARTUP CRASH:', err.message, err.stack);
+  // Create a minimal app that reports the error
+  app = express();
+  app.use("*", (req: express.Request, res: express.Response) => {
+    res.status(500).json({ success: false, message: 'Server startup failed', error: err.message });
   });
 }
 
-// Export for Vercel serverless
-module.exports = app;
+module.exports = app!;
