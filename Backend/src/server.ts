@@ -19,11 +19,21 @@ console.log("Allowed CORS origins:", allowedOrigins);
 app.use(express.json());
 app.use(
   cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Fallback: allow any vercel.app subdomain
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
+
+// Handle preflight requests
+app.options("*", cors());
 
 app.use("/api/users", userRouter);
 app.use("/api/events", eventRouter);
