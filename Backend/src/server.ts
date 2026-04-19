@@ -9,7 +9,7 @@ import cors from 'cors';
 import { initializeBookingSchedulers } from "./schedulers/booking.scheduler";
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT ;
 const ORIGIN_PORT = process.env.ORIGIN_PORT
 
 app.use(express.json());
