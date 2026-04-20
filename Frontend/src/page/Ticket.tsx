@@ -172,7 +172,7 @@ export default function Ticket() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Manajemen Tiket</h1>
           <p className="text-sm text-gray-500 mt-0.5">Kelola tipe tiket dan kuota stok untuk setiap event</p>
@@ -184,7 +184,7 @@ export default function Ticket() {
             setTicketErrors({});
             setShowTicketForm(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium rounded-lg transition-colors self-start sm:self-auto"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />

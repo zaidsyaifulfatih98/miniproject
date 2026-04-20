@@ -313,12 +313,12 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 space-y-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 space-y-8">
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Dashboard</h1>
           <p className="text-gray-500 text-sm mt-1">Selamat datang kembali! Berikut ringkasan aktivitas Anda hari ini.</p>
         </div>
         <span className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">

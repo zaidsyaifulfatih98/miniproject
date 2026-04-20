@@ -165,7 +165,7 @@ export default function Transactions() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-800">Penjualan & Transaksi</h1>
           <p className="text-sm text-gray-500 mt-0.5">Rekap transaksi dan statistik performa penjualan tiket</p>
@@ -173,7 +173,7 @@ export default function Transactions() {
       </div>
 
       {/* Tabs + Filter */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
           {(["transaksi", "statistik"] as const).map((t) => (
             <button

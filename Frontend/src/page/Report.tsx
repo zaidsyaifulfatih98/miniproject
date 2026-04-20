@@ -162,6 +162,8 @@ export default function Report() {
       .map((g) => ({ name: g.name, value: total > 0 ? Math.round((counts[g.name] / total) * 100) : 0 }));
   })();
 
+  console.log(demographicsData)
+
   // ─── Real hourly trend from bookings.createdAt ────────────────────────────
   const hourlyTrend = (() => {
     const counts: Record<number, number> = {};
@@ -240,9 +242,9 @@ export default function Report() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 space-y-10">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 space-y-10">
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-900">Dashboard Laporan</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Dashboard Laporan</h1>
         <p className="text-gray-500 mt-1 text-sm">Rekap performa, analitik, dan keuangan event Anda</p>
       </div>
 
@@ -277,7 +279,7 @@ export default function Report() {
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
           <StatCard label="Detail Tiket Dilihat" value={funnelStats.detail.toLocaleString("id-ID")} color="bg-indigo-50 text-indigo-800" />
           <StatCard label="Masuk Checkout" value={funnelStats.checkout.toLocaleString("id-ID")} color="bg-purple-50 text-purple-800" />
           <StatCard label="Pembayaran Selesai" value={funnelStats.done.toLocaleString("id-ID")} color="bg-fuchsia-50 text-fuchsia-800" />
@@ -451,7 +453,7 @@ export default function Report() {
         />
 
         {/* Summary cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="rounded-2xl p-5 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
             <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Pendapatan Kotor</p>
             <p className="text-xl font-bold mt-1">{formatRupiah(financialData.grossRevenue)}</p>

@@ -222,13 +222,13 @@ export default function OrganizerPromos() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Manajemen Voucher & Promosi</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Manajemen Voucher & Promosi</h1>
               <p className="text-gray-600 mt-2">Buat dan kelola kode voucher untuk event Anda</p>
             </div>
             <button
@@ -245,7 +245,7 @@ export default function OrganizerPromos() {
                   event_id: "",
                 });
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition self-start sm:self-auto"
             >
               <Plus className="w-5 h-5" />
               Buat Voucher
