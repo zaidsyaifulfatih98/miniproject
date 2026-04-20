@@ -68,6 +68,7 @@ export default function DetailEvent() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [organizerRating, setOrganizerRating] = useState<number | null>(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [hasUserReview, setHasUserReview] = useState(false);
 
   // Fetch event detail
   useEffect(() => {
@@ -108,6 +109,8 @@ export default function DetailEvent() {
       try {
         setReviewsLoading(true);
         const token = localStorage.getItem("token");
+        const userData = localStorage.getItem("user");
+        const currentUserId = userData ? JSON.parse(userData).id : null;
 
         // Fetch event reviews
         const reviewsResponse = await axios.get(
@@ -115,6 +118,14 @@ export default function DetailEvent() {
         );
         if (reviewsResponse.data.success) {
           setReviews(reviewsResponse.data.data || []);
+          
+          // Check if current user has already reviewed
+          if (currentUserId && reviewsResponse.data.data) {
+            const userHasReviewed = reviewsResponse.data.data.some(
+              (review: any) => review.user?.id === currentUserId
+            );
+            setHasUserReview(userHasReviewed);
+          }
         }
 
         // Fetch organizer average rating
@@ -444,17 +455,26 @@ export default function DetailEvent() {
                           <ReviewForm
                             eventId={eventId!}
                             bookingId={userBooking.id}
+                            hasUserReview={hasUserReview}
                             onReviewSubmitted={() => {
                               // Refresh reviews after submission
                               setReviewsLoading(true);
                               axios.get(`${API_BASE}/reviews/event/${eventId}`).then((res) => {
                                 if (res.data.success) {
                                   setReviews(res.data.data || []);
+                                  // Check if current user has reviewed
+                                  const userData = localStorage.getItem("user");
+                                  const currentUserId = userData ? JSON.parse(userData).id : null;
+                                  if (currentUserId && res.data.data) {
+                                    const userHasReviewed = res.data.data.some(
+                                      (review: any) => review.user?.id === currentUserId
+                                    );
+                                    setHasUserReview(userHasReviewed);
+                                  }
                                 }
                                 setReviewsLoading(false);
                               });
                             }}
-                            onClose={() => {}}
                           />
                         </div>
                       ) : (

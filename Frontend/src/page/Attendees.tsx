@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -94,7 +94,6 @@ export default function Attendees() {
 
   const totalTickets = filtered.reduce((s, a) => s + (a.quantity ?? 0), 0);
   const totalRevenue = filtered.reduce((s, a) => s + Number(a.final_price ?? a.total_price ?? 0), 0);
-  const selectedEvent = events.find((e) => e.id === selectedEventId);
 
   return (
     <div className="space-y-6">
