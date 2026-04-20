@@ -8,6 +8,12 @@ import { uploadProofMiddleware } from "../middlewares/upload.middleware";
 const bookingRouter = Router();
 
 bookingRouter.get("/", authenticateToken, bookingController.getAll);
+bookingRouter.get(
+  "/attendees",
+  authenticateToken,
+  requireOrganizerRole,
+  bookingController.getAttendees
+);
 bookingRouter.get("/:id", bookingController.getById);
 bookingRouter.post(
   "/",

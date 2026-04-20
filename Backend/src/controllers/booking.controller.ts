@@ -280,4 +280,35 @@ export const bookingController = {
       });
     }
   },
+
+  async getAttendees(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const event_id = req.query.event_id as string;
+      const organizerId = req.user?.id;
+
+      if (!event_id) {
+        res.status(400).json({ success: false, message: "event_id diperlukan" });
+        return;
+      }
+
+      // Verify organizer owns this event
+      const { prisma: db } = await import("../configs/pool-coonection.config").then(
+        (m) => ({ prisma: m.default })
+      );
+      const event = await db.events.findUnique({ where: { id: event_id }, select: { users_id: true } });
+      if (!event) {
+        res.status(404).json({ success: false, message: "Event tidak ditemukan" });
+        return;
+      }
+      if (event.users_id !== organizerId) {
+        res.status(403).json({ success: false, message: "Anda tidak memiliki akses ke event ini" });
+        return;
+      }
+
+      const attendees = await bookingService.getAttendees(event_id);
+      res.status(200).json({ success: true, data: attendees });
+    } catch (error) {
+      next(error);
+    }
+  },
 };

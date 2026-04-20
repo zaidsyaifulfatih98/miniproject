@@ -4,6 +4,106 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
+// ── Proof modal ───────────────────────────────────────────────────────────────
+interface ProofModalProps {
+  bookingId: string;
+  proofUrl: string | null | undefined;
+  displayId: string;
+  onApprove: (id: string) => void;
+  onReject: (id: string, reason: string) => void;
+  onClose: () => void;
+}
+
+function ProofModal({ bookingId, proofUrl, displayId, onApprove, onReject, onClose }: ProofModalProps) {
+  const [rejectMode, setRejectMode] = useState(false);
+  const [reason, setReason] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleApprove = async () => {
+    setLoading(true);
+    try { await onApprove(bookingId); } finally { setLoading(false); }
+  };
+
+  const handleReject = async () => {
+    if (!reason.trim()) return;
+    setLoading(true);
+    try { await onReject(bookingId, reason.trim()); } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 className="font-semibold text-gray-800">Bukti Pembayaran</h2>
+            <p className="text-xs text-gray-400 mt-0.5 font-mono">{displayId}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-6">
+          {proofUrl ? (
+            <a href={proofUrl} target="_blank" rel="noopener noreferrer">
+              <img src={proofUrl} alt="Bukti Pembayaran" className="w-full rounded-xl border border-gray-200 object-contain max-h-80 cursor-zoom-in hover:opacity-90 transition" />
+            </a>
+          ) : (
+            <div className="w-full h-48 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">
+              Belum ada bukti pembayaran
+            </div>
+          )}
+
+          {rejectMode ? (
+            <div className="mt-5 space-y-3">
+              <label className="block text-sm font-medium text-gray-700">Alasan penolakan</label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={3}
+                placeholder="Contoh: Bukti pembayaran tidak jelas / nominal tidak sesuai..."
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-red-300 resize-none"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setRejectMode(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleReject}
+                  disabled={!reason.trim() || loading}
+                  className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition disabled:opacity-50"
+                >
+                  {loading ? "Memproses..." : "Konfirmasi Tolak"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-3 mt-5">
+              <button
+                onClick={() => setRejectMode(true)}
+                className="flex-1 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition"
+              >
+                ✕ Tolak
+              </button>
+              <button
+                onClick={handleApprove}
+                disabled={loading}
+                className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition disabled:opacity-50"
+              >
+                {loading ? "Memproses..." : "✓ Konfirmasi"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── DB enums ─────────────────────────────────────────────────────────────────
 type DBStatus =
   | "PENDING"
@@ -36,6 +136,7 @@ interface BookingAPI {
   event: { id: string; title: string };
   ticket: { id: string; type: DBTicketType; price: string };
   promotion: { id: string; name: string; discount_amount: string } | null;
+  payment?: { id: string; status: string; payment_proof_url?: string | null } | null;
 }
 
 // ── Mappings ──────────────────────────────────────────────────────────────────
@@ -84,6 +185,8 @@ export default function Transactions() {
   const [filterEvent, setFilterEvent] = useState<string | "Semua">("Semua");
   const [filterStatus, setFilterStatus] = useState<TxStatus | "Semua">("Semua");
   const [search, setSearch]           = useState("");
+  const [proofBooking, setProofBooking] = useState<BookingAPI | null>(null);
+  const [actionMsg, setActionMsg]       = useState<{ text: string; ok: boolean } | null>(null);
 
   // ── Fetch bookings ──────────────────────────────────────────────────────────
   const fetchBookings = useCallback(() => {
@@ -100,6 +203,43 @@ export default function Transactions() {
   }, []);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
+
+  // ── Approve ─────────────────────────────────────────────────────────────────
+  const handleApprove = async (bookingId: string) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/approve`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    if (data.success) {
+      setActionMsg({ text: "Pembayaran dikonfirmasi. Email notifikasi dikirim.", ok: true });
+      setProofBooking(null);
+      fetchBookings();
+    } else {
+      setActionMsg({ text: data.message || "Gagal konfirmasi", ok: false });
+    }
+    setTimeout(() => setActionMsg(null), 4000);
+  };
+
+  // ── Reject ──────────────────────────────────────────────────────────────────
+  const handleReject = async (bookingId: string, reason: string) => {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/reject`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setActionMsg({ text: "Transaksi ditolak. Aset & email notifikasi telah diproses.", ok: true });
+      setProofBooking(null);
+      fetchBookings();
+    } else {
+      setActionMsg({ text: data.message || "Gagal menolak", ok: false });
+    }
+    setTimeout(() => setActionMsg(null), 4000);
+  };
 
   // ── Unique events derived from bookings ────────────────────────────────────
   const eventList = Array.from(
@@ -162,8 +302,28 @@ export default function Transactions() {
   const totalTx    = scopedBookings.length;
   const successRate = totalTx ? Math.round((successTx.length / totalTx) * 100) : 0;
 
+  // ── Bookings needing confirmation ──────────────────────────────────────────
+  const needsReviewTx = bookings.filter((b) => b.status === "WAITING_FOR_CONFIRMATION");
+
   return (
     <div className="space-y-6">
+      {/* Proof modal */}
+      {proofBooking && (
+        <ProofModal
+          bookingId={proofBooking.id}
+          proofUrl={proofBooking.payment?.payment_proof_url}
+          displayId={proofBooking.display_id ?? proofBooking.id.slice(0, 8).toUpperCase()}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onClose={() => setProofBooking(null)}
+        />
+      )}
+      {/* Action toast */}
+      {actionMsg && (
+        <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium text-white transition-all ${actionMsg.ok ? "bg-emerald-500" : "bg-red-500"}`}>
+          {actionMsg.text}
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -171,6 +331,47 @@ export default function Transactions() {
           <p className="text-sm text-gray-500 mt-0.5">Rekap transaksi dan statistik performa penjualan tiket</p>
         </div>
       </div>
+
+      {/* ── Pending confirmation alert ── */}
+      {needsReviewTx.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center flex-none mt-0.5">
+              <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-amber-800 text-sm">
+                {needsReviewTx.length} transaksi menunggu konfirmasi pembayaran
+              </p>
+              <p className="text-xs text-amber-600 mt-0.5">
+                Customer sudah mengirim bukti pembayaran. Tinjau dan konfirmasi sekarang.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 flex-none">
+            {needsReviewTx.slice(0, 3).map((b) => (
+              <button
+                key={b.id}
+                onClick={() => { setTab("transaksi"); setFilterStatus("Semua"); setProofBooking(b); }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-semibold transition"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                {b.display_id ?? b.id.slice(0, 8).toUpperCase()}
+              </button>
+            ))}
+            {needsReviewTx.length > 3 && (
+              <span className="inline-flex items-center px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold">
+                +{needsReviewTx.length - 3} lainnya
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Tabs + Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
@@ -316,15 +517,19 @@ export default function Transactions() {
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        {(b.status === "WAITING_FOR_PAYMENTS" || b.status === "WAITING_FOR_CONFIRMATION") && (
+                        {b.status === "WAITING_FOR_PAYMENTS" && (
+                          <span className="text-xs text-yellow-600 font-medium">Menunggu Bukti</span>
+                        )}
+                        {b.status === "WAITING_FOR_CONFIRMATION" && (
                           <button
-                            onClick={() => navigate(`/payment/${b.id}`)}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-xs font-semibold transition"
+                            onClick={() => setProofBooking(b)}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-xs font-semibold transition"
                           >
-                            <span>Lihat Status</span>
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
+                            <span>Tinjau Bukti</span>
                           </button>
                         )}
                         {b.status === "DONE" && (

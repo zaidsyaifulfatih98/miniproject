@@ -1,5 +1,6 @@
 import prisma from "../configs/pool-coonection.config";
 import { BookingStatus, PromoType } from "../../generated/prisma/enums";
+import { emailService } from "./email.service";
 
 /* Generate unique display_id */
 function generateDisplayId(): string {
@@ -324,7 +325,7 @@ export const bookingService = {
         where: { id: payment.id },
         data: {
           payment_proof_url: proofUrl,
-          status: "SUCCESS",
+          status: "PENDING",
           updatedAt: new Date(),
         },
       });
@@ -333,7 +334,7 @@ export const bookingService = {
         data: {
           booking_id: bookingId,
           payment_proof_url: proofUrl,
-          status: "SUCCESS",
+          status: "PENDING",
           amount: booking.final_price || booking.total_price,
         },
       });
@@ -342,7 +343,7 @@ export const bookingService = {
     const updatedBooking = await prisma.bookings.update({
       where: { id: bookingId },
       data: {
-        status: "DONE",
+        status: "WAITING_FOR_CONFIRMATION",
         updatedAt: new Date(),
       },
       include: {
@@ -428,6 +429,16 @@ export const bookingService = {
         payment: true,
       },
     });
+
+    // Send approval email (fire-and-forget)
+    emailService.sendApprovalEmail({
+      customerEmail: updated.user.email,
+      customerName: updated.user.full_name,
+      eventTitle: updated.event.title,
+      displayId: booking.display_id ?? bookingId.slice(0, 8).toUpperCase(),
+      finalPrice: Number(booking.final_price ?? booking.total_price ?? 0),
+      quantity: booking.quantity ?? 1,
+    }).catch((err) => console.error("Approval email failed:", err));
 
     return updated;
   },
@@ -540,6 +551,38 @@ export const bookingService = {
       });
     });
 
+    // Send rejection email (fire-and-forget)
+    emailService.sendRejectionEmail({
+      customerEmail: updated.user.email,
+      customerName: updated.user.full_name,
+      eventTitle: updated.event.title,
+      displayId: booking.display_id ?? bookingId.slice(0, 8).toUpperCase(),
+      finalPrice: Number(booking.final_price ?? booking.total_price ?? 0),
+      quantity: booking.quantity ?? 1,
+      reason,
+    }).catch((err) => console.error("Rejection email failed:", err));
+
     return updated;
+  },
+
+  async getAttendees(event_id: string) {
+    return await prisma.bookings.findMany({
+      where: {
+        event_id,
+        status: BookingStatus.DONE,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        display_id: true,
+        quantity: true,
+        final_price: true,
+        total_price: true,
+        createdAt: true,
+        user: { select: { id: true, full_name: true, email: true } },
+        ticket: { select: { id: true, type: true } },
+      },
+    });
   },
 };

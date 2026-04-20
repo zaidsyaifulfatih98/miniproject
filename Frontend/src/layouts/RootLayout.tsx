@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -7,6 +7,7 @@ import {
   Tag,
   ClipboardList,
   BarChart2,
+  Users,
   ChevronRight,
   Home,
   LogOut,
@@ -41,6 +42,11 @@ const navItems = [
     icon: <ClipboardList className="w-5 h-5" />,
   },
   {
+    label: "Daftar Peserta",
+    path: "/attendees",
+    icon: <Users className="w-5 h-5" />,
+  },
+  {
     label: "Laporan",
     path: "/report",
     icon: <BarChart2 className="w-5 h-5" />,
@@ -53,6 +59,7 @@ const breadcrumbLabels: Record<string, string> = {
   "/ticket": "Manajemen Tiket",
   "/promos": "Promo & Diskon",
   "/transactions": "Penjualan & Transaksi",
+  "/attendees": "Daftar Peserta",
   "/report": "Laporan",
   
 };
@@ -61,10 +68,31 @@ export default function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingConfirmCount, setPendingConfirmCount] = useState(0);
   const pageLabel = breadcrumbLabels[location.pathname] ?? "Beranda";
 
   const storedUser = localStorage.getItem("user");
   const user = storedUser ? JSON.parse(storedUser) : null;
+
+  // Fetch pending confirmation count for badge
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const orgId = user?.id;
+    if (!orgId || !token) return;
+    fetch(`${import.meta.env.VITE_API_BASE}/bookings?organizer_id=${orgId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.success) {
+          const count = (res.data as any[]).filter(
+            (b) => b.status === "WAITING_FOR_CONFIRMATION"
+          ).length;
+          setPendingConfirmCount(count);
+        }
+      })
+      .catch(() => {});
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -119,7 +147,12 @@ export default function RootLayout() {
               }
             >
               {item.icon}
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.path === "/transactions" && pendingConfirmCount > 0 && (
+                <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
+                  {pendingConfirmCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

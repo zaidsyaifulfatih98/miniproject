@@ -22,6 +22,7 @@ import CreateEvent from './page/CreateEvent'
 import BecomeOrganizer from './page/BecomeOrganizer'
 import Profile from './page/Profile'
 import OrganizerProfile from './page/OrganizerProfile'
+import Attendees from './page/Attendees'
 
 // Public Layout
 function PublicLayout() {
@@ -139,6 +140,10 @@ const router = createBrowserRouter([
           {
             path: '/transactions',
             Component: Transactions,
+          },
+          {
+            path: '/attendees',
+            Component: Attendees,
           },
           {
             path: '/report',
