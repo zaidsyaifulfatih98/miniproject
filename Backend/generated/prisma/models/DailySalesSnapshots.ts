@@ -196,7 +196,7 @@ export type DailySalesSnapshotsGroupByOutputType = {
   _max: DailySalesSnapshotsMaxAggregateOutputType | null
 }
 
-type GetDailySalesSnapshotsGroupByPayload<T extends DailySalesSnapshotsGroupByArgs> = Prisma.PrismaPromise<
+export type GetDailySalesSnapshotsGroupByPayload<T extends DailySalesSnapshotsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<DailySalesSnapshotsGroupByOutputType, T['by']> &
       {
@@ -1172,6 +1172,11 @@ export type DailySalesSnapshotsFindManyArgs<ExtArgs extends runtime.Types.Extens
    * Skip the first `n` DailySalesSnapshots.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of DailySalesSnapshots.
+   */
   distinct?: Prisma.DailySalesSnapshotsScalarFieldEnum | Prisma.DailySalesSnapshotsScalarFieldEnum[]
 }
 

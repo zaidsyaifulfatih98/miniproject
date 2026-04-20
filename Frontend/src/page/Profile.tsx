@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { User, Ticket, FileText, Edit2, Save, X, Home, ArrowRight, RefreshCw } from "lucide-react";
+import { User, Ticket, FileText, Edit2, Save, X, Home, ArrowRight, RefreshCw, Star } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { loadAndRenderTicketTemplate } from "../templates/ticketRenderer";
+import ReviewForm from "../components/ReviewForm";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -71,6 +72,7 @@ export default function CustomerProfile() {
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [reviewModal, setReviewModal] = useState<{ ticketId: string; eventId: string } | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -714,7 +716,15 @@ export default function CustomerProfile() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-col sm:flex-row">
+                      <button
+                        onClick={() => setReviewModal({ ticketId: ticket.id, eventId: ticket.id })}
+                        className="w-full px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                        title="Berikan rating dan ulasan untuk event ini"
+                      >
+                        <Star size={18} />
+                        Beri Rating
+                      </button>
                       {ticket.status === "active" && (
                         <button
                           onClick={() => handleSaveTicket(ticket)}
@@ -739,6 +749,34 @@ export default function CustomerProfile() {
                 <p className="text-sm text-gray-500 mt-1">Pesan event untuk mendapatkan tiket</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Review Modal */}
+        {reviewModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+            <div className="bg-white w-full sm:w-full sm:max-w-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl sm:rounded-t-2xl">
+                <h3 className="text-lg font-bold text-gray-900">Beri Rating & Ulasan</h3>
+                <button
+                  onClick={() => setReviewModal(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition"
+                >
+                  <X size={24} className="text-gray-600" />
+                </button>
+              </div>
+              <div className="p-6">
+                <ReviewForm
+                  eventId={reviewModal.eventId}
+                  bookingId={reviewModal.ticketId}
+                  onReviewSubmitted={() => {
+                    setReviewModal(null);
+                    handleRefreshTickets(); // Refresh tickets to update review status
+                  }}
+                  onClose={() => setReviewModal(null)}
+                />
+              </div>
+            </div>
           </div>
         )}
 

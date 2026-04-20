@@ -26,6 +26,7 @@ try {
   const ticketRouter = require("./routers/ticket.router").default;
   const promoRouter = require("./routers/promo.router").default;
   const bookingRouter = require("./routers/booking.router").default;
+  const reviewRouter = require("./routers/review.router").default;
   const { initializeBookingSchedulers } = require("./schedulers/booking.scheduler");
 
   app.use("/api/users", userRouter);
@@ -33,6 +34,7 @@ try {
   app.use("/api/tickets", ticketRouter);
   app.use("/api/promos", promoRouter);
   app.use("/api/bookings", bookingRouter);
+  app.use("/api/reviews", reviewRouter);
 
   app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error(err.message);

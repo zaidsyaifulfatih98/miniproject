@@ -21,6 +21,7 @@ import PaymentPortal from './page/PaymentPortal'
 import CreateEvent from './page/CreateEvent'
 import BecomeOrganizer from './page/BecomeOrganizer'
 import Profile from './page/Profile'
+import OrganizerProfile from './page/OrganizerProfile'
 
 // Public Layout
 function PublicLayout() {
@@ -92,6 +93,10 @@ const router = createBrowserRouter([
           {
             path: '/become-organizer',
             Component: BecomeOrganizer,
+          },
+          {
+            path: '/organizer/:organizerId',
+            Component: OrganizerProfile,
           },
         ]
       },

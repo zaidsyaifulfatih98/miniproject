@@ -206,7 +206,7 @@ export type ReferralsGroupByOutputType = {
   _max: ReferralsMaxAggregateOutputType | null
 }
 
-type GetReferralsGroupByPayload<T extends ReferralsGroupByArgs> = Prisma.PrismaPromise<
+export type GetReferralsGroupByPayload<T extends ReferralsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ReferralsGroupByOutputType, T['by']> &
       {
@@ -1368,6 +1368,11 @@ export type ReferralsFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Skip the first `n` Referrals.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Referrals.
+   */
   distinct?: Prisma.ReferralsScalarFieldEnum | Prisma.ReferralsScalarFieldEnum[]
 }
 

@@ -251,7 +251,7 @@ export type EventPerformanceStatsGroupByOutputType = {
   _max: EventPerformanceStatsMaxAggregateOutputType | null
 }
 
-type GetEventPerformanceStatsGroupByPayload<T extends EventPerformanceStatsGroupByArgs> = Prisma.PrismaPromise<
+export type GetEventPerformanceStatsGroupByPayload<T extends EventPerformanceStatsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<EventPerformanceStatsGroupByOutputType, T['by']> &
       {
@@ -1312,6 +1312,11 @@ export type EventPerformanceStatsFindManyArgs<ExtArgs extends runtime.Types.Exte
    * Skip the first `n` EventPerformanceStats.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of EventPerformanceStats.
+   */
   distinct?: Prisma.EventPerformanceStatsScalarFieldEnum | Prisma.EventPerformanceStatsScalarFieldEnum[]
 }
 

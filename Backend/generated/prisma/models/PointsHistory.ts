@@ -199,7 +199,7 @@ export type PointsHistoryGroupByOutputType = {
   _max: PointsHistoryMaxAggregateOutputType | null
 }
 
-type GetPointsHistoryGroupByPayload<T extends PointsHistoryGroupByArgs> = Prisma.PrismaPromise<
+export type GetPointsHistoryGroupByPayload<T extends PointsHistoryGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<PointsHistoryGroupByOutputType, T['by']> &
       {
@@ -1201,6 +1201,11 @@ export type PointsHistoryFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` PointsHistories.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of PointsHistories.
+   */
   distinct?: Prisma.PointsHistoryScalarFieldEnum | Prisma.PointsHistoryScalarFieldEnum[]
 }
 
