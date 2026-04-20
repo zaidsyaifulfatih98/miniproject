@@ -213,7 +213,7 @@ export type PaymentsGroupByOutputType = {
   _max: PaymentsMaxAggregateOutputType | null
 }
 
-type GetPaymentsGroupByPayload<T extends PaymentsGroupByArgs> = Prisma.PrismaPromise<
+export type GetPaymentsGroupByPayload<T extends PaymentsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<PaymentsGroupByOutputType, T['by']> &
       {
@@ -1216,6 +1216,11 @@ export type PaymentsFindManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Skip the first `n` Payments.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Payments.
+   */
   distinct?: Prisma.PaymentsScalarFieldEnum | Prisma.PaymentsScalarFieldEnum[]
 }
 

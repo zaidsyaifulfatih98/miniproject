@@ -94,6 +94,19 @@ export const bookingService = {
     });
   },
 
+  async getByUserAndEvent(user_id: string, event_id: string) {
+    return await prisma.bookings.findMany({
+      where: { user_id, event_id, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      include: {
+        event: { select: { id: true, title: true, location: true, start_event: true } },
+        ticket: { select: { id: true, type: true, price: true } },
+        promotion: { select: { id: true, name: true, discount_amount: true } },
+        payment: true,
+      },
+    });
+  },
+
   async getById(id: string) {
     return await prisma.bookings.findUnique({
       where: { id, deletedAt: null },

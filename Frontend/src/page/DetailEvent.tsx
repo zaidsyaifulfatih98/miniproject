@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { MapPin, Calendar, Layers, X } from "lucide-react";
+import axios from "axios";
 
 import DOMPurify from "dompurify";
 import CheckoutModal from "../components/CheckoutModal";
+import ReviewForm from "../components/ReviewForm";
+import ReviewsList from "../components/ReviewsList";
 import { trackFunnel } from "../utils/tracker";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -15,7 +18,7 @@ type EventStatus =
   | "REJECTED"
   | "COMPLETED"
   | "CANCELLED";
-type TabType = "deskripsi" | "tiket" | "syarat";
+type TabType = "deskripsi" | "tiket" | "syarat" | "review";
 
 interface EventDetail {
   id: string;
@@ -54,12 +57,17 @@ interface Toast {
 export default function DetailEvent() {
   const { eventId } = useParams<{ eventId: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("deskripsi");
   const [toast, setToast] = useState<Toast | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [userBooking, setUserBooking] = useState<any | null>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [organizerRating, setOrganizerRating] = useState<number | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   // Fetch event detail
   useEffect(() => {
@@ -91,6 +99,62 @@ export default function DetailEvent() {
       fetchEvent();
     }
   }, [eventId, searchParams]);
+
+  // Fetch user's booking for this event and reviews/organizer rating
+  useEffect(() => {
+    const fetchReviewsAndBooking = async () => {
+      if (!event || !eventId) return;
+
+      try {
+        setReviewsLoading(true);
+        const token = localStorage.getItem("token");
+
+        // Fetch event reviews
+        const reviewsResponse = await axios.get(
+          `${API_BASE}/reviews/event/${eventId}`
+        );
+        if (reviewsResponse.data.success) {
+          setReviews(reviewsResponse.data.data || []);
+        }
+
+        // Fetch organizer average rating
+        if (event.organizer?.id) {
+          const ratingResponse = await axios.get(
+            `${API_BASE}/reviews/organizer/${event.organizer.id}/average`
+          );
+          if (ratingResponse.data.success) {
+            setOrganizerRating(ratingResponse.data.data?.average_rating || null);
+          }
+        }
+
+        // Fetch user's booking for this event if logged in
+        if (token) {
+          try {
+            const bookingResponse = await axios.get(
+              `${API_BASE}/bookings?event_id=${eventId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            if (bookingResponse.data.success && bookingResponse.data.data.length > 0) {
+              const doneBooking = bookingResponse.data.data.find(
+                (b: any) => b.status === "DONE"
+              );
+              setUserBooking(doneBooking || null);
+            }
+          } catch (err) {
+            // Booking not found, user doesn't have this ticket
+          }
+        }
+      } catch (err) {
+        // Silent fail - reviews section will show empty state
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviewsAndBooking();
+  }, [event, eventId]);
 
   const isSoldOut = event && event.available_seats <= 0;
 
@@ -228,7 +292,7 @@ export default function DetailEvent() {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* Navigation Tabs */}
         <div className="flex gap-6 md:gap-8 border-b border-gray-300 mb-8 overflow-x-auto">
-          {(["deskripsi", "tiket", "syarat"] as const).map((tab) => (
+          {(["deskripsi", "tiket", "syarat", "review"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -240,7 +304,8 @@ export default function DetailEvent() {
             >
               {tab === "deskripsi" && "Deskripsi"}
               {tab === "tiket" && "Tiket"}
-              {tab === "syarat" && "Syarat dan Ketentuan"}
+              {tab === "syarat" && "Syarat"}
+              {tab === "review" && "Review"}
 
               {activeTab === tab && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500"></div>
@@ -354,12 +419,82 @@ export default function DetailEvent() {
                 </div>
               </div>
             )}
+
+            {/* Review Tab */}
+            {activeTab === "review" && (
+              <div className="animate-fadeIn">
+                <div className="bg-white rounded-lg p-6 md:p-8 shadow-sm">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    Review & Rating
+                  </h2>
+
+                  {reviewsLoading ? (
+                    <div className="text-center py-12">
+                      <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
+                      <p className="text-gray-600">Memuat review...</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Review Form - Only show if user has DONE booking */}
+                      {userBooking ? (
+                        <div className="mb-8 pb-8 border-b border-gray-200">
+                          <p className="text-sm text-green-600 font-medium mb-4 flex items-center gap-2">
+                            <span className="text-lg">✓</span> Anda memiliki tiket untuk event ini
+                          </p>
+                          <ReviewForm
+                            eventId={eventId!}
+                            bookingId={userBooking.id}
+                            onReviewSubmitted={() => {
+                              // Refresh reviews after submission
+                              setReviewsLoading(true);
+                              axios.get(`${API_BASE}/reviews/event/${eventId}`).then((res) => {
+                                if (res.data.success) {
+                                  setReviews(res.data.data || []);
+                                }
+                                setReviewsLoading(false);
+                              });
+                            }}
+                            onClose={() => {}}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mb-8 pb-8 border-b border-gray-200 bg-orange-50 rounded-lg p-4">
+                          <p className="text-sm text-orange-700 font-medium">
+                            Beli tiket event ini untuk dapat memberikan review dan rating
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Reviews List */}
+                      <ReviewsList
+                        reviews={reviews}
+                        averageRating={organizerRating || undefined}
+                        totalReviews={reviews.length}
+                        showDeleteButton={true}
+                        currentUserId={localStorage.getItem("userId") || ""}
+                      />
+
+                      {reviews.length === 0 && (
+                        <div className="text-center py-12">
+                          <p className="text-gray-600 font-medium">
+                            Belum ada review untuk event ini
+                          </p>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Jadilah yang pertama memberikan review
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Booking Card (Desktop Only) */}
-          <div className="hidden lg:block w-80 lg:absolute lg:right-0 lg:top-0 lg:-mt-73">
+          <div className="hidden lg:block w-80 lg:absolute lg:right-0 lg:top-0 lg:-mt-73 lg:z-20">
             <div className="sticky top-24 space-y-4">
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-white rounded-lg shadow-md">
                 {/* Event Poster Placeholder */}
                 <div className="h-48 overflow-hidden bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
                   <span className="text-gray-600 text-center px-4">
@@ -442,16 +577,20 @@ export default function DetailEvent() {
                       <p className="text-xs text-gray-500 font-medium mb-2.5">
                         Diselenggarakan oleh
                       </p>
-                      <div className="flex items-center gap-2">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
+                      <button
+                        onClick={() => navigate(`/organizer/${event.organizer.id}`)}
+                        className="w-full flex items-center gap-2 cursor-pointer p-2 -mx-2 rounded-lg hover:bg-orange-50 transition-all duration-200 group bg-transparent border-none text-left"
+                        type="button"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0 group-hover:shadow-lg group-hover:scale-110 transition-all duration-200">
                           {event.organizer.full_name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 truncate">
+                          <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-orange-600 transition-colors duration-200">
                             {event.organizer.full_name}
                           </p>
                         </div>
-                      </div>
+                      </button>
                     </div>
                   )}
                 </div>

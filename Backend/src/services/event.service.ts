@@ -24,6 +24,17 @@ export const eventService = {
       deletedAt: null,
     };
 
+    if (!filters?.users_id) {
+      where.AND = [
+        {
+          OR: [
+            { end_event: null },
+            { end_event: { gt: new Date() } }
+          ]
+        }
+      ];
+    }
+
     if (filters?.users_id) {
       where.users_id = filters.users_id;
     }
@@ -32,9 +43,17 @@ export const eventService = {
     if (filters?.location) {
       const locations = filters.location.split(',').map(l => l.trim()).filter(Boolean);
       if (locations.length > 0) {
-        where.OR = locations.map(loc => ({
-          location: { contains: loc, mode: "insensitive" }
-        }));
+        const locationConditions = {
+          OR: locations.map(loc => ({
+            location: { contains: loc, mode: "insensitive" }
+          }))
+        };
+        
+        if (where.AND) {
+          where.AND.push(locationConditions);
+        } else {
+          where.AND = [locationConditions];
+        }
       }
     }
 
@@ -56,15 +75,17 @@ export const eventService = {
 
     // Search filter
     if (filters?.search) {
-      const searchConditions = [
-        { title: { contains: filters.search, mode: "insensitive" } },
-        { location: { contains: filters.search, mode: "insensitive" } },
-      ];
+      const searchConditions = {
+        OR: [
+          { title: { contains: filters.search, mode: "insensitive" } },
+          { location: { contains: filters.search, mode: "insensitive" } },
+        ]
+      };
       
-      if (where.OR && Array.isArray(where.OR)) {
-        where.AND = { OR: searchConditions };
+      if (where.AND) {
+        where.AND.push(searchConditions);
       } else {
-        where.OR = searchConditions;
+        where.AND = [searchConditions];
       }
     }
 
@@ -138,11 +159,34 @@ export const eventService = {
             full_name: true,
           },
         },
+        reviews: {
+          where: { deletedAt: null },
+          select: {
+            rating: true,
+          },
+        },
       },
     });
 
+    // Enrich with rating aggregates
+    const enrichedData = data.map((event) => {
+      const ratings = event.reviews || [];
+      const averageRating = ratings.length > 0
+        ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
+        : 0;
+
+      return {
+        ...event,
+        ratings: {
+          average: parseFloat(averageRating.toFixed(1)),
+          count: ratings.length,
+        },
+        reviews: undefined, // Remove reviews array from response
+      };
+    });
+
     return {
-      data,
+      data: enrichedData,
       meta: {
         total,
         page,

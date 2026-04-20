@@ -9,7 +9,7 @@ const VALID_STATUSES = Object.values(BookingStatus) as string[];
 export const bookingController = {
   async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { user_id, organizer_id } = req.query;
+      const { user_id, organizer_id, event_id } = req.query;
       const authenticatedUserId = req.user?.id;
 
       let bookings;
@@ -24,6 +24,10 @@ export const bookingController = {
           return;
         }
         bookings = await bookingService.getAll(orgIdString);
+      } else if (event_id && authenticatedUserId) {
+        // User querying their bookings for a specific event
+        const eventIdString = String(event_id);
+        bookings = await bookingService.getByUserAndEvent(String(authenticatedUserId), eventIdString);
       } else if (user_id) {
         const userIdString = String(user_id);
         if (userIdString !== String(authenticatedUserId)) {
@@ -52,6 +56,8 @@ export const bookingController = {
       // Re-fetch to get updated statuses
       if (isOrganizerQuery) {
         bookings = await bookingService.getAll(String(organizer_id));
+      } else if (event_id && authenticatedUserId) {
+        bookings = await bookingService.getByUserAndEvent(String(authenticatedUserId), String(event_id));
       } else {
         const finalUserId = user_id ? String(user_id) : String(authenticatedUserId);
         bookings = await bookingService.getByUser(finalUserId);
@@ -59,7 +65,6 @@ export const bookingController = {
 
       res.status(200).json({ success: true, data: bookings });
     } catch (error) {
-      console.error("[BOOKING.GETALL] Error:", error);
       next(error);
     }
   },

@@ -235,7 +235,7 @@ export type TicketsGroupByOutputType = {
   _max: TicketsMaxAggregateOutputType | null
 }
 
-type GetTicketsGroupByPayload<T extends TicketsGroupByArgs> = Prisma.PrismaPromise<
+export type GetTicketsGroupByPayload<T extends TicketsGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<TicketsGroupByOutputType, T['by']> &
       {
@@ -1604,6 +1604,11 @@ export type TicketsFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Skip the first `n` Tickets.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Tickets.
+   */
   distinct?: Prisma.TicketsScalarFieldEnum | Prisma.TicketsScalarFieldEnum[]
 }
 
