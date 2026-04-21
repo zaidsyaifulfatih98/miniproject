@@ -731,10 +731,6 @@ export type EventsUncheckedUpdateManyWithoutOrganizerNestedInput = {
   deleteMany?: Prisma.EventsScalarWhereInput | Prisma.EventsScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumEventCategoryFieldUpdateOperationsInput = {
   set?: $Enums.EventCategory
 }

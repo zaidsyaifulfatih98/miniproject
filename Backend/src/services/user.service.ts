@@ -136,6 +136,7 @@ export const userService = {
         role: true,
         referral_code: true,
         points: true,
+        profile_picture: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -193,8 +194,8 @@ export const userService = {
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET as string,
-      { expiresIn: "1d" }
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "7d" }
     );
 
     const { password: _, ...userData } = user;
@@ -259,5 +260,52 @@ export const userService = {
         },
       },
     });
+  },
+
+  /** Change password – validates current password first */
+  async changePassword(id: string, currentPassword: string, newPassword: string) {
+    const user = await prisma.users.findUnique({ where: { id }, select: { id: true, password: true } });
+    if (!user) throw new Error("User tidak ditemukan");
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) throw new Error("Password lama tidak sesuai");
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.users.update({ where: { id }, data: { password: hashed } });
+  },
+
+  /** Update profile picture URL */
+  async updateProfilePicture(id: string, url: string) {
+    return await prisma.users.update({
+      where: { id },
+      data: { profile_picture: url },
+      select: { id: true, profile_picture: true },
+    });
+  },
+
+  /** Generate a short-lived JWT for password reset and send email */
+  async generatePasswordResetToken(email: string) {
+    const user = await prisma.users.findUnique({
+      where: { email },
+      select: { id: true, full_name: true, email: true },
+    });
+    if (!user) throw new Error("Email tidak terdaftar");
+    const token = jwt.sign(
+      { id: user.id, purpose: "reset_password" },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "15m" }
+    );
+    return { token, user };
+  },
+
+  /** Verify reset token and set new password */
+  async resetPassword(token: string, newPassword: string) {
+    let decoded: any;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || "your-secret-key") as any;
+    } catch {
+      throw new Error("Token tidak valid atau sudah kadaluarsa");
+    }
+    if (decoded.purpose !== "reset_password") throw new Error("Token tidak valid");
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await prisma.users.update({ where: { id: decoded.id }, data: { password: hashed } });
   },
 };

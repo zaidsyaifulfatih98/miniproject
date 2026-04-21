@@ -124,4 +124,39 @@ export const emailService = {
       `,
     });
   },
+
+  async sendPasswordResetEmail({ email, fullName, resetUrl }: { email: string; fullName: string; resetUrl: string }) {
+    await transporter.sendMail({
+      from: `"LOKAHAJAT" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `🔐 Reset Password – LOKAHAJAT`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; padding: 32px;">
+          <div style="background: #ffffff; border-radius: 12px; padding: 32px; border: 1px solid #e5e7eb;">
+            <div style="text-align: center; margin-bottom: 24px;">
+              <div style="display: inline-block; background: #ede9fe; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px; text-align: center;">🔐</div>
+              <h1 style="font-size: 22px; font-weight: 700; color: #111827; margin: 12px 0 4px;">Reset Password</h1>
+              <p style="color: #6b7280; font-size: 14px;">Hei <strong>${fullName}</strong>, kami menerima permintaan reset password untuk akun kamu.</p>
+            </div>
+            <div style="text-align: center; margin: 28px 0;">
+              <a href="${resetUrl}" style="display: inline-block; background: #f97316; color: #ffffff; font-weight: 700; font-size: 15px; padding: 14px 32px; border-radius: 10px; text-decoration: none;">
+                Reset Password Sekarang
+              </a>
+            </div>
+            <p style="font-size: 13px; color: #6b7280; text-align: center;">
+              Link ini berlaku selama <strong>15 menit</strong>. Jika kamu tidak meminta reset password, abaikan email ini.
+            </p>
+            <div style="background: #f3f4f6; border-radius: 8px; padding: 12px 16px; margin-top: 20px;">
+              <p style="font-size: 12px; color: #9ca3af; margin: 0; word-break: break-all;">
+                Atau salin link ini: ${resetUrl}
+              </p>
+            </div>
+          </div>
+          <p style="text-align: center; font-size: 12px; color: #9ca3af; margin-top: 16px;">
+            Email ini dikirim otomatis oleh sistem LOKAHAJAT. Jangan balas email ini.
+          </p>
+        </div>
+      `,
+    });
+  },
 };

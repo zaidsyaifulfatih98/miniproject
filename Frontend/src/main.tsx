@@ -23,6 +23,8 @@ import BecomeOrganizer from './page/BecomeOrganizer'
 import Profile from './page/Profile'
 import OrganizerProfile from './page/OrganizerProfile'
 import Attendees from './page/Attendees'
+import ForgotPassword from './page/ForgotPassword'
+import ResetPassword from './page/ResetPassword'
 
 // Public Layout
 function PublicLayout() {
@@ -67,6 +69,14 @@ const router = createBrowserRouter([
           {
             path: '/login',
             Component: Login
+          },
+          {
+            path: '/forgot-password',
+            Component: ForgotPassword
+          },
+          {
+            path: '/reset-password',
+            Component: ResetPassword
           },
         ]
       },

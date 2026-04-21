@@ -36,3 +36,26 @@ export const uploadProofMiddleware = multer({
     fileSize: 2 * 1024 * 1024, // 2MB
   },
 });
+
+// ── Avatar upload ──────────────────────────────────────────────────────────────
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (_req, _file) => ({
+    folder: 'avatars',
+    format: 'jpg',
+    public_id: `avatar-${Date.now()}`,
+    transformation: [{ width: 400, height: 400, crop: 'fill', gravity: 'face' }],
+  }),
+});
+
+const avatarFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error('Format tidak valid. Gunakan JPG, PNG, atau WEBP'));
+};
+
+export const uploadAvatarMiddleware = multer({
+  storage: avatarStorage,
+  fileFilter: avatarFilter,
+  limits: { fileSize: 2 * 1024 * 1024 },
+});

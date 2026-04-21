@@ -17,6 +17,8 @@ import {
   FunnelChart,
   Funnel,
   LabelList,
+  ComposedChart,
+  Area,
 } from "recharts";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
@@ -90,6 +92,7 @@ export default function Report() {
   const [organizerEvents, setOrganizerEvents] = useState<OrganizerEvent[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [dbStats, setDbStats] = useState<{ detail_views: number; checkout_views: number; finalized_views: number } | null>(null);
+  const [timeView, setTimeView] = useState<"year" | "month" | "day">("month");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
@@ -162,7 +165,77 @@ export default function Report() {
       .map((g) => ({ name: g.name, value: total > 0 ? Math.round((counts[g.name] / total) * 100) : 0 }));
   })();
 
-  console.log(demographicsData)
+  // ─── Time-series data (by year / month / day) ───────────────────────────
+  const timeSeriesData = (() => {
+    const map: Record<string, { revenue: number; tickets: number; bookings: number }> = {};
+
+    const add = (key: string, b: BookingAPI) => {
+      if (!map[key]) map[key] = { revenue: 0, tickets: 0, bookings: 0 };
+      map[key].bookings += 1;
+      if (b.status === "DONE") {
+        map[key].revenue += Number(b.final_price ?? b.total_price ?? 0);
+        map[key].tickets += b.quantity ?? 0;
+      }
+    };
+
+    if (timeView === "year") {
+      bookings.forEach((b) => {
+        const key = new Date(b.createdAt).getFullYear().toString();
+        add(key, b);
+      });
+      return Object.entries(map)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([label, v]) => ({ label, ...v }));
+    }
+
+    if (timeView === "month") {
+      const cutoff = new Date();
+      cutoff.setMonth(cutoff.getMonth() - 11);
+      cutoff.setDate(1);
+      bookings
+        .filter((b) => new Date(b.createdAt) >= cutoff)
+        .forEach((b) => {
+          const d = new Date(b.createdAt);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+          add(key, b);
+        });
+      return Object.entries(map)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([label, v]) => ({
+          label: new Date(label + "-01").toLocaleDateString("id-ID", { month: "short", year: "2-digit" }),
+          ...v,
+        }));
+    }
+
+    // day — last 30 days
+    const today = new Date();
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      if (!map[key]) map[key] = { revenue: 0, tickets: 0, bookings: 0 };
+    }
+    bookings.forEach((b) => {
+      const key = new Date(b.createdAt).toISOString().slice(0, 10);
+      if (map[key]) add(key, b);
+    });
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, v]) => ({
+        label: new Date(label).toLocaleDateString("id-ID", { day: "numeric", month: "short" }),
+        ...v,
+      }));
+  })();
+
+  const totalRevTS = timeSeriesData.reduce((s, d) => s + d.revenue, 0);
+  const totalTixTS = timeSeriesData.reduce((s, d) => s + d.tickets, 0);
+  const totalBkgTS = timeSeriesData.reduce((s, d) => s + d.bookings, 0);
+
+  const TIME_VIEW_LABELS: Record<typeof timeView, string> = {
+    year: "Per Tahun",
+    month: "Per Bulan (12 bln terakhir)",
+    day: "Per Hari (30 hari terakhir)",
+  };
 
   // ─── Real hourly trend from bookings.createdAt ────────────────────────────
   const hourlyTrend = (() => {
@@ -311,6 +384,154 @@ export default function Report() {
             </FunnelChart>
           </ResponsiveContainer>
         </div>
+      </section>
+
+      {/* ── STATISTIK PENJUALAN BERDASARKAN WAKTU ──────────────────────────── */}
+      <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <SectionHeader
+            title="Statistik Penjualan Berdasarkan Waktu"
+            subtitle="Pendapatan, tiket terjual, dan jumlah transaksi dalam periode tertentu"
+          />
+          {/* Granularity toggle */}
+          <div className="flex gap-2 flex-shrink-0">
+            {(["year", "month", "day"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setTimeView(v)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                  timeView === v
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {v === "year" ? "Tahun" : v === "month" ? "Bulan" : "Hari"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Period label */}
+        <p className="text-xs text-gray-400 mb-4 -mt-2">{TIME_VIEW_LABELS[timeView]}</p>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="rounded-2xl p-5 bg-indigo-50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500 opacity-80">Pendapatan Bersih</p>
+            <p className="text-xl font-bold text-indigo-800 mt-1">{formatRupiah(totalRevTS)}</p>
+          </div>
+          <div className="rounded-2xl p-5 bg-purple-50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-purple-500 opacity-80">Tiket Terjual</p>
+            <p className="text-xl font-bold text-purple-800 mt-1">{totalTixTS.toLocaleString("id-ID")}</p>
+          </div>
+          <div className="rounded-2xl p-5 bg-sky-50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 opacity-80">Total Transaksi</p>
+            <p className="text-xl font-bold text-sky-800 mt-1">{totalBkgTS.toLocaleString("id-ID")}</p>
+          </div>
+        </div>
+
+        {/* Revenue bar + tickets line */}
+        {loading ? (
+          <div className="h-80 flex items-center justify-center text-gray-400 text-sm">Memuat data…</div>
+        ) : timeSeriesData.length === 0 ? (
+          <div className="h-80 flex items-center justify-center text-gray-400 text-sm">Belum ada data untuk periode ini.</div>
+        ) : (
+          <>
+            <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">Pendapatan & Tiket Terjual</h3>
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={timeSeriesData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    interval={timeView === "day" ? Math.floor(timeSeriesData.length / 8) : 0}
+                  />
+                  <YAxis
+                    yAxisId="rev"
+                    orientation="left"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    tickFormatter={(v) =>
+                      v >= 1_000_000
+                        ? `${(v / 1_000_000).toFixed(0)}jt`
+                        : v >= 1_000
+                        ? `${(v / 1_000).toFixed(0)}rb`
+                        : `${v}`
+                    }
+                  />
+                  <YAxis
+                    yAxisId="tix"
+                    orientation="right"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    }}
+                    formatter={(val, name) => {
+                      if (name === "revenue") return [formatRupiah(Number(val)), "Pendapatan"];
+                      if (name === "tickets") return [`${Number(val).toLocaleString("id-ID")} tiket`, "Tiket Terjual"];
+                      return [val, name];
+                    }}
+                  />
+                  <Legend
+                    iconType="circle"
+                    iconSize={10}
+                    formatter={(value) => (
+                      <span className="text-xs text-gray-600">
+                        {value === "revenue" ? "Pendapatan Bersih" : "Tiket Terjual"}
+                      </span>
+                    )}
+                  />
+                  <Area
+                    yAxisId="rev"
+                    type="monotone"
+                    dataKey="revenue"
+                    fill="#e0e7ff"
+                    stroke="#6366f1"
+                    strokeWidth={2}
+                  />
+                  <Bar
+                    yAxisId="tix"
+                    dataKey="tickets"
+                    fill="#a855f7"
+                    radius={[6, 6, 0, 0]}
+                    opacity={0.7}
+                    barSize={timeView === "year" ? 40 : timeView === "month" ? 22 : 8}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Bookings count bar chart */}
+            <h3 className="text-sm font-semibold text-gray-600 mb-3 mt-8 uppercase tracking-wide">Jumlah Transaksi</h3>
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={timeSeriesData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    interval={timeView === "day" ? Math.floor(timeSeriesData.length / 8) : 0}
+                  />
+                  <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "none",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                    }}
+                    formatter={(val) => [`${Number(val).toLocaleString("id-ID")} transaksi`, "Transaksi"]}
+                  />
+                  <Bar dataKey="bookings" fill="#0ea5e9" radius={[6, 6, 0, 0]} barSize={timeView === "year" ? 40 : timeView === "month" ? 22 : 8} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
       </section>
 
       {/* ── LAPORAN PENJUALAN ────────────────────────────────────────────────── */}
