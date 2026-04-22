@@ -71,8 +71,20 @@ export default function RootLayout() {
   const [pendingConfirmCount, setPendingConfirmCount] = useState(0);
   const pageLabel = breadcrumbLabels[location.pathname] ?? "Beranda";
 
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
+
+  // Keep user in sync with localStorage changes (e.g. avatar update)
+  useEffect(() => {
+    const onStorage = () => {
+      const stored = localStorage.getItem("user");
+      setUser(stored ? JSON.parse(stored) : null);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Fetch pending confirmation count for badge
   useEffect(() => {
@@ -164,15 +176,26 @@ export default function RootLayout() {
             onClick={() => setSidebarOpen(false)}
             className="flex items-center gap-3 w-full rounded-lg hover:bg-gray-100 px-1 py-1.5 transition-colors"
           >
-            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold text-gray-600 flex-none">
-              BS
+            <div className="w-8 h-8 rounded-full flex-none overflow-hidden">
+              {user?.profile_picture ? (
+                <img
+                  src={user.profile_picture}
+                  alt={user.full_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-orange-500 flex items-center justify-center text-xs font-semibold text-white">
+                  {user?.full_name
+                    ? user.full_name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()
+                    : "?"}
+                </div>
+              )}
             </div>
             {user && (
               <div className="min-w-0 flex-1 text-left">
                 <p className="text-sm font-semibold text-gray-800 truncate">{user.full_name}</p>
                 <p className="text-xs text-gray-400 truncate">{user.role}</p>
               </div>
-
             )}
             <ChevronRight className="w-4 h-4 text-gray-400 flex-none" />
           </Link>

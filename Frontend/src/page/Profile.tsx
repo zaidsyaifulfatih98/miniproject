@@ -262,7 +262,15 @@ export default function CustomerProfile() {
       const res = await axios.post(`${API_BASE}/users/${profile.id}/avatar`, formData, {
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
       });
-      setProfile((prev) => prev ? { ...prev, profile_picture: res.data.data.profile_picture } : prev);
+      const newPicture = res.data.data.profile_picture;
+      setProfile((prev) => prev ? { ...prev, profile_picture: newPicture } : prev);
+      // Sync to localStorage so Navbar reflects the change
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        localStorage.setItem("user", JSON.stringify({ ...parsed, profile_picture: newPicture }));
+        window.dispatchEvent(new Event("storage"));
+      }
     } catch {
       setError("Gagal mengunggah foto.");
     } finally {

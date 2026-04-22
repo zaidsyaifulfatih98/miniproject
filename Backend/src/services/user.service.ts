@@ -180,6 +180,7 @@ export const userService = {
         password: true,
         role: true,
         referral_code: true,
+        profile_picture: true,
       },
     });
 
