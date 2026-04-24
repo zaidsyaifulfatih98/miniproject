@@ -88,11 +88,10 @@ export default function RootLayout() {
 
   // Fetch pending confirmation count for badge
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const orgId = user?.id;
-    if (!orgId || !token) return;
+    if (!orgId) return;
     fetch(`${import.meta.env.VITE_API_BASE}/bookings?organizer_id=${orgId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
     })
       .then((r) => r.json())
       .then((res) => {
@@ -107,7 +106,7 @@ export default function RootLayout() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    fetch(`${import.meta.env.VITE_API_BASE}/users/logout`, { method: "POST", credentials: "include" }).catch(() => {});
     localStorage.removeItem("user");
     navigate("/login");
   };

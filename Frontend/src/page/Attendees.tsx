@@ -53,9 +53,8 @@ export default function Attendees() {
   // ── Fetch organizer's events ───────────────────────────────────────────────
   useEffect(() => {
     const user  = JSON.parse(localStorage.getItem("user") ?? "{}");
-    const token = localStorage.getItem("token");
     fetch(`${API_BASE}/events?organizer_id=${user?.id ?? ""}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
     })
       .then((r) => r.json())
       .then((res) => {
@@ -73,9 +72,8 @@ export default function Attendees() {
   const fetchAttendees = useCallback(() => {
     if (!selectedEventId) { setAttendees([]); return; }
     setLoading(true);
-    const token = localStorage.getItem("token");
     fetch(`${API_BASE}/bookings/attendees?event_id=${selectedEventId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
     })
       .then((r) => r.json())
       .then((res) => { if (res.success) setAttendees(res.data); })

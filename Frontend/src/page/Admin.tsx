@@ -125,11 +125,11 @@ export default function Admin() {
     if (!file || !profile) return;
     setAvatarUploading(true);
     try {
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("avatar", file);
       const res = await axios.post(`${API_BASE}/users/${profile.id}/avatar`, formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
       });
       const newPicture = res.data.data.profile_picture;
       setProfile((prev) => prev ? { ...prev, profile_picture: newPicture } : prev);
@@ -153,11 +153,10 @@ export default function Admin() {
     if (pwdForm.next.length < 6) { setPwdError("Password baru minimal 6 karakter"); return; }
     setPwdSaving(true); setPwdError(""); setPwdSuccess("");
     try {
-      const token = localStorage.getItem("token");
       await axios.post(
         `${API_BASE}/users/${profile?.id}/change-password`,
         { currentPassword: pwdForm.current, newPassword: pwdForm.next },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { withCredentials: true }
       );
       setPwdSuccess("Password berhasil diubah!");
       setPwdForm({ current: "", next: "", confirm: "" });

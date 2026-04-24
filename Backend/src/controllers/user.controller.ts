@@ -18,6 +18,14 @@ export const userController = {
 
       const result = await userService.login(email, password);
 
+      const isProduction = process.env.NODE_ENV === "production";
+      res.cookie("token", result.token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
       res.status(200).json({
         success: true,
         message: "Login berhasil",
@@ -26,6 +34,16 @@ export const userController = {
     } catch (error: any) {
       res.status(401).json({ success: false, message: error.message });
     }
+  },
+
+  async logout(req: Request, res: Response, next: NextFunction) {
+    const isProduction = process.env.NODE_ENV === "production";
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+    });
+    res.status(200).json({ success: true, message: "Logout berhasil" });
   },
 
   async create(req: Request, res: Response, next: NextFunction) {

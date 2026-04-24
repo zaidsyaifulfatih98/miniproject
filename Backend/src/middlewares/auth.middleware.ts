@@ -9,8 +9,10 @@ export interface AuthRequest extends Request {
 }
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction): void {
   try {
+    const cookieToken = (req as any).cookies?.token as string | undefined;
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(" ")[1];
+    const bearerToken = authHeader && authHeader.split(" ")[1];
+    const token = cookieToken || bearerToken;
 
     if (!token) {
       res.status(401).json({ success: false, message: "Token tidak ditemukan" });

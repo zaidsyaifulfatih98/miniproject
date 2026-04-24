@@ -9,6 +9,7 @@ const userRouter = Router();
 
 // Auth routes (no token needed)
 userRouter.post("/login", validate(loginSchema), userController.login);
+userRouter.post("/logout", userController.logout);
 userRouter.post("/forgot-password", userController.forgotPassword);
 userRouter.post("/reset-password", userController.resetPassword);
 

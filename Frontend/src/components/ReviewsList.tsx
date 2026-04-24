@@ -84,11 +84,8 @@ export default function ReviewsList({
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.delete(`${API_BASE}/reviews/${reviewId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        withCredentials: true,
       });
 
       if (response.data.success) {

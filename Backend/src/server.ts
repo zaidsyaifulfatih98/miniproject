@@ -1,6 +1,7 @@
 ﻿import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -20,6 +21,7 @@ const corsOptions: cors.CorsOptions = {
 const app = express();
 app.use(express.json());
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 try {
   const userRouter = require("./routers/user.router").default;

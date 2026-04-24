@@ -23,6 +23,7 @@ import BecomeOrganizer from './page/BecomeOrganizer'
 import Profile from './page/Profile'
 import OrganizerProfile from './page/OrganizerProfile'
 import Attendees from './page/Attendees'
+import OrganizerGuard from './components/OrganizerGuard'
 import ForgotPassword from './page/ForgotPassword'
 import ResetPassword from './page/ResetPassword'
 
@@ -129,39 +130,44 @@ const router = createBrowserRouter([
 
       // ── Dashboard Organizer ──
       {
-        element: <RootLayout />,
+        element: <OrganizerGuard />,
         children: [
           {
-            path: '/dashboard',
-            Component: Dashboard,
-          },
-          {
-            path: '/event',
-            Component: Event,
-          },
-          {
-            path: '/ticket',
-            Component: Ticket,
-          },
-          {
-            path: '/promos',
-            Component: Promos,
-          },
-          {
-            path: '/transactions',
-            Component: Transactions,
-          },
-          {
-            path: '/attendees',
-            Component: Attendees,
-          },
-          {
-            path: '/report',
-            Component: Report,
-          },
-          {
-            path: '/admin',
-            Component: Admin,
+            element: <RootLayout />,
+            children: [
+              {
+                path: '/dashboard',
+                Component: Dashboard,
+              },
+              {
+                path: '/event',
+                Component: Event,
+              },
+              {
+                path: '/ticket',
+                Component: Ticket,
+              },
+              {
+                path: '/promos',
+                Component: Promos,
+              },
+              {
+                path: '/transactions',
+                Component: Transactions,
+              },
+              {
+                path: '/attendees',
+                Component: Attendees,
+              },
+              {
+                path: '/report',
+                Component: Report,
+              },
+              {
+                path: '/admin',
+                Component: Admin,
+              }
+            ]
           }
         ]
       },

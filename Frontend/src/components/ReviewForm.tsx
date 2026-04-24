@@ -36,7 +36,6 @@ export default function ReviewForm({
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
       const response = await axios.post(
         `${API_BASE}/reviews`,
         {
@@ -45,11 +44,7 @@ export default function ReviewForm({
           rating,
           comment: comment.trim() || undefined,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { withCredentials: true }
       );
 
       if (response.data.success) {

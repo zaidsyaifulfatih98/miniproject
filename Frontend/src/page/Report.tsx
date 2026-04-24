@@ -96,12 +96,11 @@ export default function Report() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
-    const token = localStorage.getItem("token");
     const organizerId: string = user?.id ?? "";
     const url = organizerId
       ? `${API_BASE}/bookings?organizer_id=${organizerId}`
       : `${API_BASE}/bookings`;
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(url, { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         setBookings(Array.isArray(data) ? data : (data.data ?? []));

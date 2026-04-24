@@ -115,7 +115,7 @@ export default function Navbar() {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    fetch(`${API_BASE}/users/logout`, { method: "POST", credentials: "include" }).catch(() => {});
     localStorage.removeItem("user");
     setUser(null);
     setIsProfileDropdownOpen(false);

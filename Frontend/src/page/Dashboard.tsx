@@ -91,12 +91,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
-    const token = localStorage.getItem("token");
     const organizerId: string = user?.id ?? "";
     const qs = organizerId ? `?organizer_id=${organizerId}` : "";
-    const authHeader = { Authorization: `Bearer ${token}` };
     Promise.all([
-      fetch(`${API_BASE}/bookings${qs}`, { headers: authHeader }).then((r) => r.json()),
+      fetch(`${API_BASE}/bookings${qs}`, { credentials: "include" }).then((r) => r.json()),
       fetch(`${API_BASE}/events${qs}`).then((r) => r.json()),
       fetch(`${API_BASE}/users`).then((r) => r.json()),
     ])

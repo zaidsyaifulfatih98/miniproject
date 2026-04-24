@@ -75,10 +75,9 @@ export default function CreateEvent() {
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const token = localStorage.getItem("token");
         const userData = localStorage.getItem("user");
 
-        if (!token || !userData) {
+        if (!userData) {
           navigate("/login");
           return;
         }
@@ -216,8 +215,6 @@ export default function CreateEvent() {
     setSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
-
       const formDataToSend = new FormData();
       formDataToSend.append("title", formData.title);
       formDataToSend.append("location", formData.location);
@@ -237,8 +234,8 @@ export default function CreateEvent() {
       }
 
       const response = await axios.post(`${API_BASE}/events/create`, formDataToSend, {
+        withCredentials: true,
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
