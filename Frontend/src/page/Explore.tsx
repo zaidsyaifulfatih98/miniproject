@@ -27,6 +27,7 @@ interface Event {
   id: string;
   title: string;
   location: string;
+  image_url?: string | null;
   start_event: string;
   end_event: string;
   category?: string;
@@ -717,6 +718,7 @@ export default function Explore() {
                       date_start={event.start_event}
                       category={event.category}
                       price={event.price}
+                      image_url={event.image_url}
                       organizer_name={event.organizer?.full_name}
                       rating={event.ratings?.average}
                       review_count={event.ratings?.count}

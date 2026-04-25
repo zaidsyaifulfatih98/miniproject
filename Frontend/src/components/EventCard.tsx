@@ -8,6 +8,7 @@ interface EventCardProps {
   date_start: string;
   category?: string;
   price?: number | string;
+  image_url?: string | null;
   organizer_name?: string | null;
   rating?: number;
   review_count?: number;
@@ -28,6 +29,7 @@ export default function EventCard({
   date_start,
   category,
   price,
+  image_url,
   organizer_name,
   rating = 0,
   review_count = 0,
@@ -43,9 +45,22 @@ export default function EventCard({
       <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col cursor-pointer">
         {/* Image */}
         <div className="relative w-full aspect-video bg-gray-200 overflow-hidden">
-          <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-            <span className="text-gray-600 text-sm">📸 Event Image</span>
-          </div>
+          {image_url ? (
+            <img
+              src={image_url}
+              alt={title}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          ) : null}
+          {!image_url && (
+            <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+              <span className="text-gray-600 text-sm">📸 Event Image</span>
+            </div>
+          )}
           {category && (
             <span className="absolute top-3 right-3 px-2.5 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full">
               {category}

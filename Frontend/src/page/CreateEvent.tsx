@@ -217,8 +217,19 @@ export default function CreateEvent() {
 
     try {
       const token = localStorage.getItem("token");
+      const userData = localStorage.getItem("user");
+      
+      if (!userData) {
+        showToast("User data tidak ditemukan", "error");
+        setSubmitting(false);
+        return;
+      }
+
+      const parsedUser = JSON.parse(userData);
+      const userId = parsedUser.id;
 
       const formDataToSend = new FormData();
+      formDataToSend.append("users_id", userId);
       formDataToSend.append("title", formData.title);
       formDataToSend.append("location", formData.location);
       formDataToSend.append("start_event", formData.startDate);
@@ -236,7 +247,7 @@ export default function CreateEvent() {
         formDataToSend.append("image", formData.image);
       }
 
-      const response = await axios.post(`${API_BASE}/events/create`, formDataToSend, {
+      const response = await axios.post(`${API_BASE}/events`, formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

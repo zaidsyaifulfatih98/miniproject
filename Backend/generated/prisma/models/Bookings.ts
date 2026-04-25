@@ -50,6 +50,9 @@ export type BookingsMinAggregateOutputType = {
   ticket_id: string | null
   promotion_id: string | null
   quantity: number | null
+  buyer_name: string | null
+  buyer_email: string | null
+  buyer_phone: string | null
   status: $Enums.BookingStatus | null
   total_price: runtime.Decimal | null
   discount_amount: runtime.Decimal | null
@@ -71,6 +74,9 @@ export type BookingsMaxAggregateOutputType = {
   ticket_id: string | null
   promotion_id: string | null
   quantity: number | null
+  buyer_name: string | null
+  buyer_email: string | null
+  buyer_phone: string | null
   status: $Enums.BookingStatus | null
   total_price: runtime.Decimal | null
   discount_amount: runtime.Decimal | null
@@ -92,6 +98,9 @@ export type BookingsCountAggregateOutputType = {
   ticket_id: number
   promotion_id: number
   quantity: number
+  buyer_name: number
+  buyer_email: number
+  buyer_phone: number
   status: number
   total_price: number
   discount_amount: number
@@ -131,6 +140,9 @@ export type BookingsMinAggregateInputType = {
   ticket_id?: true
   promotion_id?: true
   quantity?: true
+  buyer_name?: true
+  buyer_email?: true
+  buyer_phone?: true
   status?: true
   total_price?: true
   discount_amount?: true
@@ -152,6 +164,9 @@ export type BookingsMaxAggregateInputType = {
   ticket_id?: true
   promotion_id?: true
   quantity?: true
+  buyer_name?: true
+  buyer_email?: true
+  buyer_phone?: true
   status?: true
   total_price?: true
   discount_amount?: true
@@ -173,6 +188,9 @@ export type BookingsCountAggregateInputType = {
   ticket_id?: true
   promotion_id?: true
   quantity?: true
+  buyer_name?: true
+  buyer_email?: true
+  buyer_phone?: true
   status?: true
   total_price?: true
   discount_amount?: true
@@ -281,6 +299,9 @@ export type BookingsGroupByOutputType = {
   ticket_id: string
   promotion_id: string | null
   quantity: number | null
+  buyer_name: string | null
+  buyer_email: string | null
+  buyer_phone: string | null
   status: $Enums.BookingStatus
   total_price: runtime.Decimal | null
   discount_amount: runtime.Decimal | null
@@ -325,6 +346,9 @@ export type BookingsWhereInput = {
   ticket_id?: Prisma.StringFilter<"Bookings"> | string
   promotion_id?: Prisma.StringNullableFilter<"Bookings"> | string | null
   quantity?: Prisma.IntNullableFilter<"Bookings"> | number | null
+  buyer_name?: Prisma.StringNullableFilter<"Bookings"> | string | null
+  buyer_email?: Prisma.StringNullableFilter<"Bookings"> | string | null
+  buyer_phone?: Prisma.StringNullableFilter<"Bookings"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"Bookings"> | $Enums.BookingStatus
   total_price?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -352,6 +376,9 @@ export type BookingsOrderByWithRelationInput = {
   ticket_id?: Prisma.SortOrder
   promotion_id?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyer_name?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyer_email?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyer_phone?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   total_price?: Prisma.SortOrderInput | Prisma.SortOrder
   discount_amount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -382,6 +409,9 @@ export type BookingsWhereUniqueInput = Prisma.AtLeast<{
   ticket_id?: Prisma.StringFilter<"Bookings"> | string
   promotion_id?: Prisma.StringNullableFilter<"Bookings"> | string | null
   quantity?: Prisma.IntNullableFilter<"Bookings"> | number | null
+  buyer_name?: Prisma.StringNullableFilter<"Bookings"> | string | null
+  buyer_email?: Prisma.StringNullableFilter<"Bookings"> | string | null
+  buyer_phone?: Prisma.StringNullableFilter<"Bookings"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"Bookings"> | $Enums.BookingStatus
   total_price?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -409,6 +439,9 @@ export type BookingsOrderByWithAggregationInput = {
   ticket_id?: Prisma.SortOrder
   promotion_id?: Prisma.SortOrderInput | Prisma.SortOrder
   quantity?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyer_name?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyer_email?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyer_phone?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   total_price?: Prisma.SortOrderInput | Prisma.SortOrder
   discount_amount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -438,6 +471,9 @@ export type BookingsScalarWhereWithAggregatesInput = {
   ticket_id?: Prisma.StringWithAggregatesFilter<"Bookings"> | string
   promotion_id?: Prisma.StringNullableWithAggregatesFilter<"Bookings"> | string | null
   quantity?: Prisma.IntNullableWithAggregatesFilter<"Bookings"> | number | null
+  buyer_name?: Prisma.StringNullableWithAggregatesFilter<"Bookings"> | string | null
+  buyer_email?: Prisma.StringNullableWithAggregatesFilter<"Bookings"> | string | null
+  buyer_phone?: Prisma.StringNullableWithAggregatesFilter<"Bookings"> | string | null
   status?: Prisma.EnumBookingStatusWithAggregatesFilter<"Bookings"> | $Enums.BookingStatus
   total_price?: Prisma.DecimalNullableWithAggregatesFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.DecimalNullableWithAggregatesFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -455,6 +491,9 @@ export type BookingsCreateInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -482,6 +521,9 @@ export type BookingsUncheckedCreateInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -501,6 +543,9 @@ export type BookingsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -528,6 +573,9 @@ export type BookingsUncheckedUpdateInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -551,6 +599,9 @@ export type BookingsCreateManyInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -568,6 +619,9 @@ export type BookingsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -589,6 +643,9 @@ export type BookingsUncheckedUpdateManyInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -620,6 +677,9 @@ export type BookingsCountOrderByAggregateInput = {
   ticket_id?: Prisma.SortOrder
   promotion_id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  buyer_name?: Prisma.SortOrder
+  buyer_email?: Prisma.SortOrder
+  buyer_phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
   total_price?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -649,6 +709,9 @@ export type BookingsMaxOrderByAggregateInput = {
   ticket_id?: Prisma.SortOrder
   promotion_id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  buyer_name?: Prisma.SortOrder
+  buyer_email?: Prisma.SortOrder
+  buyer_phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
   total_price?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -670,6 +733,9 @@ export type BookingsMinOrderByAggregateInput = {
   ticket_id?: Prisma.SortOrder
   promotion_id?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
+  buyer_name?: Prisma.SortOrder
+  buyer_email?: Prisma.SortOrder
+  buyer_phone?: Prisma.SortOrder
   status?: Prisma.SortOrder
   total_price?: Prisma.SortOrder
   discount_amount?: Prisma.SortOrder
@@ -920,6 +986,9 @@ export type BookingsCreateWithoutUserInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -945,6 +1014,9 @@ export type BookingsUncheckedCreateWithoutUserInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -997,6 +1069,9 @@ export type BookingsScalarWhereInput = {
   ticket_id?: Prisma.StringFilter<"Bookings"> | string
   promotion_id?: Prisma.StringNullableFilter<"Bookings"> | string | null
   quantity?: Prisma.IntNullableFilter<"Bookings"> | number | null
+  buyer_name?: Prisma.StringNullableFilter<"Bookings"> | string | null
+  buyer_email?: Prisma.StringNullableFilter<"Bookings"> | string | null
+  buyer_phone?: Prisma.StringNullableFilter<"Bookings"> | string | null
   status?: Prisma.EnumBookingStatusFilter<"Bookings"> | $Enums.BookingStatus
   total_price?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.DecimalNullableFilter<"Bookings"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1014,6 +1089,9 @@ export type BookingsCreateWithoutEventInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1039,6 +1117,9 @@ export type BookingsUncheckedCreateWithoutEventInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1084,6 +1165,9 @@ export type BookingsCreateWithoutTicketInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1109,6 +1193,9 @@ export type BookingsUncheckedCreateWithoutTicketInput = {
   event_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1154,6 +1241,9 @@ export type BookingsCreateWithoutPaymentInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1180,6 +1270,9 @@ export type BookingsUncheckedCreateWithoutPaymentInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1214,6 +1307,9 @@ export type BookingsUpdateWithoutPaymentInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1240,6 +1336,9 @@ export type BookingsUncheckedUpdateWithoutPaymentInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1258,6 +1357,9 @@ export type BookingsCreateWithoutReviewInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1284,6 +1386,9 @@ export type BookingsUncheckedCreateWithoutReviewInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1318,6 +1423,9 @@ export type BookingsUpdateWithoutReviewInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1344,6 +1452,9 @@ export type BookingsUncheckedUpdateWithoutReviewInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1362,6 +1473,9 @@ export type BookingsCreateWithoutPromotionInput = {
   id?: string
   display_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1387,6 +1501,9 @@ export type BookingsUncheckedCreateWithoutPromotionInput = {
   event_id: string
   ticket_id: string
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1435,6 +1552,9 @@ export type BookingsCreateManyUserInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1452,6 +1572,9 @@ export type BookingsUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1477,6 +1600,9 @@ export type BookingsUncheckedUpdateWithoutUserInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1499,6 +1625,9 @@ export type BookingsUncheckedUpdateManyWithoutUserInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1519,6 +1648,9 @@ export type BookingsCreateManyEventInput = {
   ticket_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1536,6 +1668,9 @@ export type BookingsUpdateWithoutEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1561,6 +1696,9 @@ export type BookingsUncheckedUpdateWithoutEventInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1583,6 +1721,9 @@ export type BookingsUncheckedUpdateManyWithoutEventInput = {
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1603,6 +1744,9 @@ export type BookingsCreateManyTicketInput = {
   event_id: string
   promotion_id?: string | null
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1620,6 +1764,9 @@ export type BookingsUpdateWithoutTicketInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1645,6 +1792,9 @@ export type BookingsUncheckedUpdateWithoutTicketInput = {
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1667,6 +1817,9 @@ export type BookingsUncheckedUpdateManyWithoutTicketInput = {
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
   promotion_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1687,6 +1840,9 @@ export type BookingsCreateManyPromotionInput = {
   event_id: string
   ticket_id: string
   quantity?: number | null
+  buyer_name?: string | null
+  buyer_email?: string | null
+  buyer_phone?: string | null
   status?: $Enums.BookingStatus
   total_price?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1704,6 +1860,9 @@ export type BookingsUpdateWithoutPromotionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   display_id?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1729,6 +1888,9 @@ export type BookingsUncheckedUpdateWithoutPromotionInput = {
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1751,6 +1913,9 @@ export type BookingsUncheckedUpdateManyWithoutPromotionInput = {
   event_id?: Prisma.StringFieldUpdateOperationsInput | string
   ticket_id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  buyer_name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  buyer_phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
   total_price?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   discount_amount?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
@@ -1774,6 +1939,9 @@ export type BookingsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   ticket_id?: boolean
   promotion_id?: boolean
   quantity?: boolean
+  buyer_name?: boolean
+  buyer_email?: boolean
+  buyer_phone?: boolean
   status?: boolean
   total_price?: boolean
   discount_amount?: boolean
@@ -1801,6 +1969,9 @@ export type BookingsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   ticket_id?: boolean
   promotion_id?: boolean
   quantity?: boolean
+  buyer_name?: boolean
+  buyer_email?: boolean
+  buyer_phone?: boolean
   status?: boolean
   total_price?: boolean
   discount_amount?: boolean
@@ -1826,6 +1997,9 @@ export type BookingsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   ticket_id?: boolean
   promotion_id?: boolean
   quantity?: boolean
+  buyer_name?: boolean
+  buyer_email?: boolean
+  buyer_phone?: boolean
   status?: boolean
   total_price?: boolean
   discount_amount?: boolean
@@ -1851,6 +2025,9 @@ export type BookingsSelectScalar = {
   ticket_id?: boolean
   promotion_id?: boolean
   quantity?: boolean
+  buyer_name?: boolean
+  buyer_email?: boolean
+  buyer_phone?: boolean
   status?: boolean
   total_price?: boolean
   discount_amount?: boolean
@@ -1864,7 +2041,7 @@ export type BookingsSelectScalar = {
   deletedAt?: boolean
 }
 
-export type BookingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "display_id" | "user_id" | "event_id" | "ticket_id" | "promotion_id" | "quantity" | "status" | "total_price" | "discount_amount" | "points_used" | "final_price" | "expires_at" | "has_rollback" | "rollback_reason" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bookings"]>
+export type BookingsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "display_id" | "user_id" | "event_id" | "ticket_id" | "promotion_id" | "quantity" | "buyer_name" | "buyer_email" | "buyer_phone" | "status" | "total_price" | "discount_amount" | "points_used" | "final_price" | "expires_at" | "has_rollback" | "rollback_reason" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["bookings"]>
 export type BookingsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UsersDefaultArgs<ExtArgs>
   event?: boolean | Prisma.EventsDefaultArgs<ExtArgs>
@@ -1904,6 +2081,9 @@ export type $BookingsPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     ticket_id: string
     promotion_id: string | null
     quantity: number | null
+    buyer_name: string | null
+    buyer_email: string | null
+    buyer_phone: string | null
     status: $Enums.BookingStatus
     total_price: runtime.Decimal | null
     discount_amount: runtime.Decimal | null
@@ -2351,6 +2531,9 @@ export interface BookingsFieldRefs {
   readonly ticket_id: Prisma.FieldRef<"Bookings", 'String'>
   readonly promotion_id: Prisma.FieldRef<"Bookings", 'String'>
   readonly quantity: Prisma.FieldRef<"Bookings", 'Int'>
+  readonly buyer_name: Prisma.FieldRef<"Bookings", 'String'>
+  readonly buyer_email: Prisma.FieldRef<"Bookings", 'String'>
+  readonly buyer_phone: Prisma.FieldRef<"Bookings", 'String'>
   readonly status: Prisma.FieldRef<"Bookings", 'BookingStatus'>
   readonly total_price: Prisma.FieldRef<"Bookings", 'Decimal'>
   readonly discount_amount: Prisma.FieldRef<"Bookings", 'Decimal'>

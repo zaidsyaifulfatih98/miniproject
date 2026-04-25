@@ -203,6 +203,7 @@ export const eventService = {
         id: true,
         title: true,
         location: true,
+        image_url: true,
         start_event: true,
         end_event: true,
         start_time: true,
@@ -239,6 +240,7 @@ export const eventService = {
           id: true,
           title: true,
           location: true,
+          image_url: true,
           start_event: true,
           end_event: true,
           start_time: true,
@@ -265,6 +267,7 @@ export const eventService = {
     description?: string;
     category?: EventCategory;
     location?: string;
+    image_url?: string | null;
     price: number;
     total_seats: number;
     available_seats: number;
@@ -276,8 +279,15 @@ export const eventService = {
   }) {
     const event = await prisma.events.create({
       data: {
-        ...data,
+        users_id: data.users_id,
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        location: data.location,
+        image_url: data.image_url,
         price: data.price,
+        total_seats: data.total_seats,
+        available_seats: data.available_seats,
         start_time: data.start_time ? new Date(data.start_time) : null,
         end_time: data.end_time ? new Date(data.end_time) : null,
         start_event: data.start_event ? new Date(data.start_event) : null,
@@ -308,6 +318,7 @@ export const eventService = {
       description?: string;
       category?: EventCategory;
       location?: string;
+      image_url?: string | null;
       price?: number;
       total_seats?: number;
       available_seats?: number;
@@ -321,7 +332,15 @@ export const eventService = {
     return await prisma.events.update({
       where: { id },
       data: {
-        ...data,
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        location: data.location,
+        image_url: data.image_url,
+        price: data.price,
+        total_seats: data.total_seats,
+        available_seats: data.available_seats,
+        status: data.status,
         start_time: data.start_time ? new Date(data.start_time) : undefined,
         end_time: data.end_time ? new Date(data.end_time) : undefined,
         start_event: data.start_event ? new Date(data.start_event) : undefined,

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { eventService } from "../services/event.service";
+import { uploadService } from "../services/upload.service";
 
 export const eventController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
@@ -61,9 +62,13 @@ export const eventController = {
         res.status(400).json({ success: false, message: "title, price, dan total_seats wajib diisi" });
         return;
       }
+
+      const imageUrl = uploadService.getImageUrl(req.file);
+
       const event = await eventService.create({
         ...req.body,
         available_seats: req.body.available_seats ?? total_seats,
+        image_url: imageUrl,
       });
       res.status(201).json({ success: true, message: "Event berhasil dibuat", data: event });
     } catch (error) {
@@ -73,7 +78,25 @@ export const eventController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const event = await eventService.update(req.params.id as string, req.body);
+      const eventId = req.params.id as string;
+      const currentEvent = await eventService.getById(eventId);
+      
+      if (!currentEvent) {
+        res.status(404).json({ success: false, message: "Event tidak ditemukan" });
+        return;
+      }
+
+      const imageUrl = uploadService.getImageUrl(req.file);
+      
+      // Delete old image if new image is uploaded
+      if (imageUrl && currentEvent.image_url) {
+        await uploadService.deleteImage(currentEvent.image_url);
+      }
+
+      const event = await eventService.update(eventId, {
+        ...req.body,
+        ...(imageUrl && { image_url: imageUrl }),
+      });
       res.status(200).json({ success: true, message: "Event berhasil diupdate", data: event });
     } catch (error) {
       next(error);
@@ -82,7 +105,14 @@ export const eventController = {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      await eventService.softDelete(req.params.id as string);
+      const eventId = req.params.id as string;
+      const event = await eventService.getById(eventId);
+      
+      if (event?.image_url) {
+        await uploadService.deleteImage(event.image_url);
+      }
+
+      await eventService.softDelete(eventId);
       res.status(200).json({ success: true, message: "Event berhasil dihapus" });
     } catch (error) {
       next(error);
@@ -109,6 +139,38 @@ export const eventController = {
       const id = req.params.id as string;
       const stats = await eventService.getStats(id);
       res.status(200).json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async uploadImage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const eventId = req.params.id as string;
+      
+      if (!req.file) {
+        res.status(400).json({ success: false, message: "File tidak ditemukan" });
+        return;
+      }
+
+      const currentEvent = await eventService.getById(eventId);
+      if (!currentEvent) {
+        res.status(404).json({ success: false, message: "Event tidak ditemukan" });
+        return;
+      }
+
+      const imageUrl = uploadService.getImageUrl(req.file);
+      
+      // Delete old image if exists
+      if (currentEvent.image_url) {
+        await uploadService.deleteImage(currentEvent.image_url);
+      }
+
+      const event = await eventService.update(eventId, {
+        image_url: imageUrl,
+      });
+
+      res.status(200).json({ success: true, message: "Gambar event berhasil diupload", data: event });
     } catch (error) {
       next(error);
     }
