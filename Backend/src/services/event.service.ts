@@ -159,31 +159,58 @@ export const eventService = {
             full_name: true,
           },
         },
-        reviews: {
-          where: { deletedAt: null },
-          select: {
-            rating: true,
-          },
-        },
       },
     });
 
-    // Enrich with rating aggregates
-    const enrichedData = data.map((event) => {
-      const ratings = event.reviews || [];
-      const averageRating = ratings.length > 0
-        ? ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length
-        : 0;
+    // Enrich with organizer rating aggregates (from all completed events)
+    const enrichedData = await Promise.all(
+      data.map(async (event) => {
+        // Get all completed events from this organizer (either status COMPLETED or end_event passed)
+        const completedEvents = await prisma.events.findMany({
+          where: {
+            users_id: event.users_id,
+            deletedAt: null,
+            OR: [
+              { status: EventStatus.COMPLETED },
+              { end_event: { lt: new Date() } }
+            ]
+          },
+          select: {
+            id: true,
+          },
+        });
 
-      return {
-        ...event,
-        ratings: {
-          average: parseFloat(averageRating.toFixed(1)),
-          count: ratings.length,
-        },
-        reviews: undefined, // Remove reviews array from response
-      };
-    });
+        // Get all reviews from organizer's completed events
+        const allReviews = await prisma.reviews.findMany({
+          where: {
+            event_id: {
+              in: completedEvents.map((e) => e.id),
+            },
+            deletedAt: null,
+          },
+          select: {
+            rating: true,
+          },
+        });
+
+        const averageRating =
+          allReviews.length > 0
+            ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
+            : 0;
+
+        console.log(
+          `[EVENT] ${event.title} (organizer: ${event.organizer?.full_name}): Completed events: ${completedEvents.length}, Total reviews: ${allReviews.length}, Avg rating: ${averageRating}`
+        );
+
+        return {
+          ...event,
+          ratings: {
+            average: parseFloat(averageRating.toFixed(1)),
+            count: allReviews.length,
+          },
+        };
+      })
+    );
 
     return {
       data: enrichedData,

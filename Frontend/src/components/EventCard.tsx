@@ -10,6 +10,7 @@ interface EventCardProps {
   price?: number | string;
   image_url?: string | null;
   organizer_name?: string | null;
+  organizer_id?: string;
   rating?: number;
   review_count?: number;
 }
@@ -92,16 +93,6 @@ export default function EventCard({
             <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="line-clamp-1">{organizer_name || 'Unknown Organizer'}</span>
           </div>
-
-          {/* Rating */}
-          {review_count > 0 && (
-            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm mb-2 sm:mb-3">
-              <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-gray-700 font-medium">
-                {rating.toFixed(1)} <span className="text-gray-500 text-[10px] sm:text-xs">({review_count} review)</span>
-              </span>
-            </div>
-          )}
 
           {/* Footer */}
           <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between">

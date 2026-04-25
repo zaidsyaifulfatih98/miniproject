@@ -214,10 +214,11 @@ export const reviewController = {
     try {
       const organizerId = req.params.organizerId as string;
       const { limit } = req.query;
+      const limitValue = limit ? parseInt(limit as string) : 10;
 
       const reviews = await reviewService.getReviewsByOrganizer(
         organizerId,
-        limit ? parseInt(limit as string) : 10
+        limitValue
       );
 
       res.status(200).json({

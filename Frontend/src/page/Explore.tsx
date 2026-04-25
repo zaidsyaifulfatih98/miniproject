@@ -720,6 +720,7 @@ export default function Explore() {
                       price={event.price}
                       image_url={event.image_url}
                       organizer_name={event.organizer?.full_name}
+                      organizer_id={event.organizer?.id}
                       rating={event.ratings?.average}
                       review_count={event.ratings?.count}
                     />

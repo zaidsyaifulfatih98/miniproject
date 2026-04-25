@@ -163,7 +163,6 @@ export const reviewService = {
       where: {
         event: {
           users_id: organizerId,
-          deletedAt: null,
         },
         deletedAt: null,
       },
@@ -186,7 +185,6 @@ export const reviewService = {
       where: {
         event: {
           users_id: organizerId,
-          deletedAt: null,
         },
         deletedAt: null,
       },
@@ -257,3 +255,4 @@ export const reviewService = {
     };
   },
 };
+
