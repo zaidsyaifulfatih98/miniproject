@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Calendar, Star, User } from 'lucide-react';
 
@@ -35,6 +36,8 @@ export default function EventCard({
   rating = 0,
   review_count = 0,
 }: EventCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   const eventDate = new Date(date_start).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'short',
@@ -46,18 +49,14 @@ export default function EventCard({
       <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col cursor-pointer">
         {/* Image */}
         <div className="relative w-full aspect-video bg-gray-200 overflow-hidden">
-          {image_url ? (
+          {image_url && !imgError ? (
             <img
               src={image_url}
               alt={title}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-              }}
+              onError={() => setImgError(true)}
             />
-          ) : null}
-          {!image_url && (
+          ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
               <span className="text-gray-600 text-sm">📸 Event Image</span>
             </div>

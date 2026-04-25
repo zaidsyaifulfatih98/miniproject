@@ -9,21 +9,20 @@ datasource db {
 
 
 model Users {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password      String
-  full_name     String    @db.VarChar(40)
-  birth_date    DateTime  @db.Date
-  gender        String    @db.VarChar(30)
-  address       String    @db.Text
-  role          Roles[]
-  referral_code String    @unique
-  profile_picture String? @db.VarChar()
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  full_name       String    @db.VarChar(40)
+  birth_date      DateTime  @db.Date
+  gender          String    @db.VarChar(30)
+  address         String    @db.Text
+  role            Roles[]
+  referral_code   String    @unique
+  profile_picture String?   @db.VarChar()
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
   points          Int       @default(0)
-  profile_picture String?
 
   events              Events[]
   bookings            Bookings[]
