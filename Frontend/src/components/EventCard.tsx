@@ -8,7 +8,9 @@ interface EventCardProps {
   date_start: string;
   category?: string;
   price?: number | string;
+  image_url?: string | null;
   organizer_name?: string | null;
+  organizer_id?: string;
   rating?: number;
   review_count?: number;
 }
@@ -28,6 +30,7 @@ export default function EventCard({
   date_start,
   category,
   price,
+  image_url,
   organizer_name,
   rating = 0,
   review_count = 0,
@@ -43,9 +46,22 @@ export default function EventCard({
       <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 h-full flex flex-col cursor-pointer">
         {/* Image */}
         <div className="relative w-full aspect-video bg-gray-200 overflow-hidden">
-          <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-            <span className="text-gray-600 text-sm">📸 Event Image</span>
-          </div>
+          {image_url ? (
+            <img
+              src={image_url}
+              alt={title}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+              }}
+            />
+          ) : null}
+          {!image_url && (
+            <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+              <span className="text-gray-600 text-sm">📸 Event Image</span>
+            </div>
+          )}
           {category && (
             <span className="absolute top-3 right-3 px-2.5 py-1 bg-orange-500 text-white text-xs font-semibold rounded-full">
               {category}
@@ -77,16 +93,6 @@ export default function EventCard({
             <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="line-clamp-1">{organizer_name || 'Unknown Organizer'}</span>
           </div>
-
-          {/* Rating */}
-          {review_count > 0 && (
-            <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm mb-2 sm:mb-3">
-              <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-gray-700 font-medium">
-                {rating.toFixed(1)} <span className="text-gray-500 text-[10px] sm:text-xs">({review_count} review)</span>
-              </span>
-            </div>
-          )}
 
           {/* Footer */}
           <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between">

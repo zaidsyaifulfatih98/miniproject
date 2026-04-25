@@ -21,6 +21,8 @@ export const createEventSchema = z.object({
 
   location: z.string().trim().optional(),
 
+  image_url: z.string().url("URL gambar tidak valid").optional(),
+
   price: z
     .number({ error: "Harga harus berupa angka" })
     .min(0, "Harga tidak boleh negatif"),

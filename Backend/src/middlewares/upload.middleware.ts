@@ -8,16 +8,19 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: async (req, file) => {
-    return {
-      folder: 'payment-proofs',
-      format: 'jpg',
-      public_id: `payment-${Date.now()}`,
-    };
-  },
-});
+// Create storage with dynamic folder based on upload type
+const createCloudinaryStorage = (folder: string) => {
+  return new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+      return {
+        folder: folder,
+        format: 'jpg',
+        public_id: `${folder}-${Date.now()}`,
+      };
+    },
+  });
+};
 
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   const allowedMimes = ['image/jpeg', 'image/png', 'application/pdf'];
@@ -29,11 +32,33 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   }
 };
 
+const imageFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimes = ['image/jpeg', 'image/png'];
+  
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Format file tidak valid. Hanya JPG dan PNG yang diperbolehkan'));
+  }
+};
+
+const maxFileSize = 2 * 1024 * 1024; // 2MB
+
+// Payment proof upload middleware
 export const uploadProofMiddleware = multer({
-  storage,
+  storage: createCloudinaryStorage('payment-proofs'),
   fileFilter,
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB
+    fileSize: maxFileSize,
+  },
+});
+
+// Event image upload middleware
+export const uploadEventImageMiddleware = multer({
+  storage: createCloudinaryStorage('event-images'),
+  fileFilter: imageFilter,
+  limits: {
+    fileSize: maxFileSize,
   },
 });
 

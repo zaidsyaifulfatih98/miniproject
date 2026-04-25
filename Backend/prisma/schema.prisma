@@ -18,6 +18,7 @@ model Users {
   address       String    @db.Text
   role          Roles[]
   referral_code String    @unique
+  profile_picture String? @db.VarChar()
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
@@ -40,6 +41,7 @@ model Events {
   description     String?     @db.Text
   category        EventCategory @default(LAINNYA)
   location        String?     @db.Text
+  image_url       String?     @db.VarChar()
   price           Decimal
   total_seats     Int
   available_seats Int
@@ -86,6 +88,9 @@ model Bookings {
   ticket_id       String
   promotion_id    String?
   quantity        Int?
+  buyer_name      String?       @db.VarChar(255)
+  buyer_email     String?       @db.VarChar(255)
+  buyer_phone     String?       @db.VarChar(20)
   status          BookingStatus @default(PENDING)
   total_price     Decimal?
   discount_amount Decimal?

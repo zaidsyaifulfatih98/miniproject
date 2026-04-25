@@ -29,35 +29,22 @@ export const reviewController = {
           data: review,
         });
       } catch (error: any) {
-        // Security guard errors
+        const message = error.message || 'Gagal membuat review';
+
+        let statusCode = 400;
         if (
-          error.message.includes('Error 403') ||
-          error.message.includes('belum berhak') ||
-          error.message.includes('belum selesai') ||
-          error.message.includes('status DONE')
+          message.includes('belum selesai') ||
+          message.includes('status DONE') ||
+          message.includes('tidak ditemukan')
         ) {
-          res.status(403).json({
-            success: false,
-            message: error.message,
-          });
-          return;
+          statusCode = 403;
         }
 
-        // Validation errors
-        if (
-          error.message.includes('Error 400') ||
-          error.message.includes('tidak sesuai') ||
-          error.message.includes('sudah memberikan') ||
-          error.message.includes('Satu review per event')
-        ) {
-          res.status(400).json({
-            success: false,
-            message: error.message,
-          });
-          return;
-        }
-
-        throw error;
+        res.status(statusCode).json({
+          success: false,
+          message: message,
+        });
+        return;
       }
     } catch (error) {
       next(error);
@@ -143,7 +130,7 @@ export const reviewController = {
           data: review,
         });
       } catch (error: any) {
-        if (error.message.includes('Error 403') || error.message.includes('tidak memiliki akses')) {
+        if (error.message.includes('tidak memiliki akses')) {
           res.status(403).json({
             success: false,
             message: error.message,
@@ -184,7 +171,7 @@ export const reviewController = {
           message: 'Review deleted successfully',
         });
       } catch (error: any) {
-        if (error.message.includes('Error 403') || error.message.includes('tidak memiliki akses')) {
+        if (error.message.includes('tidak memiliki akses')) {
           res.status(403).json({
             success: false,
             message: error.message,
@@ -227,10 +214,11 @@ export const reviewController = {
     try {
       const organizerId = req.params.organizerId as string;
       const { limit } = req.query;
+      const limitValue = limit ? parseInt(limit as string) : 10;
 
       const reviews = await reviewService.getReviewsByOrganizer(
         organizerId,
-        limit ? parseInt(limit as string) : 10
+        limitValue
       );
 
       res.status(200).json({

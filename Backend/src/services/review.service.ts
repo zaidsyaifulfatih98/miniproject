@@ -14,29 +14,31 @@ export const reviewService = {
 
       if (!booking) throw new Error('Booking tidak ditemukan');
       if (booking.user_id !== userId) throw new Error('Booking bukan milik user ini');
-      if (booking.status !== 'DONE') throw new Error('Hanya booking dengan status DONE yang bisa direview (Error 403)');
-      if (booking.event_id !== event_id) throw new Error('Event ID tidak sesuai dengan booking');
+      if (booking.status !== 'DONE') throw new Error('Hanya booking dengan status DONE yang bisa direview');
+      
+      // Gunakan event_id dari booking (yang sudah terbukti valid)
+      const event_id_from_booking = booking.event_id;
 
       // Validasi event sudah selesai
-      const event = await tx.events.findUnique({ where: { id: event_id } });
+      const event = await tx.events.findUnique({ where: { id: event_id_from_booking } });
       if (!event) throw new Error('Event tidak ditemukan');
 
       const now = new Date();
       if (event.end_event && event.end_event > now) {
-        throw new Error('Event belum selesai. Hanya event selesai yang bisa direview (Error 403)');
+        throw new Error('Event belum selesai. Hanya event selesai yang bisa direview');
       }
 
       // Cek duplicate review
       const existingReview = await tx.reviews.findFirst({
-        where: { user_id: userId, event_id: event_id, deletedAt: null },
+        where: { user_id: userId, event_id: event_id_from_booking, deletedAt: null },
       });
-      if (existingReview) throw new Error('Anda sudah memberikan review untuk event ini (Error 400)');
+      if (existingReview) throw new Error('Anda sudah memberikan review untuk event ini');
 
       // Create review
       const review = await tx.reviews.create({
         data: {
           user_id: userId,
-          event_id: event_id,
+          event_id: event_id_from_booking,
           booking_id: booking_id,
           rating,
           comment: comment || null,
@@ -120,7 +122,7 @@ export const reviewService = {
   async updateReview(reviewId: string, userId: string, data: UpdateReviewInput) {
     const review = await prisma.reviews.findUnique({ where: { id: reviewId } });
     if (!review) throw new Error('Review tidak ditemukan');
-    if (review.user_id !== userId) throw new Error('Anda tidak memiliki akses untuk update review ini (Error 403)');
+    if (review.user_id !== userId) throw new Error('Anda tidak memiliki akses untuk update review ini');
 
     return await prisma.reviews.update({
       where: { id: reviewId },
@@ -148,7 +150,7 @@ export const reviewService = {
   async deleteReview(reviewId: string, userId: string) {
     const review = await prisma.reviews.findUnique({ where: { id: reviewId } });
     if (!review) throw new Error('Review tidak ditemukan');
-    if (review.user_id !== userId) throw new Error('Anda tidak memiliki akses untuk delete review ini (Error 403)');
+    if (review.user_id !== userId) throw new Error('Anda tidak memiliki akses untuk delete review ini');
 
     return await prisma.reviews.update({
       where: { id: reviewId },
@@ -161,7 +163,6 @@ export const reviewService = {
       where: {
         event: {
           users_id: organizerId,
-          deletedAt: null,
         },
         deletedAt: null,
       },
@@ -184,7 +185,6 @@ export const reviewService = {
       where: {
         event: {
           users_id: organizerId,
-          deletedAt: null,
         },
         deletedAt: null,
       },
@@ -255,3 +255,4 @@ export const reviewService = {
     };
   },
 };
+

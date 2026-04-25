@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { MapPin, Calendar, Layers, X } from "lucide-react";
 import axios from "axios";
-
 import DOMPurify from "dompurify";
 import CheckoutModal from "../components/CheckoutModal";
 import ReviewForm from "../components/ReviewForm";
@@ -18,12 +17,14 @@ type EventStatus =
   | "REJECTED"
   | "COMPLETED"
   | "CANCELLED";
+
 type TabType = "deskripsi" | "tiket" | "syarat" | "review";
 
 interface EventDetail {
   id: string;
   title: string;
   location: string | null;
+  image_url?: string | null;
   start_event: string | null;
   end_event: string | null;
   start_time: string | null;
@@ -58,6 +59,7 @@ export default function DetailEvent() {
   const { eventId } = useParams<{ eventId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export default function DetailEvent() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [organizerRating, setOrganizerRating] = useState<number | null>(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [hasUserReview, setHasUserReview] = useState(false);
 
   // Fetch event detail
   useEffect(() => {
@@ -77,6 +80,7 @@ export default function DetailEvent() {
         const response = await fetch(`${API_BASE}/events/${eventId}`);
         if (!response.ok) throw new Error("Event not found");
         const data = await response.json();
+
         if (data.success) {
           setEvent(data.data);
           setError(null);
@@ -110,19 +114,28 @@ export default function DetailEvent() {
 
         // Fetch event reviews
         const reviewsResponse = await axios.get(
-          `${API_BASE}/reviews/event/${eventId}`
+          `${API_BASE}/reviews/event/${eventId}`,
         );
         if (reviewsResponse.data.success) {
           setReviews(reviewsResponse.data.data || []);
+
+          if (currentUserId && reviewsResponse.data.data) {
+            const userHasReviewed = reviewsResponse.data.data.some(
+              (review: any) => review.user?.id === currentUserId,
+            );
+            setHasUserReview(userHasReviewed);
+          }
         }
 
         // Fetch organizer average rating
         if (event.organizer?.id) {
           const ratingResponse = await axios.get(
-            `${API_BASE}/reviews/organizer/${event.organizer.id}/average`
+            `${API_BASE}/reviews/organizer/${event.organizer.id}/average`,
           );
           if (ratingResponse.data.success) {
-            setOrganizerRating(ratingResponse.data.data?.average_rating || null);
+            setOrganizerRating(
+              ratingResponse.data.data?.average_rating || null,
+            );
           }
         }
 
@@ -134,18 +147,22 @@ export default function DetailEvent() {
               `${API_BASE}/bookings?event_id=${eventId}`,
               { withCredentials: true }
             );
-            if (bookingResponse.data.success && bookingResponse.data.data.length > 0) {
+
+            if (
+              bookingResponse.data.success &&
+              bookingResponse.data.data.length > 0
+            ) {
               const doneBooking = bookingResponse.data.data.find(
-                (b: any) => b.status === "DONE"
+                (b: any) => b.status === "DONE",
               );
               setUserBooking(doneBooking || null);
             }
           } catch (err) {
-            // Booking not found, user doesn't have this ticket
+            // Booking not found
           }
         }
       } catch (err) {
-        // Silent fail - reviews section will show empty state
+        // Silent fail
       } finally {
         setReviewsLoading(false);
       }
@@ -155,17 +172,14 @@ export default function DetailEvent() {
   }, [event, eventId]);
 
   const isSoldOut = event && event.available_seats <= 0;
-
   const isEventEnded =
     event && event.end_event && new Date(event.end_event) < new Date();
 
   const getButtonState = () => {
-    if (isEventEnded) {
+    if (isEventEnded)
       return { disabled: true, text: "Event Ended", color: "bg-gray-400" };
-    }
-    if (isSoldOut) {
+    if (isSoldOut)
       return { disabled: true, text: "Sold Out", color: "bg-gray-400" };
-    }
     return {
       disabled: false,
       text: "Beli Tiket",
@@ -175,7 +189,6 @@ export default function DetailEvent() {
 
   const buttonState = getButtonState();
 
-  // Format date and time
   const formatDateTime = (date: string | null, time: string | null) => {
     if (!date) return "-";
     const dateObj = new Date(date);
@@ -197,7 +210,6 @@ export default function DetailEvent() {
     return formatted;
   };
 
-  // Format price
   const formatPrice = (price: number | string): string => {
     if (price === undefined || price === null) return "GRATIS";
     const numPrice = typeof price === "string" ? parseFloat(price) : price;
@@ -234,9 +246,7 @@ export default function DetailEvent() {
       {/* Toast Notification */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 px-4 py-3 rounded-lg text-white z-50 flex items-center gap-2 ${
-            toast.type === "success" ? "bg-green-500" : "bg-red-500"
-          }`}
+          className={`fixed top-4 right-4 px-4 py-3 rounded-lg text-white z-50 flex items-center gap-2 ${toast.type === "success" ? "bg-green-500" : "bg-red-500"}`}
         >
           {toast.message}
           <button onClick={() => setToast(null)} className="ml-2">
@@ -246,28 +256,39 @@ export default function DetailEvent() {
       )}
 
       {/* Header Banner Section */}
-      <div
-        className="relative h-64 md:h-80 bg-gradient-to-r from-orange-600 to-amber-700 bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(135deg, rgba(194, 97, 25, 0.8), rgba(180, 83, 9, 0.8))`,
-        }}
-      >
-        <div className="relative z-10 h-full flex flex-col justify-end p-6 md:p-8 lg:p-12">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight max-w-2xl">
+      <div className="relative h-64 md:h-80 overflow-hidden bg-gray-900">
+        {/* Background Blur */}
+        <div
+          className="absolute inset-0 bg-cover bg-center transition-all duration-500"
+          style={{
+            backgroundImage: event.image_url
+              ? `url(${event.image_url})`
+              : `linear-gradient(135deg, #c26119, #b45309)`,
+            filter: "blur(20px)",
+            transform: "scale(1.1)",
+          }}
+        />
+
+        {/* Overlay Gelap */}
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
+
+        {/* Konten Teks */}
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-4 md:px-6 flex flex-col justify-end pb-8 md:pb-10">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight max-w-2xl drop-shadow-md">
             {event.title}
           </h1>
 
-          <div className="space-y-2 text-white">
+          <div className="space-y-2 text-white/90">
             {event.location && (
               <div className="flex items-center gap-2 text-sm md:text-base">
-                <MapPin size={20} className="flex-shrink-0" />
+                <MapPin size={18} className="flex-shrink-0" />
                 <span>{event.location}</span>
               </div>
             )}
 
             {event.start_event && (
               <div className="flex items-center gap-2 text-sm md:text-base">
-                <Calendar size={20} className="flex-shrink-0" />
+                <Calendar size={18} className="flex-shrink-0" />
                 <span>
                   {formatDateTime(event.start_event, event.start_time)}
                   {event.end_event &&
@@ -278,7 +299,7 @@ export default function DetailEvent() {
 
             {event.category && (
               <div className="flex items-center gap-2 text-sm md:text-base">
-                <Layers size={20} className="flex-shrink-0" />
+                <Layers size={18} className="flex-shrink-0" />
                 <span>{event.category}</span>
               </div>
             )}
@@ -304,7 +325,6 @@ export default function DetailEvent() {
               {tab === "tiket" && "Tiket"}
               {tab === "syarat" && "Syarat"}
               {tab === "review" && "Review"}
-
               {activeTab === tab && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500"></div>
               )}
@@ -314,7 +334,6 @@ export default function DetailEvent() {
 
         {/* Content Layout */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-0 relative lg:min-h-screen">
-          {/* Left Content Area */}
           <div className="flex-1 lg:pr-96 relative z-10">
             {/* Description Tab */}
             {activeTab === "deskripsi" && (
@@ -348,7 +367,6 @@ export default function DetailEvent() {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
                     Pilih Tiket
                   </h2>
-
                   {isSoldOut ? (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
                       <p className="text-red-600 font-semibold text-lg mb-2">
@@ -425,7 +443,6 @@ export default function DetailEvent() {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
                     Review & Rating
                   </h2>
-
                   {reviewsLoading ? (
                     <div className="text-center py-12">
                       <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
@@ -433,37 +450,50 @@ export default function DetailEvent() {
                     </div>
                   ) : (
                     <>
-                      {/* Review Form - Only show if user has DONE booking */}
                       {userBooking ? (
                         <div className="mb-8 pb-8 border-b border-gray-200">
                           <p className="text-sm text-green-600 font-medium mb-4 flex items-center gap-2">
-                            <span className="text-lg">✓</span> Anda memiliki tiket untuk event ini
+                            <span className="text-lg">✓</span> Anda memiliki
+                            tiket untuk event ini
                           </p>
                           <ReviewForm
                             eventId={eventId!}
                             bookingId={userBooking.id}
+                            hasUserReview={hasUserReview}
                             onReviewSubmitted={() => {
-                              // Refresh reviews after submission
                               setReviewsLoading(true);
-                              axios.get(`${API_BASE}/reviews/event/${eventId}`).then((res) => {
-                                if (res.data.success) {
-                                  setReviews(res.data.data || []);
-                                }
-                                setReviewsLoading(false);
-                              });
+                              axios
+                                .get(`${API_BASE}/reviews/event/${eventId}`)
+                                .then((res) => {
+                                  if (res.data.success) {
+                                    setReviews(res.data.data || []);
+                                    const userData =
+                                      localStorage.getItem("user");
+                                    const currentUserId = userData
+                                      ? JSON.parse(userData).id
+                                      : null;
+                                    if (currentUserId && res.data.data) {
+                                      const userHasReviewed =
+                                        res.data.data.some(
+                                          (review: any) =>
+                                            review.user?.id === currentUserId,
+                                        );
+                                      setHasUserReview(userHasReviewed);
+                                    }
+                                  }
+                                  setReviewsLoading(false);
+                                });
                             }}
-                            onClose={() => {}}
                           />
                         </div>
                       ) : (
                         <div className="mb-8 pb-8 border-b border-gray-200 bg-orange-50 rounded-lg p-4">
                           <p className="text-sm text-orange-700 font-medium">
-                            Beli tiket event ini untuk dapat memberikan review dan rating
+                            Beli tiket event ini untuk dapat memberikan review
+                            dan rating
                           </p>
                         </div>
                       )}
-
-                      {/* Reviews List */}
                       <ReviewsList
                         reviews={reviews}
                         averageRating={organizerRating || undefined}
@@ -471,7 +501,6 @@ export default function DetailEvent() {
                         showDeleteButton={true}
                         currentUserId={localStorage.getItem("userId") || ""}
                       />
-
                       {reviews.length === 0 && (
                         <div className="text-center py-12">
                           <p className="text-gray-600 font-medium">
@@ -493,14 +522,19 @@ export default function DetailEvent() {
           <div className="hidden lg:block w-80 lg:absolute lg:right-0 lg:top-0 lg:-mt-73 lg:z-20">
             <div className="sticky top-24 space-y-4">
               <div className="bg-white rounded-lg shadow-md">
-                {/* Event Poster Placeholder */}
-                <div className="h-48 overflow-hidden bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                  <span className="text-gray-600 text-center px-4">
-                    📸 Event Image
-                  </span>
+                <div className="h-48 overflow-hidden bg-gray-200">
+                  {event.image_url ? (
+                    <img
+                      src={event.image_url}
+                      alt={event.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                      <span className="text-gray-500 text-xs">No Image</span>
+                    </div>
+                  )}
                 </div>
-
-                {/* Content */}
                 <div className="p-4 space-y-4">
                   <div>
                     <p className="text-xs text-gray-500 font-medium mb-1.5">
@@ -510,9 +544,10 @@ export default function DetailEvent() {
                       {formatPrice(event.price)}
                     </p>
                   </div>
-
                   <button
-                    onClick={() => !buttonState.disabled && setIsCheckoutOpen(true)}
+                    onClick={() =>
+                      !buttonState.disabled && setIsCheckoutOpen(true)
+                    }
                     disabled={buttonState.disabled}
                     className={`w-full py-2.5 px-4 rounded-lg font-semibold text-white transition-all duration-200 text-sm relative z-10 pointer-events-auto ${
                       buttonState.disabled
@@ -522,8 +557,6 @@ export default function DetailEvent() {
                   >
                     {buttonState.text}
                   </button>
-
-                  {/* Event Details */}
                   <div className="space-y-2.5 py-4 border-t border-b border-gray-200">
                     {event.location && (
                       <div>
@@ -536,7 +569,6 @@ export default function DetailEvent() {
                         </p>
                       </div>
                     )}
-
                     {event.start_event && (
                       <div>
                         <p className="text-xs text-gray-500 font-medium mb-1">
@@ -556,7 +588,6 @@ export default function DetailEvent() {
                         </p>
                       </div>
                     )}
-
                     <div>
                       <p className="text-xs text-gray-500 font-medium mb-1">
                         Tiket Tersedia
@@ -568,15 +599,15 @@ export default function DetailEvent() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Organizer */}
                   {event.organizer && (
                     <div className="py-3">
                       <p className="text-xs text-gray-500 font-medium mb-2.5">
                         Diselenggarakan oleh
                       </p>
                       <button
-                        onClick={() => navigate(`/organizer/${event.organizer.id}`)}
+                        onClick={() =>
+                          navigate(`/organizer/${event.organizer.id}`)
+                        }
                         className="w-full flex items-center gap-2 cursor-pointer p-2 -mx-2 rounded-lg hover:bg-orange-50 transition-all duration-200 group bg-transparent border-none text-left"
                         type="button"
                       >
@@ -611,26 +642,15 @@ export default function DetailEvent() {
             {buttonState.text}
           </button>
         </div>
-
-        {/* Mobile Bottom Padding */}
         <div className="lg:hidden h-24"></div>
       </div>
 
       <style>{`
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-in-out;
-        }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-in-out; }
       `}</style>
 
       {/* Checkout Modal */}
@@ -649,4 +669,3 @@ export default function DetailEvent() {
     </div>
   );
 }
-

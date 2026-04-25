@@ -88,13 +88,17 @@ export default function OrganizerProfile() {
         const statsRes = await axios.get(`${API_BASE}/reviews/organizer/${organizerId}/average`);
         setStats(statsRes.data.data);
 
-        // Get organizer reviews
-        const reviewsRes = await axios.get(`${API_BASE}/reviews/organizer/${organizerId}?limit=20`);
-        setReviews(reviewsRes.data.data || []);
+        // Get organizer reviews from database
+        const reviewsRes = await axios.get(`${API_BASE}/reviews/organizer/${organizerId}?limit=100`);
+        if (reviewsRes.data.success) {
+          setReviews(reviewsRes.data.data || []);
+        }
 
-        // Get organizer events
-        const eventsRes = await axios.get(`${API_BASE}/events?organizer_id=${organizerId}`);
-        setEvents(eventsRes.data.data || []);
+        // Get organizer events (filter active events only)
+        const eventsRes = await axios.get(`${API_BASE}/events?organizer_id=${organizerId}&status=ACTIVE`);
+        if (eventsRes.data.success) {
+          setEvents(eventsRes.data.data || []);
+        }
       } catch (err: any) {
         setError(err.response?.data?.message || 'Gagal memuat profil organizer');
       } finally {
@@ -270,7 +274,7 @@ export default function OrganizerProfile() {
                 <div
                   key={event.id}
                   className="flex items-start gap-3 pb-3 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-orange-50 p-2 rounded transition"
-                  onClick={() => navigate(`/event/${event.id}`)}
+                  onClick={() => navigate(`/events/${event.id}`)}
                 >
                   <Calendar size={20} className="text-orange-500 flex-shrink-0 mt-1" />
                   <div>

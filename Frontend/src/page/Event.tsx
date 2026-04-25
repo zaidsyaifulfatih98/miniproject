@@ -1,6 +1,7 @@
 ﻿
 import { useState, useRef, useEffect, useCallback } from "react";
 
+
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 type EventStatus = "DRAFT" | "PENDING" | "ACTIVE" | "REJECTED" | "COMPLETED" | "CANCELLED";
@@ -17,6 +18,7 @@ interface EventItem {
   total_seats: number;
   available_seats: number;
   banner: string;
+  image_url?: string | null;
   description: string | null;
   category: string | null;
   status: EventStatus;
@@ -142,27 +144,34 @@ export default function Event() {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
     const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
-    const payload = {
-      users_id: currentUser.id,
-      title: form.title,
-      location: form.location,
-      description: form.description,
-      category: form.category.toUpperCase(),
-      status: form.status,
-      price: Number(form.price),
-      total_seats: Number(form.total_seats),
-      available_seats: Number(form.total_seats),
-      start_event: form.dateStart ? `${form.dateStart}T${form.timeStart || "00:00"}:00` : undefined,
-      end_event: form.dateEnd ? `${form.dateEnd}T${form.timeEnd || "00:00"}:00` : undefined,
-    };
+    const formDataToSend = new FormData();
+    
+    formDataToSend.append("users_id", currentUser.id);
+    formDataToSend.append("title", form.title);
+    formDataToSend.append("location", form.location);
+    formDataToSend.append("description", form.description);
+    formDataToSend.append("category", form.category.toUpperCase());
+    formDataToSend.append("status", form.status);
+    formDataToSend.append("price", String(Number(form.price)));
+    formDataToSend.append("total_seats", String(Number(form.total_seats)));
+    formDataToSend.append("available_seats", String(Number(form.total_seats)));
+    formDataToSend.append("start_event", form.dateStart ? `${form.dateStart}T${form.timeStart || "00:00"}:00` : "");
+    formDataToSend.append("end_event", form.dateEnd ? `${form.dateEnd}T${form.timeEnd || "00:00"}:00` : "");
+    
+    // Add image file if exists (banner should be actual file, not data URL)
+    if (bannerInputRef.current?.files?.[0]) {
+      formDataToSend.append("image", bannerInputRef.current.files[0]);
+    }
 
     try {
       const url = editId ? `${API_BASE}/events/${editId}` : `${API_BASE}/events`;
       const method = editId ? "PUT" : "POST";
+      const token = localStorage.getItem("token");
+      
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formDataToSend,
       });
       if (!res.ok) {
         const json = await res.json();
@@ -172,6 +181,9 @@ export default function Event() {
       setErrors({});
       setShowForm(false);
       setEditId(null);
+      if (bannerInputRef.current) {
+        bannerInputRef.current.value = "";
+      }
       fetchEvents();
     } catch (err: any) {
       setError(err.message);
@@ -204,6 +216,10 @@ export default function Event() {
       : ev.end_event
       ? new Date(ev.end_event).toTimeString().slice(0, 5)
       : "";
+    
+    // Use image_url if available, otherwise use banner
+    const imageUrl = ev.image_url || ev.banner;
+    
     setForm({
       title: ev.title,
       location: ev.location ?? "",
@@ -213,7 +229,7 @@ export default function Event() {
       timeEnd: endTime,
       total_seats: String(ev.total_seats),
       price: ev.price,
-      banner: ev.banner ?? "",
+      banner: imageUrl ?? "",
       description: ev.description ?? "",
       category: (ev.category ? (categoryLabel[ev.category] as EventCategory) : "Konser") ?? "Konser",
       status: ev.status,
@@ -497,7 +513,9 @@ export default function Event() {
                 <tr key={ev.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      {ev.banner ? (
+                      {ev.image_url ? (
+                        <img src={ev.image_url} alt={ev.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                      ) : ev.banner ? (
                         <img src={ev.banner} alt={ev.title} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">

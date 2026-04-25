@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -178,7 +177,6 @@ function formatDate(d: string) {
 }
 
 export default function Transactions() {
-  const navigate = useNavigate();
   const [bookings, setBookings]       = useState<BookingAPI[]>([]);
   const [loading, setLoading]         = useState(true);
   const [tab, setTab]                 = useState<"transaksi" | "statistik">("transaksi");

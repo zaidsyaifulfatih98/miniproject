@@ -216,6 +216,7 @@ export default function CreateEvent() {
 
     try {
       const formDataToSend = new FormData();
+      formDataToSend.append("users_id", userId);
       formDataToSend.append("title", formData.title);
       formDataToSend.append("location", formData.location);
       formDataToSend.append("start_event", formData.startDate);
