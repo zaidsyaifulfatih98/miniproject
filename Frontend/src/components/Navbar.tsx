@@ -47,15 +47,22 @@ export default function Navbar() {
 
   // Check user auth on mount
   useEffect(() => {
-    try {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
+    const readUser = () => {
+      try {
+        const userData = localStorage.getItem("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error);
       }
-    } catch (error) {
-      console.error("Error parsing user data:", error);
-    }
+    };
+
+    readUser();
+    window.addEventListener("storage", readUser);
+    return () => window.removeEventListener("storage", readUser);
   }, []);
 
   const handleCreateEventClick = () => {
@@ -108,7 +115,7 @@ export default function Navbar() {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    fetch(`${API_BASE}/users/logout`, { method: "POST", credentials: "include" }).catch(() => {});
     localStorage.removeItem("user");
     setUser(null);
     setIsProfileDropdownOpen(false);

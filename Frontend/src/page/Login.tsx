@@ -18,9 +18,8 @@ export default function Login() {
 
   useEffect(() => {
     try {
-      const token = localStorage.getItem("token");
       const user = localStorage.getItem("user");
-      if (token && user) {
+      if (user) {
         const parsedUser = JSON.parse(user);
         if (parsedUser.role?.includes("ORGANIZER")) {
           navigate("/dashboard", { replace: true });
@@ -59,19 +58,20 @@ export default function Login() {
     try {
       let response = await axios.post(
         `${API_BASE}/users/login`,
-        form
+        form,
+        { withCredentials: true }
       );
 
       if (!response.data.success) {
         response = await axios.post(
           `${API_BASE}/users/login/organizer`,
-          form
+          form,
+          { withCredentials: true }
         );
       }
 
-      const { token, user } = response.data.data;
+      const { user } = response.data.data;
 
-      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
       if (returnTo) {

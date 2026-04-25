@@ -111,9 +111,6 @@ export default function DetailEvent() {
 
       try {
         setReviewsLoading(true);
-        const token = localStorage.getItem("token");
-        const userData = localStorage.getItem("user");
-        const currentUserId = userData ? JSON.parse(userData).id : null;
 
         // Fetch event reviews
         const reviewsResponse = await axios.get(
@@ -143,11 +140,12 @@ export default function DetailEvent() {
         }
 
         // Fetch user's booking for this event if logged in
-        if (token) {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
           try {
             const bookingResponse = await axios.get(
               `${API_BASE}/bookings?event_id=${eventId}`,
-              { headers: { Authorization: `Bearer ${token}` } },
+              { withCredentials: true }
             );
 
             if (

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { User, Ticket, FileText, Edit2, Save, X, Home, ArrowRight, RefreshCw, Star } from "lucide-react";
+import { User, Ticket, FileText, Edit2, Save, X, Home, ArrowRight, RefreshCw, Star, Camera, Lock, Gift, Coins } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { loadAndRenderTicketTemplate } from "../templates/ticketRenderer";
@@ -20,6 +20,7 @@ interface UserProfile {
   role: string[];
   createdAt: string;
   profile_picture?: string;
+  points?: number;
 }
 
 interface TicketItem {
@@ -47,7 +48,7 @@ interface Transaction {
 }
 
 type EditableDraft = Pick<UserProfile, "full_name" | "email" | "birth_date" | "gender" | "address">;
-type TabType = "profile" | "tickets" | "transactions";
+type TabType = "profile" | "tickets" | "transactions" | "points";
 
 export default function CustomerProfile() {
   const navigate = useNavigate();
@@ -74,6 +75,23 @@ export default function CustomerProfile() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [reviewModal, setReviewModal] = useState<{ ticketId: string; eventId: string } | null>(null);
 
+  // Avatar upload
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  // Change password
+  const [pwdModal, setPwdModal] = useState(false);
+  const [pwdForm, setPwdForm] = useState({ current: "", next: "", confirm: "" });
+  const [pwdError, setPwdError] = useState("");
+  const [pwdSaving, setPwdSaving] = useState(false);
+  const [pwdSuccess, setPwdSuccess] = useState("");
+
+  // Points
+  const [availablePoints, setAvailablePoints] = useState(0);
+  const [pointsHistory, setPointsHistory] = useState<any[]>([]);
+  const [coupons, setCoupons] = useState<any[]>([]);
+  const [pointsLoading, setPointsLoading] = useState(false);
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) {
@@ -94,6 +112,14 @@ export default function CustomerProfile() {
           gender: data.gender,
           address: data.address,
         });
+        // fetch points
+        return axios.get(`${API_BASE}/users/${id}/points-history`);
+      })
+      .then((res) => {
+        if (res?.data?.data) {
+          setAvailablePoints(res.data.data.available_points ?? 0);
+          setPointsHistory(res.data.data.history ?? []);
+        }
       })
       .catch(() => setError("Gagal memuat profil."))
       .finally(() => setLoading(false));
@@ -109,11 +135,8 @@ export default function CustomerProfile() {
       }
       const { id: userId } = JSON.parse(storedUser);
 
-      const token = localStorage.getItem("token");
       const response = await axios.get(`${API_BASE}/bookings?user_id=${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        withCredentials: true,
       });
       
       const bookingData = response.data.data || [];
@@ -161,13 +184,10 @@ export default function CustomerProfile() {
       }
       const { id: userId } = JSON.parse(storedUser);
 
-      const token = localStorage.getItem("token");
       const url = `${API_BASE}/bookings?user_id=${userId}`;
       
       const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        withCredentials: true,
       });
       
       const bookingData = response.data.data || [];
@@ -225,11 +245,79 @@ export default function CustomerProfile() {
     await loadTickets();
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await axios.post(`${API_BASE}/users/${profile.id}/avatar`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const newPicture = res.data.data.profile_picture;
+      setProfile((prev) => prev ? { ...prev, profile_picture: newPicture } : prev);
+      // Sync to localStorage so Navbar reflects the change
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        localStorage.setItem("user", JSON.stringify({ ...parsed, profile_picture: newPicture }));
+        window.dispatchEvent(new Event("storage"));
+      }
+    } catch {
+      setError("Gagal mengunggah foto.");
+    } finally {
+      setAvatarUploading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (pwdForm.next !== pwdForm.confirm) { setPwdError("Password baru tidak cocok"); return; }
+    if (pwdForm.next.length < 6) { setPwdError("Password baru minimal 6 karakter"); return; }
+    setPwdSaving(true); setPwdError(""); setPwdSuccess("");
+    try {
+      await axios.post(
+        `${API_BASE}/users/${profile?.id}/change-password`,
+        { currentPassword: pwdForm.current, newPassword: pwdForm.next },
+        { withCredentials: true }
+      );
+      setPwdSuccess("Password berhasil diubah!");
+      setPwdForm({ current: "", next: "", confirm: "" });
+      setTimeout(() => { setPwdModal(false); setPwdSuccess(""); }, 1500);
+    } catch (err: any) {
+      setPwdError(err.response?.data?.message || "Gagal mengubah password");
+    } finally {
+      setPwdSaving(false);
+    }
+  };
+
+  const loadPointsData = async () => {
+    if (!profile) return;
+    setPointsLoading(true);
+    try {
+      const [phRes, cpRes] = await Promise.all([
+        axios.get(`${API_BASE}/users/${profile.id}/points-history`),
+        axios.get(`${API_BASE}/users/${profile.id}/coupons`),
+      ]);
+      setAvailablePoints(phRes.data.data.available_points ?? 0);
+      setPointsHistory(phRes.data.data.history ?? []);
+      setCoupons(cpRes.data.data ?? []);
+    } catch {
+      /* silent */
+    } finally {
+      setPointsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "tickets") {
       loadTickets();
     } else if (activeTab === "transactions") {
       loadTransactions();
+    } else if (activeTab === "points") {
+      loadPointsData();
     }
   }, [activeTab]);
 
@@ -404,6 +492,7 @@ export default function CustomerProfile() {
     { id: "profile", label: "Profil Saya", icon: <User className="w-5 h-5" /> },
     { id: "tickets", label: "Tiket Saya", icon: <Ticket className="w-5 h-5" /> },
     { id: "transactions", label: "Riwayat Transaksi", icon: <FileText className="w-5 h-5" /> },
+    { id: "points", label: "Poin & Voucher", icon: <Gift className="w-5 h-5" /> },
   ];
 
   return (
@@ -455,20 +544,55 @@ export default function CustomerProfile() {
             {/* Avatar Card */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col items-center text-center">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white mb-4">
-                  {avatarInitials}
+                {/* Avatar with upload */}
+                <div className="relative mb-4">
+                  {profile.profile_picture ? (
+                    <img
+                      src={profile.profile_picture}
+                      alt={profile.full_name}
+                      className="w-24 h-24 rounded-full object-cover border-4 border-orange-200"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white">
+                      {avatarInitials}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                    className="absolute bottom-0 right-0 bg-white border-2 border-orange-300 rounded-full p-1.5 hover:bg-orange-50 transition shadow"
+                    title="Ganti foto profil"
+                  >
+                    {avatarUploading ? (
+                      <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4 text-orange-500" />
+                    )}
+                  </button>
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
                 </div>
                 <h2 className="text-lg font-bold text-gray-900">{profile.full_name}</h2>
                 <p className="text-sm text-gray-600 mt-1">{profile.email}</p>
                 <div className="flex gap-2 flex-wrap justify-center mt-4">
                   {profile.role.map((r) => (
-                    <span
-                      key={r}
-                      className="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold"
-                    >
+                    <span key={r} className="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
                       {r === "ORGANIZER" ? "Organizer" : "Customer"}
                     </span>
                   ))}
+                </div>
+                {/* Points */}
+                <div className="w-full mt-4 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 p-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <Coins className="w-4 h-4 text-orange-500" />
+                    <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Poin Aktif</span>
+                  </div>
+                  <p className="text-2xl font-extrabold text-orange-600 mt-1">{availablePoints.toLocaleString("id-ID")}</p>
                 </div>
                 <div className="w-full border-t border-gray-200 mt-4 pt-4 text-center">
                   <p className="text-xs text-gray-500">Bergabung sejak</p>
@@ -478,24 +602,11 @@ export default function CustomerProfile() {
                   <p className="text-xs text-gray-500 mb-2">Kode Referral</p>
                   <div className="flex items-center justify-center gap-2 bg-gray-50 rounded-lg p-2">
                     <span className="font-mono font-bold text-sm text-gray-800">{profile.referral_code}</span>
-                    <button
-                      onClick={handleCopy}
-                      className="p-1 hover:bg-gray-200 rounded transition"
-                      title="Salin kode referral"
-                    >
+                    <button onClick={handleCopy} className="p-1 hover:bg-gray-200 rounded transition" title="Salin kode referral">
                       {copied ? (
-                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                       ) : (
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                       )}
                     </button>
                   </div>
@@ -512,13 +623,22 @@ export default function CustomerProfile() {
                     <p className="text-sm text-gray-600 mt-1">Ubah data pribadi akun Anda</p>
                   </div>
                   {!editing ? (
-                    <button
-                      onClick={handleEdit}
-                      className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition font-semibold text-sm"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      Edit
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPwdModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition font-semibold text-sm"
+                      >
+                        <Lock className="w-4 h-4" />
+                        Ubah Password
+                      </button>
+                      <button
+                        onClick={handleEdit}
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition font-semibold text-sm"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                        Edit
+                      </button>
+                    </div>
                   ) : (
                     <div className="flex gap-2">
                       <button
@@ -879,7 +999,135 @@ export default function CustomerProfile() {
             )}
           </div>
         )}
+
+        {/* Points Tab */}
+        {activeTab === "points" && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl p-6 text-white">
+              <p className="text-sm font-semibold opacity-80 uppercase tracking-wide">Poin Aktif</p>
+              <p className="text-4xl font-extrabold mt-1">{availablePoints.toLocaleString("id-ID")}</p>
+              <p className="text-xs opacity-70 mt-1">Poin yang dapat digunakan untuk diskon pembelian tiket</p>
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Riwayat Poin</h3>
+              {pointsLoading ? (
+                <div className="text-center py-8 text-gray-400">Memuat...</div>
+              ) : pointsHistory.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">Belum ada riwayat poin</div>
+              ) : (
+                <div className="space-y-3">
+                  {pointsHistory.map((h: any) => {
+                    const expired = new Date(h.expires_at) < new Date() || h.deletedAt;
+                    return (
+                      <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">+{h.points.toLocaleString("id-ID")} poin</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Berlaku hingga:{" "}
+                            {new Date(h.expires_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
+                          </p>
+                        </div>
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${expired ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-700"}`}>
+                          {expired ? "Kadaluarsa" : "Aktif"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h3 className="font-bold text-gray-900 mb-4">Voucher Saya</h3>
+              {coupons.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">Belum ada voucher</div>
+              ) : (
+                <div className="space-y-3">
+                  {coupons.map((c: any) => {
+                    const expired = new Date(c.expires_at) < new Date();
+                    const used = c.used_count >= c.max_usage;
+                    return (
+                      <div key={c.id} className={`p-4 rounded-xl border-2 ${expired || used ? "border-gray-200 opacity-60" : "border-orange-200 bg-orange-50"}`}>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{c.name}</p>
+                            <p className="font-mono text-lg font-extrabold text-orange-600 mt-1">{c.promotion_code}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Diskon {c.discount_amount}% • Berlaku hingga {new Date(c.expires_at).toLocaleDateString("id-ID")}
+                            </p>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${expired ? "bg-gray-100 text-gray-500" : used ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"}`}>
+                            {expired ? "Kadaluarsa" : used ? "Terpakai" : "Aktif"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Change Password Modal */}
+      {pwdModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <Lock className="w-5 h-5 text-orange-500" /> Ubah Password
+              </h3>
+              <button
+                onClick={() => { setPwdModal(false); setPwdError(""); setPwdSuccess(""); setPwdForm({ current: "", next: "", confirm: "" }); }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            {pwdSuccess && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">{pwdSuccess}</div>
+            )}
+            {pwdError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{pwdError}</div>
+            )}
+            <div className="space-y-4">
+              {[
+                { key: "current", label: "Password Lama" },
+                { key: "next", label: "Password Baru" },
+                { key: "confirm", label: "Konfirmasi Password Baru" },
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">{label}</label>
+                  <input
+                    type="password"
+                    value={pwdForm[key as keyof typeof pwdForm]}
+                    onChange={(e) => setPwdForm((prev) => ({ ...prev, [key]: e.target.value }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setPwdModal(false); setPwdError(""); setPwdForm({ current: "", next: "", confirm: "" }); }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold text-sm"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleChangePassword}
+                disabled={pwdSaving}
+                className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition font-semibold text-sm disabled:opacity-60"
+              >
+                {pwdSaving ? "Menyimpan..." : "Simpan Password"}
+              </button>
+            </div>
+            <div className="mt-4 text-center">
+              <a href="/forgot-password" className="text-xs text-orange-500 hover:underline">Lupa password lama?</a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

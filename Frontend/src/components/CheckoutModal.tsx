@@ -188,9 +188,8 @@ export default function CheckoutModal({
 
     // Check if user is logged in
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const token = localStorage.getItem("token");
 
-    if (!user.id || !token) {
+    if (!user.id) {
       navigate(`/login?returnTo=/event/${event.id}?openCheckout=true`);
       return;
     }
@@ -203,12 +202,11 @@ export default function CheckoutModal({
       let firstBookingId = "";
 
       for (const ticket of selectedTickets) {
-        console.log("Sending booking request with token:", token ? "exists" : "missing");
         const response = await fetch(`${API_BASE}/bookings`, {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             event_id: event.id,
@@ -226,7 +224,6 @@ export default function CheckoutModal({
 
         if (!response.ok || !data.success) {
           if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem("token");
             localStorage.removeItem("user");
             navigate(`/login?returnTo=/event/${event.id}?openCheckout=true`);
             return;

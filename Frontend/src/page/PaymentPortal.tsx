@@ -68,12 +68,9 @@ export default function PaymentPortal() {
     const fetchBooking = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
         
         const response = await fetch(`${API_BASE}/bookings/${bookingId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: 'include',
         });
 
         if (!response.ok) throw new Error('Booking tidak ditemukan');
@@ -130,11 +127,8 @@ export default function PaymentPortal() {
   const handleRefreshStatus = async () => {
     try {
       setRefreshing(true);
-      const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE}/bookings/${bookingId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
       });
       
       if (response.ok) {
@@ -194,15 +188,12 @@ export default function PaymentPortal() {
 
     try {
       setUploading(true);
-      const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('proof', uploadFile);
 
       const response = await fetch(`${API_BASE}/bookings/${bookingId}/proof`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
         body: formData,
       });
 

@@ -190,10 +190,9 @@ export default function Transactions() {
   const fetchBookings = useCallback(() => {
     setLoading(true);
     const user = JSON.parse(localStorage.getItem("user") ?? "{}");
-    const token = localStorage.getItem("token");
     const organizerId: string = user?.id ?? "";
     const url = organizerId ? `${API_BASE}/bookings?organizer_id=${organizerId}` : `${API_BASE}/bookings`;
-    fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(url, { credentials: "include" })
       .then((r) => r.json())
       .then((res) => { if (res.success) setBookings(res.data); })
       .catch(() => {})
@@ -204,10 +203,9 @@ export default function Transactions() {
 
   // ── Approve ─────────────────────────────────────────────────────────────────
   const handleApprove = async (bookingId: string) => {
-    const token = localStorage.getItem("token");
     const res = await fetch(`${API_BASE}/bookings/${bookingId}/approve`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
     });
     const data = await res.json();
     if (data.success) {
@@ -222,10 +220,10 @@ export default function Transactions() {
 
   // ── Reject ──────────────────────────────────────────────────────────────────
   const handleReject = async (bookingId: string, reason: string) => {
-    const token = localStorage.getItem("token");
     const res = await fetch(`${API_BASE}/bookings/${bookingId}/reject`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ reason }),
     });
     const data = await res.json();

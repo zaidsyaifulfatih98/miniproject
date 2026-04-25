@@ -1,10 +1,11 @@
 ﻿import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
-    const allowedOrigins = (process.env.ORIGIN_PORT || "http://localhost:5173")
+    const allowedOrigins = (process.env.ORIGIN_PORT || "http://localhost:5173,http://localhost:5174")
       .split(",")
       .map((o) => o.trim());
     if (!origin) return callback(null, true);
@@ -13,12 +14,14 @@ const corsOptions: cors.CorsOptions = {
     callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
 const app = express();
 app.use(express.json());
 app.use(cors(corsOptions));
+app.use(cookieParser());
 
 try {
   const userRouter = require("./routers/user.router").default;
