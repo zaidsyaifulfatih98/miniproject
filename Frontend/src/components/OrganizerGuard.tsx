@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 export default function OrganizerGuard() {
   const stored = localStorage.getItem("user");
+  console.log(stored)
   if (!stored) {
     return <Navigate to="/login" replace />;
   }
