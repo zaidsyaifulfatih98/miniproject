@@ -14,6 +14,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { getUserFromCookie, removeUserCookie } from "../utils/auth";
 
 const navItems = [
   {
@@ -71,16 +72,12 @@ export default function RootLayout() {
   const [pendingConfirmCount, setPendingConfirmCount] = useState(0);
   const pageLabel = breadcrumbLabels[location.pathname] ?? "Beranda";
 
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("user");
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [user, setUser] = useState(() => getUserFromCookie());
 
-  // Keep user in sync with localStorage changes (e.g. avatar update)
+  // Keep user in sync with cookie changes (e.g. avatar update)
   useEffect(() => {
     const onStorage = () => {
-      const stored = localStorage.getItem("user");
-      setUser(stored ? JSON.parse(stored) : null);
+      setUser(getUserFromCookie());
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -107,7 +104,7 @@ export default function RootLayout() {
 
   const handleLogout = () => {
     fetch(`${import.meta.env.VITE_API_BASE}/users/logout`, { method: "POST", credentials: "include" }).catch(() => {});
-    localStorage.removeItem("user");
+    removeUserCookie();
     navigate("/login");
   };
 

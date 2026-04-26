@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Camera, Lock, Coins } from "lucide-react";
+import { getUserFromCookie, setUserCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -51,9 +52,9 @@ export default function Admin() {
   const [pwdSuccess, setPwdSuccess] = useState("");
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = getUserFromCookie();
     if (!storedUser) return;
-    const { id } = JSON.parse(storedUser);
+    const { id } = storedUser;
 
     axios
       .get(`${API_BASE}/users/${id}`)
@@ -133,11 +134,10 @@ export default function Admin() {
       });
       const newPicture = res.data.data.profile_picture;
       setProfile((prev) => prev ? { ...prev, profile_picture: newPicture } : prev);
-      // Sync to localStorage so Navbar/Sidebar reflect the change
-      const stored = localStorage.getItem("user");
+      // Sync to cookie so Navbar/Sidebar reflect the change
+      const stored = getUserFromCookie();
       if (stored) {
-        const parsed = JSON.parse(stored);
-        localStorage.setItem("user", JSON.stringify({ ...parsed, profile_picture: newPicture }));
+        setUserCookie({ ...stored, profile_picture: newPicture });
         window.dispatchEvent(new Event("storage"));
       }
     } catch {

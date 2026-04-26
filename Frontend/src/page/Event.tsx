@@ -1,6 +1,6 @@
 ﻿
 import { useState, useRef, useEffect, useCallback } from "react";
-
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -96,7 +96,7 @@ export default function Event() {
     try {
       setLoading(true);
       setError(null);
-      const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+      const user = getUserFromCookie() ?? {};
       const params = new URLSearchParams();
       if (filterCategory !== "Semua") params.set("category", filterCategory);
       if (filterStatus !== "Semua") params.set("status", filterStatus);
@@ -143,7 +143,7 @@ export default function Event() {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
 
-    const currentUser = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const currentUser = getUserFromCookie() ?? {};
     const formDataToSend = new FormData();
     
     formDataToSend.append("users_id", currentUser.id);
@@ -166,11 +166,9 @@ export default function Event() {
     try {
       const url = editId ? `${API_BASE}/events/${editId}` : `${API_BASE}/events`;
       const method = editId ? "PUT" : "POST";
-      const token = localStorage.getItem("token");
-      
       const res = await fetch(url, {
         method,
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
         body: formDataToSend,
       });
       if (!res.ok) {

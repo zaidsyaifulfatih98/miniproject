@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Award, Zap, Tag, ArrowRight } from "lucide-react";
 import UpgradeOrganizerModal from "../components/UpgradeOrganizerModal";
+import { getUserFromCookie } from "../utils/auth";
 
 interface User {
   id: string;
@@ -18,9 +19,9 @@ export default function BecomeOrganizer() {
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const userData = localStorage.getItem("user");
+        const userData = getUserFromCookie();
         if (userData) {
-          const parsedUser = JSON.parse(userData);
+          const parsedUser = userData;
           setUser(parsedUser);
           
           if (parsedUser.role?.includes("ORGANIZER")) {

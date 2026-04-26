@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Ticket, Search, MapPin, Plus, Compass, Menu, X, LogOut, User, FileText } from "lucide-react";
 import axios from "axios";
+import { getUserFromCookie, removeUserCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -49,9 +50,9 @@ export default function Navbar() {
   useEffect(() => {
     const readUser = () => {
       try {
-        const userData = localStorage.getItem("user");
-        if (userData) {
-          setUser(JSON.parse(userData));
+        const user = getUserFromCookie();
+        if (user) {
+          setUser(user as any);
         } else {
           setUser(null);
         }
@@ -116,7 +117,7 @@ export default function Navbar() {
   // Handle logout
   const handleLogout = () => {
     fetch(`${API_BASE}/users/logout`, { method: "POST", credentials: "include" }).catch(() => {});
-    localStorage.removeItem("user");
+    removeUserCookie();
     setUser(null);
     setIsProfileDropdownOpen(false);
     navigate("/");

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 import axios from "axios";
 import { createEventSchema } from "../schemas/event.schema";
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -75,14 +76,14 @@ export default function CreateEvent() {
   useEffect(() => {
     const checkAuth = () => {
       try {
-        const userData = localStorage.getItem("user");
+        const userData = getUserFromCookie();
 
         if (!userData) {
           navigate("/login");
           return;
         }
 
-        const parsedUser = JSON.parse(userData);
+        const parsedUser = userData;
         if (!parsedUser.role?.includes("ORGANIZER")) {
           navigate("/register");
           return;

@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { loginSchema } from "../schemas/user.schema";
+import { getUserFromCookie, setUserCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -18,9 +19,8 @@ export default function Login() {
 
   useEffect(() => {
     try {
-      const user = localStorage.getItem("user");
-      if (user) {
-        const parsedUser = JSON.parse(user);
+      const parsedUser = getUserFromCookie();
+      if (parsedUser) {
         if (parsedUser.role?.includes("ORGANIZER")) {
           navigate("/dashboard", { replace: true });
         } else {
@@ -72,7 +72,7 @@ export default function Login() {
 
       const { user } = response.data.data;
 
-      localStorage.setItem("user", JSON.stringify(user));
+      setUserCookie(user);
 
       if (returnTo) {
         navigate(returnTo, { replace: true });

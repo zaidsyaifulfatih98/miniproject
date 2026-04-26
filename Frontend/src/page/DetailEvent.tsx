@@ -7,6 +7,7 @@ import CheckoutModal from "../components/CheckoutModal";
 import ReviewForm from "../components/ReviewForm";
 import ReviewsList from "../components/ReviewsList";
 import { trackFunnel } from "../utils/tracker";
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -140,7 +141,7 @@ export default function DetailEvent() {
         }
 
         // Fetch user's booking for this event if logged in
-        const storedUser = localStorage.getItem("user");
+        const storedUser = getUserFromCookie();
         if (storedUser) {
           try {
             const bookingResponse = await axios.get(
@@ -467,11 +468,7 @@ export default function DetailEvent() {
                                 .then((res) => {
                                   if (res.data.success) {
                                     setReviews(res.data.data || []);
-                                    const userData =
-                                      localStorage.getItem("user");
-                                    const currentUserId = userData
-                                      ? JSON.parse(userData).id
-                                      : null;
+                                    const currentUserId = getUserFromCookie()?.id ?? null;
                                     if (currentUserId && res.data.data) {
                                       const userHasReviewed =
                                         res.data.data.some(
@@ -499,7 +496,7 @@ export default function DetailEvent() {
                         averageRating={organizerRating || undefined}
                         totalReviews={reviews.length}
                         showDeleteButton={true}
-                        currentUserId={localStorage.getItem("userId") || ""}
+                        currentUserId={getUserFromCookie()?.id || ""}
                       />
                       {reviews.length === 0 && (
                         <div className="text-center py-12">

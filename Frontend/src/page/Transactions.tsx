@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -189,7 +190,7 @@ export default function Transactions() {
   // ── Fetch bookings ──────────────────────────────────────────────────────────
   const fetchBookings = useCallback(() => {
     setLoading(true);
-    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const user = getUserFromCookie() ?? {};
     const organizerId: string = user?.id ?? "";
     const url = organizerId ? `${API_BASE}/bookings?organizer_id=${organizerId}` : `${API_BASE}/bookings`;
     fetch(url, { credentials: "include" })

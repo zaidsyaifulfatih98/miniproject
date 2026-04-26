@@ -6,6 +6,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { loadAndRenderTicketTemplate } from "../templates/ticketRenderer";
 import ReviewForm from "../components/ReviewForm";
+import { getUserFromCookie, setUserCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -93,12 +94,12 @@ export default function CustomerProfile() {
   const [pointsLoading, setPointsLoading] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = getUserFromCookie();
     if (!storedUser) {
       navigate("/login");
       return;
     }
-    const { id } = JSON.parse(storedUser);
+    const { id } = storedUser;
 
     axios
       .get(`${API_BASE}/users/${id}`)
@@ -128,12 +129,12 @@ export default function CustomerProfile() {
   const loadTickets = async () => {
     setTicketsLoading(true);
     try {
-      const storedUser = localStorage.getItem("user");
+      const storedUser = getUserFromCookie();
       if (!storedUser) {
         setError("User tidak ditemukan");
         return;
       }
-      const { id: userId } = JSON.parse(storedUser);
+      const { id: userId } = storedUser;
 
       const response = await axios.get(`${API_BASE}/bookings?user_id=${userId}`, {
         withCredentials: true,
@@ -177,12 +178,12 @@ export default function CustomerProfile() {
   const loadTransactions = async () => {
     setTransactionsLoading(true);
     try {
-      const storedUser = localStorage.getItem("user");
+      const storedUser = getUserFromCookie();
       if (!storedUser) {
         setError("User tidak ditemukan");
         return;
       }
-      const { id: userId } = JSON.parse(storedUser);
+      const { id: userId } = storedUser;
 
       const url = `${API_BASE}/bookings?user_id=${userId}`;
       
@@ -258,11 +259,10 @@ export default function CustomerProfile() {
       });
       const newPicture = res.data.data.profile_picture;
       setProfile((prev) => prev ? { ...prev, profile_picture: newPicture } : prev);
-      // Sync to localStorage so Navbar reflects the change
-      const stored = localStorage.getItem("user");
+      // Sync to cookie so Navbar reflects the change
+      const stored = getUserFromCookie();
       if (stored) {
-        const parsed = JSON.parse(stored);
-        localStorage.setItem("user", JSON.stringify({ ...parsed, profile_picture: newPicture }));
+        setUserCookie({ ...stored, profile_picture: newPicture });
         window.dispatchEvent(new Event("storage"));
       }
     } catch {

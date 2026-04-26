@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -52,7 +53,7 @@ export default function Attendees() {
 
   // ── Fetch organizer's events ───────────────────────────────────────────────
   useEffect(() => {
-    const user  = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const user  = getUserFromCookie() ?? {};
     fetch(`${API_BASE}/events?organizer_id=${user?.id ?? ""}`, {
       credentials: "include",
     })

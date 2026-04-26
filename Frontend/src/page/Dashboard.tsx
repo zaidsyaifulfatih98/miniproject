@@ -13,6 +13,7 @@ import {
   Bar,
   Cell,
 } from "recharts";
+import { getUserFromCookie } from "../utils/auth";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ export default function Dashboard() {
   const [users, setUsers] = useState<UserRaw[]>([]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const user = getUserFromCookie() ?? {};
     const organizerId: string = user?.id ?? "";
     const qs = organizerId ? `?organizer_id=${organizerId}` : "";
     Promise.all([

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Plus, Edit2, Trash2, Search, AlertCircle, CheckCircle } from "lucide-react";
 import { createPromoSchema, updatePromoSchema } from "../schemas/promo.schema";
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -55,7 +56,7 @@ export default function OrganizerPromos() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")!) : null;
+  const user = getUserFromCookie();
 
   useEffect(() => {
     loadPromos();

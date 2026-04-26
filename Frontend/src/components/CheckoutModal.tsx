@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, ChevronRight, ChevronLeft, Plus, Minus } from "lucide-react";
 import { trackFunnel } from "../utils/tracker";
+import { getUserFromCookie, removeUserCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -187,7 +188,7 @@ export default function CheckoutModal({
     }
 
     // Check if user is logged in
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const user = getUserFromCookie() ?? {};
 
     if (!user.id) {
       navigate(`/login?returnTo=/event/${event.id}?openCheckout=true`);
@@ -224,7 +225,7 @@ export default function CheckoutModal({
 
         if (!response.ok || !data.success) {
           if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem("user");
+            removeUserCookie();
             navigate(`/login?returnTo=/event/${event.id}?openCheckout=true`);
             return;
           }

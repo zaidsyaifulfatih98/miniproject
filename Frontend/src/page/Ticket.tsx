@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import { createTicketSchema, updateTicketSchema } from "../schemas/ticket.schema";
+import { getUserFromCookie } from "../utils/auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -57,7 +58,7 @@ export default function Ticket() {
 
   // â”€â”€ Data Fetching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const user = getUserFromCookie() ?? {};
     const organizerId: string = user?.id ?? "";
     fetch(`${API_BASE}/events${organizerId ? `?organizer_id=${organizerId}` : ""}`)
       .then((r) => r.json())
@@ -66,7 +67,7 @@ export default function Ticket() {
   }, []);
 
   const fetchTickets = useCallback(() => {
-    const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+    const user = getUserFromCookie() ?? {};
     const organizerId: string = user?.id ?? "";
     const url =
       filterEventId !== "Semua"
