@@ -231,8 +231,11 @@ export const userController = {
       await emailService.sendPasswordResetEmail({ email: user.email, fullName: user.full_name, resetUrl });
       res.status(200).json({ success: true, message: "Link reset password telah dikirim ke email Anda" });
     } catch (error: any) {
-      // Return 200 even on error to prevent email enumeration
-      res.status(200).json({ success: true, message: "Jika email terdaftar, link reset telah dikirim" });
+      if (error.message === "Email tidak terdaftar") {
+        res.status(404).json({ success: false, message: "Email tidak terdaftar. Periksa kembali alamat email Anda." });
+        return;
+      }
+      next(error);
     }
   },
 

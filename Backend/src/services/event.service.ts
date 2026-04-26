@@ -198,10 +198,6 @@ export const eventService = {
             ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length
             : 0;
 
-        console.log(
-          `[EVENT] ${event.title} (organizer: ${event.organizer?.full_name}): Completed events: ${completedEvents.length}, Total reviews: ${allReviews.length}, Avg rating: ${averageRating}`
-        );
-
         return {
           ...event,
           ratings: {

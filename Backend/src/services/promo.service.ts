@@ -9,6 +9,25 @@ export const promoService = {
     });
   },
 
+  async getAvailableForUser(event_id: string, user_id: string) {
+    return await prisma.promotions.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          // Voucher spesifik untuk event ini
+          { event_id },
+          // Referral voucher personal milik user ini (tidak terikat event)
+          {
+            type: PromoType.REFERRAL,
+            recipient_user_id: user_id,
+            event_id: null,
+          },
+        ],
+      },
+      orderBy: { expires_at: "asc" },
+    });
+  },
+
   async getAll(organizer_id?: string) {
     return await prisma.promotions.findMany({
       where: {

@@ -102,7 +102,9 @@ export default function CheckoutModal({
     if (step === 3 && availableVouchers.length === 0 && !isFreeTicket) {
       const fetchVouchers = async () => {
         try {
-          const response = await fetch(`${API_BASE}/promotions?event_id=${event.id}`);
+          const response = await fetch(`${API_BASE}/promos?event_id=${event.id}`, {
+            credentials: "include",
+          });
           if (response.ok) {
             const data = await response.json();
             const vouchers = data.data || [];
@@ -126,7 +128,14 @@ export default function CheckoutModal({
     0
   );
 
-  const discount = paymentData.voucherCode.trim() ? 0 : 0;
+  const selectedVoucher = paymentData.voucherCode
+    ? availableVouchers.find((v: any) => v.promotion_code === paymentData.voucherCode)
+    : null;
+  const discount = selectedVoucher
+    ? selectedVoucher.type === "REFERRAL"
+      ? Math.floor((subtotal * Number(selectedVoucher.discount_amount)) / 100)
+      : Number(selectedVoucher.discount_amount)
+    : 0;
   
   const serviceCharge = isFreeTicket ? 0 : Math.floor(subtotal * 0.1);
   const pointsReduction = paymentData.usePoints

@@ -53,6 +53,26 @@ export function requireCustomerRole(req: AuthRequest, res: Response, next: NextF
   next();
 }
 
+export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): void {
+  try {
+    const cookieToken = (req as any).cookies?.token as string | undefined;
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader && authHeader.split(" ")[1];
+    const token = cookieToken || bearerToken;
+
+    if (!token) {
+      return next();
+    }
+
+    const secret = process.env.JWT_SECRET || "your-secret-key";
+    const decoded = jwt.verify(token, secret) as { id: string; role: string };
+    req.user = { id: decoded.id, role: decoded.role };
+    next();
+  } catch {
+    next(); // token invalid or expired, continue without auth
+  }
+}
+
 export function requireOrganizerRole(req: AuthRequest, res: Response, next: NextFunction): void {
   if (!req.user) {
     res.status(401).json({ success: false, message: "Unauthorized" });

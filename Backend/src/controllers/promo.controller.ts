@@ -1,12 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import { promoService } from "../services/promo.service";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 export const promoController = {
-  async getAll(req: Request, res: Response, next: NextFunction) {
+  async getAll(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { event_id, organizer_id } = req.query;
       if (event_id) {
-        const promos = await promoService.getAllByEvent(event_id as string);
+        const userId = req.user?.id;
+        const promos = userId
+          ? await promoService.getAvailableForUser(event_id as string, userId)
+          : await promoService.getAllByEvent(event_id as string);
         res.status(200).json({ success: true, data: promos });
       } else {
         const promos = await promoService.getAll(organizer_id as string | undefined);
