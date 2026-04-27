@@ -133,7 +133,7 @@ export const bookingService = {
   }) {
     const { user_id, event_id, ticket_id, quantity, voucherCode, usePoints, pointsAmount, isFree } = data;
 
-    return await prisma.$transaction(async (tx) => {
+    const createdBooking = await prisma.$transaction(async (tx) => {
       // 1. Validasi event
       const event = await tx.events.findUnique({ 
         where: { id: event_id, deletedAt: null } 
@@ -280,6 +280,26 @@ export const bookingService = {
 
       return booking;
     });
+
+    // 13. Send confirmation email for free tickets (already DONE status)
+    if (isFree) {
+      const [user, event] = await Promise.all([
+        prisma.users.findUnique({ where: { id: user_id }, select: { email: true, full_name: true } }),
+        prisma.events.findUnique({ where: { id: event_id }, select: { title: true } }),
+      ]);
+      if (user && event) {
+        emailService.sendApprovalEmail({
+          customerEmail: user.email,
+          customerName: user.full_name,
+          eventTitle: event.title,
+          displayId: createdBooking.display_id ?? createdBooking.id.slice(0, 8).toUpperCase(),
+          finalPrice: Number(createdBooking.final_price ?? createdBooking.total_price ?? 0),
+          quantity: createdBooking.quantity ?? 1,
+        }).catch((err) => console.error("Free ticket confirmation email failed:", err));
+      }
+    }
+
+    return createdBooking;
   },
 
   async updateStatus(id: string, status: BookingStatus) {
