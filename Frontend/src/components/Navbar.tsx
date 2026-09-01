@@ -3,8 +3,29 @@ import { Link, useNavigate } from "react-router-dom";
 import { Ticket, Search, MapPin, Plus, Compass, Menu, X, LogOut, User, FileText } from "lucide-react";
 import axios from "axios";
 import { getUserFromCookie, removeUserCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+
+function FlagIcon({ country }: { country: "id" | "gb" }) {
+  if (country === "id") {
+    return (
+      <svg viewBox="0 0 3 2" className="w-5 h-3.5 rounded-[2px] shadow-sm flex-none" style={{ overflow: "hidden" }}>
+        <rect width="3" height="1" y="0" fill="#FF0000" />
+        <rect width="3" height="1" y="1" fill="#FFFFFF" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 60 30" className="w-5 h-3.5 rounded-[2px] shadow-sm flex-none" style={{ overflow: "hidden" }}>
+      <rect width="60" height="30" fill="#00247d" />
+      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6" />
+      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#cf142b" strokeWidth="2" />
+      <path d="M30,0 V30 M0,15 H60" stroke="#fff" strokeWidth="10" />
+      <path d="M30,0 V30 M0,15 H60" stroke="#cf142b" strokeWidth="6" />
+    </svg>
+  );
+}
 
 interface User {
   id: string;
@@ -25,6 +46,7 @@ interface Suggestion {
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { language, toggleLanguage, t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [locationQuery, setLocationQuery] = useState<string>("");
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
@@ -295,11 +317,11 @@ export default function Navbar() {
                   onFocus={() => {
                     if (searchSuggestions.length > 0) setShowSearchSuggestions(true);
                   }}
-                  placeholder="Cari event seru..."
+                  placeholder={t("navbar.searchPlaceholder")}
                   className="w-full pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
                 />
               </form>
-              
+
               {/* Search Suggestions Dropdown */}
               {showSearchSuggestions && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden z-50">
@@ -353,12 +375,12 @@ export default function Navbar() {
                         onClick={() => handleSearchSubmit()}
                         className="w-full px-4 py-2 text-left text-sm font-medium text-orange-600 hover:bg-orange-50 transition-colors border-t border-gray-100"
                       >
-                        Lihat semua hasil untuk "{searchQuery}"
+                        {t("navbar.seeAllResultsFor", { query: searchQuery })}
                       </button>
                     </>
                   ) : searchQuery.trim() && (
                     <div className="px-4 py-3 text-sm text-gray-500">
-                      Tidak ada event ditemukan untuk "{searchQuery}"
+                      {t("navbar.noEventsFoundFor", { query: searchQuery })}
                     </div>
                   )}
                 </div>
@@ -376,7 +398,7 @@ export default function Navbar() {
                   onFocus={() => {
                     if (locationSuggestions.length > 0) setShowLocationSuggestions(true);
                   }}
-                  placeholder="Pilih lokasi..."
+                  placeholder={t("navbar.locationPlaceholder")}
                   className="w-full pl-9 pr-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
                 />
               </form>
@@ -407,12 +429,12 @@ export default function Navbar() {
                         onClick={() => handleLocationSubmit()}
                         className="w-full px-4 py-2 text-left text-sm font-medium text-orange-600 hover:bg-orange-50 transition-colors border-t border-gray-100"
                       >
-                        Lihat semua event di "{locationQuery}"
+                        {t("navbar.seeAllEventsIn", { location: locationQuery })}
                       </button>
                     </>
                   ) : locationQuery.trim() && (
                     <div className="px-4 py-3 text-sm text-gray-500">
-                      Tidak ada lokasi ditemukan untuk "{locationQuery}"
+                      {t("navbar.noLocationsFoundFor", { query: locationQuery })}
                     </div>
                   )}
                 </div>
@@ -427,7 +449,7 @@ export default function Navbar() {
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              Buat Event
+              {t("navbar.createEvent")}
             </button>
 
             <Link
@@ -435,8 +457,19 @@ export default function Navbar() {
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
             >
               <Compass className="w-4 h-4" />
-              Jelajah Event
+              {t("navbar.exploreEvent")}
             </Link>
+
+            {/* Language Switcher - Desktop */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors cursor-pointer"
+              title={language === "id" ? "Switch to English" : "Ganti ke Bahasa Indonesia"}
+              aria-label="Toggle language"
+            >
+              <FlagIcon country={language === "id" ? "id" : "gb"} />
+              <span className="uppercase text-xs font-semibold">{language}</span>
+            </button>
 
             {/* Auth Section - Desktop */}
             {user ? (
@@ -445,7 +478,7 @@ export default function Navbar() {
                   <button
                     onClick={() => navigate("/dashboard")}
                     className="flex items-center justify-center w-11 h-11 rounded-full hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
-                    title="Buka Dashboard"
+                    title={t("navbar.openDashboard")}
                   >
                     {user.profile_picture ? (
                       <img
@@ -499,7 +532,7 @@ export default function Navbar() {
                             className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
                           >
                             <Ticket className="w-4 h-4" />
-                            Tiket Saya
+                            {t("navbar.myTickets")}
                           </button>
                           <button
                             onClick={() => {
@@ -509,7 +542,7 @@ export default function Navbar() {
                             className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
                           >
                             <FileText className="w-4 h-4" />
-                            Riwayat Transaksi
+                            {t("navbar.transactionHistory")}
                           </button>
                           <button
                             onClick={() => {
@@ -519,7 +552,7 @@ export default function Navbar() {
                             className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center gap-2"
                           >
                             <User className="w-4 h-4" />
-                            Profil Saya
+                            {t("navbar.myProfile")}
                           </button>
 
                           <div className="border-t border-gray-200 my-2"></div>
@@ -529,7 +562,7 @@ export default function Navbar() {
                             className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                           >
                             <LogOut className="w-4 h-4" />
-                            Keluar
+                            {t("navbar.logout")}
                           </button>
                         </div>
                       </div>
@@ -544,7 +577,7 @@ export default function Navbar() {
                   className="ml-2 px-5 py-2 rounded-full text-sm font-semibold border-2 text-orange-500 hover:bg-orange-50 transition-colors"
                   style={{ borderColor: "#FF5C2E" }}
                 >
-                  Daftar
+                  {t("navbar.register")}
                 </Link>
 
                 <Link
@@ -552,17 +585,27 @@ export default function Navbar() {
                   className="px-5 py-2 rounded-full text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                   style={{ backgroundColor: "#FF5C2E" }}
                 >
-                  Masuk
+                  {t("navbar.login")}
                 </Link>
               </>
             )}
           </div>
 
+          {/* ── Language Switcher (mobile, always visible) ── */}
+          <button
+            onClick={toggleLanguage}
+            className="md:hidden flex items-center gap-1 px-2 py-1.5 rounded-full text-gray-600 hover:bg-orange-50 transition-colors flex-none"
+            title={language === "id" ? "Switch to English" : "Ganti ke Bahasa Indonesia"}
+            aria-label="Toggle language"
+          >
+            <FlagIcon country={language === "id" ? "id" : "gb"} />
+          </button>
+
           {/* ── Hamburger (mobile) ── */}
           <button
             onClick={() => setIsMenuOpen((prev) => !prev)}
             className="md:hidden p-2 rounded-lg text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex-none"
-            aria-label="Toggle menu"
+            aria-label={t("navbar.toggleMenu")}
           >
             {isMenuOpen ? (
               <X className="w-6 h-6" />
@@ -585,7 +628,7 @@ export default function Navbar() {
                 onFocus={() => {
                   if (searchSuggestions.length > 0) setShowSearchSuggestions(true);
                 }}
-                placeholder="Cari event seru..."
+                placeholder={t("navbar.searchPlaceholder")}
                 className="w-full pl-9 pr-4 py-2.5 rounded-full border border-gray-200 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
               />
               
@@ -642,7 +685,7 @@ export default function Navbar() {
                 onFocus={() => {
                   if (locationSuggestions.length > 0) setShowLocationSuggestions(true);
                 }}
-                placeholder="Pilih lokasi..."
+                placeholder={t("navbar.locationPlaceholder")}
                 className="w-full pl-9 pr-4 py-2.5 rounded-full border border-gray-200 bg-gray-50 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition"
               />
               
@@ -680,7 +723,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                Buat Event
+                {t("navbar.createEvent")}
               </button>
 
               <Link
@@ -689,7 +732,7 @@ export default function Navbar() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors"
               >
                 <Compass className="w-4 h-4" />
-                Jelajah Event
+                {t("navbar.exploreEvent")}
               </Link>
 
               {/* Mobile Auth Section */}
@@ -710,7 +753,7 @@ export default function Navbar() {
                         className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
                       >
                         <FileText className="w-4 h-4" />
-                        Dashboard
+                        {t("navbar.dashboard")}
                       </button>
                       <button
                         onClick={() => {
@@ -720,7 +763,7 @@ export default function Navbar() {
                         className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
                       >
                         <User className="w-4 h-4" />
-                        Profil
+                        {t("navbar.profile")}
                       </button>
                     </>
                   ) : (
@@ -733,7 +776,7 @@ export default function Navbar() {
                         className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
                       >
                         <Ticket className="w-4 h-4" />
-                        Tiket Saya
+                        {t("navbar.myTickets")}
                       </button>
                       <button
                         onClick={() => {
@@ -743,7 +786,7 @@ export default function Navbar() {
                         className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
                       >
                         <FileText className="w-4 h-4" />
-                        Riwayat Transaksi
+                        {t("navbar.transactionHistory")}
                       </button>
                       <button
                         onClick={() => {
@@ -753,7 +796,7 @@ export default function Navbar() {
                         className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-orange-500 hover:bg-orange-50 transition-colors flex items-center gap-2"
                       >
                         <User className="w-4 h-4" />
-                        Profil Saya
+                        {t("navbar.myProfile")}
                       </button>
                     </>
                   )}
@@ -766,7 +809,7 @@ export default function Navbar() {
                     className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                   >
                     <LogOut className="w-4 h-4" />
-                    Keluar
+                    {t("navbar.logout")}
                   </button>
                 </div>
               ) : (
@@ -777,7 +820,7 @@ export default function Navbar() {
                     className="flex-1 text-center px-4 py-2.5 rounded-full text-sm font-semibold border-2 text-orange-500 hover:bg-orange-50 transition-colors"
                     style={{ borderColor: "#FF5C2E" }}
                   >
-                    Daftar
+                    {t("navbar.register")}
                   </Link>
                   <Link
                     to="/login"
@@ -785,7 +828,7 @@ export default function Navbar() {
                     className="flex-1 text-center px-4 py-2.5 rounded-full text-sm font-semibold text-white hover:opacity-90 transition-opacity"
                     style={{ backgroundColor: "#FF5C2E" }}
                   >
-                    Masuk
+                    {t("navbar.login")}
                   </Link>
                 </div>
               )}

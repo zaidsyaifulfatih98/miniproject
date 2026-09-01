@@ -15,62 +15,63 @@ import {
   X,
 } from "lucide-react";
 import { getUserFromCookie, removeUserCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const navItems = [
   {
-    label: "Dashboard",
+    key: "navDashboard",
     path: "/dashboard",
     icon: <LayoutDashboard className="w-5 h-5" />,
   },
   {
-    label: "Manajemen Event",
+    key: "navEventManagement",
     path: "/event",
     icon: <CalendarDays className="w-5 h-5" />,
   },
   {
-    label: "Manajemen Tiket",
+    key: "navTicketManagement",
     path: "/ticket",
     icon: <Ticket className="w-5 h-5" />,
   },
   {
-    label: "Promo & Diskon",
+    key: "navPromotions",
     path: "/promos",
     icon: <Tag className="w-5 h-5" />,
   },
   {
-    label: "Penjualan & Transaksi",
+    key: "navTransactions",
     path: "/transactions",
     icon: <ClipboardList className="w-5 h-5" />,
   },
   {
-    label: "Daftar Peserta",
+    key: "navAttendees",
     path: "/attendees",
     icon: <Users className="w-5 h-5" />,
   },
   {
-    label: "Laporan",
+    key: "navReports",
     path: "/report",
     icon: <BarChart2 className="w-5 h-5" />,
   },
 ];
 
-const breadcrumbLabels: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/event": "Manajemen Event",
-  "/ticket": "Manajemen Tiket",
-  "/promos": "Promo & Diskon",
-  "/transactions": "Penjualan & Transaksi",
-  "/attendees": "Daftar Peserta",
-  "/report": "Laporan",
-  
+const breadcrumbKeys: Record<string, string> = {
+  "/dashboard": "navDashboard",
+  "/event": "navEventManagement",
+  "/ticket": "navTicketManagement",
+  "/promos": "navPromotions",
+  "/transactions": "navTransactions",
+  "/attendees": "navAttendees",
+  "/report": "navReports",
 };
 
 export default function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingConfirmCount, setPendingConfirmCount] = useState(0);
-  const pageLabel = breadcrumbLabels[location.pathname] ?? "Beranda";
+  const pageLabel = t(`rootLayout.${breadcrumbKeys[location.pathname] ?? "home"}`);
 
   const [user, setUser] = useState(() => getUserFromCookie());
 
@@ -155,7 +156,7 @@ export default function RootLayout() {
               }
             >
               {item.icon}
-              <span className="flex-1">{item.label}</span>
+              <span className="flex-1">{t(`rootLayout.${item.key}`)}</span>
               {item.path === "/transactions" && pendingConfirmCount > 0 && (
                 <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">
                   {pendingConfirmCount}
@@ -211,7 +212,7 @@ export default function RootLayout() {
             </button>
             <nav className="flex items-center gap-2 text-sm text-gray-500">
               <Home className="w-4 h-4 hidden sm:block" />
-              <span className="hidden sm:block">Beranda</span>
+              <span className="hidden sm:block">{t("rootLayout.home")}</span>
               <span className="text-gray-300 hidden sm:block">/</span>
               <span className="text-gray-800 font-medium">{pageLabel}</span>
             </nav>
@@ -223,7 +224,7 @@ export default function RootLayout() {
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
+              <span className="hidden sm:inline">{t("rootLayout.logout")}</span>
             </button>
           </div>
         </header>

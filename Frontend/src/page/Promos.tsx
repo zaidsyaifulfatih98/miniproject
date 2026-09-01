@@ -3,6 +3,7 @@ import axios from "axios";
 import { Plus, Edit2, Trash2, Search, AlertCircle, CheckCircle } from "lucide-react";
 import { createPromoSchema, updatePromoSchema } from "../schemas/promo.schema";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -35,6 +36,7 @@ interface Event {
 }
 
 export default function OrganizerPromos() {
+  const { t } = useLanguage();
   const [promos, setPromos] = useState<Promo[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,7 +73,7 @@ export default function OrganizerPromos() {
       });
       setPromos(res.data.data || []);
     } catch (error) {
-      showMessage("error", "Gagal memuat voucher");
+      showMessage("error", t("promos.errorLoadPromos"));
     } finally {
       setLoading(false);
     }
@@ -130,7 +132,7 @@ export default function OrganizerPromos() {
         if (!errs[key]) errs[key] = issue.message;
       });
     }
-    if (!editingId && !formData.event_id) errs.event_id = "Event wajib dipilih";
+    if (!editingId && !formData.event_id) errs.event_id = t("promos.validationEventRequired");
     if (Object.keys(errs).length > 0) {
       setFormErrors(errs);
       return;
@@ -151,10 +153,10 @@ export default function OrganizerPromos() {
 
       if (editingId) {
         await axios.put(`${API_BASE}/promos/${editingId}`, payload);
-        showMessage("success", "Voucher berhasil diupdate");
+        showMessage("success", t("promos.successUpdated"));
       } else {
         await axios.post(`${API_BASE}/promos`, payload);
-        showMessage("success", "Voucher berhasil dibuat");
+        showMessage("success", t("promos.successCreated"));
       }
 
       setShowForm(false);
@@ -170,7 +172,7 @@ export default function OrganizerPromos() {
       });
       loadPromos();
     } catch (error: any) {
-      showMessage("error", error.response?.data?.message || "Terjadi kesalahan");
+      showMessage("error", error.response?.data?.message || t("promos.errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -192,14 +194,14 @@ export default function OrganizerPromos() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Yakin ingin menghapus voucher ini?")) return;
+    if (!window.confirm(t("promos.confirmDelete"))) return;
 
     try {
       await axios.delete(`${API_BASE}/promos/${id}`);
-      showMessage("success", "Voucher berhasil dihapus");
+      showMessage("success", t("promos.successDeleted"));
       loadPromos();
     } catch (error) {
-      showMessage("error", "Gagal menghapus voucher");
+      showMessage("error", t("promos.errorDeletePromo"));
     }
   };
 
@@ -214,7 +216,7 @@ export default function OrganizerPromos() {
   };
 
   const getRemainingQuota = (promo: Promo) => {
-    if (!promo.max_usage) return "Unlimited";
+    if (!promo.max_usage) return t("promos.quotaUnlimited");
     return `${promo.used_count || 0}/${promo.max_usage}`;
   };
 
@@ -229,8 +231,8 @@ export default function OrganizerPromos() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Manajemen Voucher & Promosi</h1>
-              <p className="text-gray-600 mt-2">Buat dan kelola kode voucher untuk event Anda</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{t("promos.pageTitle")}</h1>
+              <p className="text-gray-600 mt-2">{t("promos.pageSubtitle")}</p>
             </div>
             <button
               onClick={() => {
@@ -249,7 +251,7 @@ export default function OrganizerPromos() {
               className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition self-start sm:self-auto"
             >
               <Plus className="w-5 h-5" />
-              Buat Voucher
+              {t("promos.createVoucherButton")}
             </button>
           </div>
 
@@ -276,19 +278,19 @@ export default function OrganizerPromos() {
         {showForm && (
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-6">
-              {editingId ? "Edit Voucher" : "Buat Voucher Baru"}
+              {editingId ? t("promos.modalEditTitle") : t("promos.modalAddTitle")}
             </h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event * </label>
+                  {t("promos.labelEvent")} </label>
                 <select
                   name="event_id"
                   value={formData.event_id}
                   onChange={handleInputChange}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${formErrors.event_id ? "border-red-400" : "border-gray-300"}`}
                 >
-                  <option value="">Pilih Event...</option>
+                  <option value="">{t("promos.selectEventPlaceholder")}</option>
                   {events.map((event) => (
                     <option key={event.id} value={event.id}>
                       {event.title}
@@ -300,14 +302,14 @@ export default function OrganizerPromos() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Voucher *
+                  {t("promos.labelVoucherName")}
                 </label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder="Misal: Diskon Member Baru"
+                  placeholder={t("promos.placeholderVoucherName")}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${formErrors.name ? "border-red-400" : "border-gray-300"}`}
                 />
                 {formErrors.name && <p className="text-xs text-red-500 mt-1">{formErrors.name}</p>}
@@ -315,14 +317,14 @@ export default function OrganizerPromos() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kode Voucher *
+                  {t("promos.labelVoucherCode")}
                 </label>
                 <input
                   type="text"
                   name="promotion_code"
                   value={formData.promotion_code}
                   onChange={handleInputChange}
-                  placeholder="PROMO2024 (auto UPPERCASE)"
+                  placeholder={t("promos.placeholderVoucherCode")}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent uppercase ${formErrors.promotion_code ? "border-red-400" : "border-gray-300"}`}
                 />
                 {formErrors.promotion_code && <p className="text-xs text-red-500 mt-1">{formErrors.promotion_code}</p>}
@@ -330,7 +332,7 @@ export default function OrganizerPromos() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipe *
+                  {t("promos.labelType")}
                 </label>
                 <select
                   name="type"
@@ -338,23 +340,23 @@ export default function OrganizerPromos() {
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
-                  <option value="VOUCHER">Voucher (Fixed Amount)</option>
-                  <option value="FLASH_SALE">Flash Sale</option>
-                  <option value="BUNDLE">Bundle</option>
-                  <option value="LAINNYA">Lainnya</option>
+                  <option value="VOUCHER">{t("promos.typeVoucher")}</option>
+                  <option value="FLASH_SALE">{t("promos.typeFlashSale")}</option>
+                  <option value="BUNDLE">{t("promos.typeBundle")}</option>
+                  <option value="LAINNYA">{t("promos.typeLainnya")}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nilai Diskon (Rp) *
+                  {t("promos.labelDiscountAmount")}
                 </label>
                 <input
                   type="number"
                   name="discount_amount"
                   value={formData.discount_amount}
                   onChange={handleInputChange}
-                  placeholder="Contoh: 50000"
+                  placeholder={t("promos.placeholderDiscountAmount")}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${formErrors.discount_amount ? "border-red-400" : "border-gray-300"}`}
                 />
                 {formErrors.discount_amount && <p className="text-xs text-red-500 mt-1">{formErrors.discount_amount}</p>}
@@ -362,14 +364,14 @@ export default function OrganizerPromos() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kuota (Opsional)
+                  {t("promos.labelQuota")}
                 </label>
                 <input
                   type="number"
                   name="max_usage"
                   value={formData.max_usage}
                   onChange={handleInputChange}
-                  placeholder="Kosong = Unlimited"
+                  placeholder={t("promos.placeholderQuota")}
                   min="1"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
@@ -377,7 +379,7 @@ export default function OrganizerPromos() {
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tanggal Kadaluarsa (Opsional)
+                  {t("promos.labelExpiryDate")}
                 </label>
                 <input
                   type="date"
@@ -394,7 +396,7 @@ export default function OrganizerPromos() {
                   disabled={loading}
                   className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition"
                 >
-                  {loading ? "Menyimpan..." : editingId ? "Update Voucher" : "Buat Voucher"}
+                  {loading ? t("promos.saving") : editingId ? t("promos.updateVoucherButton") : t("promos.createVoucherSubmitButton")}
                 </button>
                 <button
                   type="button"
@@ -404,7 +406,7 @@ export default function OrganizerPromos() {
                   }}
                   className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                 >
-                  Batal
+                  {t("promos.cancelButton")}
                 </button>
               </div>
             </form>
@@ -419,7 +421,7 @@ export default function OrganizerPromos() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari kode atau nama voucher..."
+              placeholder={t("promos.searchPlaceholder")}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
@@ -428,12 +430,12 @@ export default function OrganizerPromos() {
         {/* Table */}
         <div className="bg-white rounded-lg shadow overflow-hidden">
           {loading && promos.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">Memuat voucher...</div>
+            <div className="p-8 text-center text-gray-500">{t("promos.loadingVouchers")}</div>
           ) : filteredPromos.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               {promos.length === 0
-                ? "Belum ada voucher. Buat yang pertama!"
-                : "Voucher tidak ditemukan"}
+                ? t("promos.emptyStateNoVouchers")
+                : t("promos.emptyStateNoResults")}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -441,28 +443,28 @@ export default function OrganizerPromos() {
                 <thead className="bg-gray-100 border-b">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Kode
+                      {t("promos.columnCode")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Event
+                      {t("promos.columnEvent")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Nama
+                      {t("promos.columnName")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Diskon
+                      {t("promos.columnDiscount")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Kuota
+                      {t("promos.columnQuota")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Kadaluarsa
+                      {t("promos.columnExpiry")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Status
+                      {t("promos.columnStatus")}
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                      Aksi
+                      {t("promos.columnAction")}
                     </th>
                   </tr>
                 </thead>
@@ -483,7 +485,7 @@ export default function OrganizerPromos() {
                       <td className="px-6 py-4 text-gray-700">
                         {promo.expires_at
                           ? new Date(promo.expires_at).toLocaleDateString("id-ID")
-                          : "Permanent"}
+                          : t("promos.expiryPermanent")}
                       </td>
                       <td className="px-6 py-4">
                         <span
@@ -493,7 +495,7 @@ export default function OrganizerPromos() {
                               : "bg-green-100 text-green-700"
                           }`}
                         >
-                          {isExpired(promo.expires_at) ? "Expired" : "Aktif"}
+                          {isExpired(promo.expires_at) ? t("promos.statusExpired") : t("promos.statusActive")}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -501,14 +503,14 @@ export default function OrganizerPromos() {
                           <button
                             onClick={() => handleEdit(promo)}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded"
-                            title="Edit"
+                            title={t("promos.editTitle")}
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(promo.id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded"
-                            title="Hapus"
+                            title={t("promos.deleteTitle")}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

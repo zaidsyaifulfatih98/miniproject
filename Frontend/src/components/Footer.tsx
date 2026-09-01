@@ -1,24 +1,9 @@
 import { Link } from "react-router-dom";
 import { Ticket } from "lucide-react";
 import { VscGithubAlt, VscTwitter, VscGlobe, VscMail } from "react-icons/vsc";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const BG = "#1a0b2e";
-
-const aboutLinks = [
-  { label: "Tentang Kami", to: "/about" },
-  { label: "Jelajah Event", to: "/explore" },
-  { label: "Masuk", to: "/login" },
-  { label: "Privacy Policy", to: "/privacy" },
-  { label: "Terms & Conditions", to: "/terms" },
-];
-
-const cityLinks = [
-  { label: "Jakarta", to: "/explore?city=jakarta" },
-  { label: "Yogyakarta", to: "/explore?city=yogyakarta" },
-  { label: "Bandung", to: "/explore?city=bandung" },
-  { label: "Bali", to: "/explore?city=bali" },
-  { label: "Semua Kota", to: "/explore" },
-];
 
 const socialLinks = [
   { icon: <VscGithubAlt size={18} />, href: "https://github.com", label: "GitHub" },
@@ -27,7 +12,25 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-    const currentYear = new Date().getFullYear();
+  const { t } = useLanguage();
+  const currentYear = new Date().getFullYear();
+
+  const aboutLinks = [
+    { label: t("footer.aboutUs"), to: "/about" },
+    { label: t("footer.exploreEvent"), to: "/explore" },
+    { label: t("footer.login"), to: "/login" },
+    { label: t("footer.privacyPolicy"), to: "/privacy" },
+    { label: t("footer.terms"), to: "/terms" },
+  ];
+
+  const cityLinks = [
+    { label: "Jakarta", to: "/explore?city=jakarta" },
+    { label: "Yogyakarta", to: "/explore?city=yogyakarta" },
+    { label: "Bandung", to: "/explore?city=bandung" },
+    { label: "Bali", to: "/explore?city=bali" },
+    { label: t("footer.allCities"), to: "/explore" },
+  ];
+
   return (
     <footer style={{ backgroundColor: BG }} className="text-white font-sans">
       {/* ── Main grid ── */}
@@ -46,7 +49,7 @@ export default function Footer() {
 
             {/* Deskripsi */}
             <p className="text-sm leading-relaxed" style={{ color: "#b0a0c8" }}>
-              Temukan hidden gem event dan bikin momen seru bareng circle baru. Dari Indonesia, buat kamu yang gak bisa diam di rumah.
+              {t("footer.brandDescription")}
             </p>
 
             {/* Badge */}
@@ -55,14 +58,14 @@ export default function Footer() {
               style={{ backgroundColor: "rgba(255,92,46,0.1)" }}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-              Live Events
+              {t("footer.liveEvents")}
             </span>
           </div>
 
           {/* ── Tentang Lokahajat ── */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Tentang Lokahajat
+              {t("footer.aboutHeading")}
             </h3>
             <ul className="flex flex-col gap-2.5">
               {aboutLinks.map((link) => (
@@ -84,7 +87,7 @@ export default function Footer() {
           {/* ── Lokasi Event ── */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Lokasi Event
+              {t("footer.citiesHeading")}
             </h3>
             <ul className="flex flex-col gap-2.5">
               {cityLinks.map((link) => (
@@ -106,7 +109,7 @@ export default function Footer() {
           {/* ── Ikuti Kami ── */}
           <div className="flex flex-col gap-4">
             <h3 className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Ikuti Kami
+              {t("footer.followHeading")}
             </h3>
 
             {/* Email */}
@@ -149,7 +152,9 @@ export default function Footer() {
 
             {/* Tagline kecil */}
             <p className="text-xs mt-2 leading-relaxed" style={{ color: "#6b5785" }}>
-              Tetap terhubung dan dapatkan info<br />event terbaru langsung ke kamu.
+              {t("footer.taglineLine1")}
+              <br />
+              {t("footer.taglineLine2")}
             </p>
           </div>
         </div>
@@ -164,7 +169,7 @@ export default function Footer() {
           © {currentYear}{" "}
           <span className="font-semibold text-white/60">LOKAHAJAT</span>
           {" — "}
-          PT LOKAHAJAT NUSANTARA DIGITAL. ALL RIGHTS RESERVED.
+          {t("footer.copyrightSuffix")}
         </p>
       </div>
     </footer>

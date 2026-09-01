@@ -7,6 +7,7 @@ import html2canvas from "html2canvas";
 import { loadAndRenderTicketTemplate } from "../templates/ticketRenderer";
 import ReviewForm from "../components/ReviewForm";
 import { getUserFromCookie, setUserCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -53,6 +54,7 @@ type TabType = "profile" | "tickets" | "transactions" | "points";
 
 export default function CustomerProfile() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const tabParam = (searchParams.get("tab") as TabType) || "profile";
   const [activeTab, setActiveTab] = useState<TabType>(tabParam);
@@ -122,7 +124,7 @@ export default function CustomerProfile() {
           setPointsHistory(res.data.data.history ?? []);
         }
       })
-      .catch(() => setError("Gagal memuat profil."))
+      .catch(() => setError(t("profile.errorLoadProfile")))
       .finally(() => setLoading(false));
   }, [navigate]);
 
@@ -131,7 +133,7 @@ export default function CustomerProfile() {
     try {
       const storedUser = getUserFromCookie();
       if (!storedUser) {
-        setError("User tidak ditemukan");
+        setError(t("profile.errorUserNotFound"));
         return;
       }
       const { id: userId } = storedUser;
@@ -139,9 +141,9 @@ export default function CustomerProfile() {
       const response = await axios.get(`${API_BASE}/bookings?user_id=${userId}`, {
         withCredentials: true,
       });
-      
+
       const bookingData = response.data.data || [];
-      
+
       const ticketData = bookingData
         .filter((booking: any) => {
           const isDone = booking.status === "DONE";
@@ -180,7 +182,7 @@ export default function CustomerProfile() {
     try {
       const storedUser = getUserFromCookie();
       if (!storedUser) {
-        setError("User tidak ditemukan");
+        setError(t("profile.errorUserNotFound"));
         return;
       }
       const { id: userId } = storedUser;
@@ -229,7 +231,7 @@ export default function CustomerProfile() {
       console.error("[loadTransactions] Error:", err);
       console.error("[loadTransactions] Error response:", err.response?.data);
       console.error("[loadTransactions] Error message:", err.message);
-      setError(`Gagal memuat transaksi: ${err.response?.data?.message || err.message}`);
+      setError(t("profile.errorLoadTransactions", { message: err.response?.data?.message || err.message }));
     } finally {
       setTransactionsLoading(false);
       setIsRefreshing(false);
@@ -266,7 +268,7 @@ export default function CustomerProfile() {
         window.dispatchEvent(new Event("storage"));
       }
     } catch {
-      setError("Gagal mengunggah foto.");
+      setError(t("profile.errorUploadAvatar"));
     } finally {
       setAvatarUploading(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
@@ -274,8 +276,8 @@ export default function CustomerProfile() {
   };
 
   const handleChangePassword = async () => {
-    if (pwdForm.next !== pwdForm.confirm) { setPwdError("Password baru tidak cocok"); return; }
-    if (pwdForm.next.length < 6) { setPwdError("Password baru minimal 6 karakter"); return; }
+    if (pwdForm.next !== pwdForm.confirm) { setPwdError(t("profile.errorPasswordMismatch")); return; }
+    if (pwdForm.next.length < 6) { setPwdError(t("profile.errorPasswordTooShort")); return; }
     setPwdSaving(true); setPwdError(""); setPwdSuccess("");
     try {
       await axios.post(
@@ -283,11 +285,11 @@ export default function CustomerProfile() {
         { currentPassword: pwdForm.current, newPassword: pwdForm.next },
         { withCredentials: true }
       );
-      setPwdSuccess("Password berhasil diubah!");
+      setPwdSuccess(t("profile.successPasswordChanged"));
       setPwdForm({ current: "", next: "", confirm: "" });
       setTimeout(() => { setPwdModal(false); setPwdSuccess(""); }, 1500);
     } catch (err: any) {
-      setPwdError(err.response?.data?.message || "Gagal mengubah password");
+      setPwdError(err.response?.data?.message || t("profile.errorChangePassword"));
     } finally {
       setPwdSaving(false);
     }
@@ -348,7 +350,7 @@ export default function CustomerProfile() {
       setProfile((prev) => (prev ? { ...prev, ...res.data.data } : prev));
       setEditing(false);
     } catch {
-      setError("Gagal menyimpan perubahan.");
+      setError(t("profile.errorSaveChanges"));
     } finally {
       setSaving(false);
     }
@@ -430,12 +432,12 @@ export default function CustomerProfile() {
 
       await navigator.clipboard.writeText(ticket.ticket_code);
 
-      setError(`✓ Tiket berhasil disimpan! Kode '${ticket.ticket_code}' sudah dicopy ke clipboard.`);
+      setError(t("profile.successTicketSaved", { code: ticket.ticket_code }));
       setTimeout(() => setError(''), 3500);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       console.error('[handleSaveTicket] Error:', errorMsg);
-      setError(`Gagal: ${errorMsg}`);
+      setError(t("profile.errorGeneric", { message: errorMsg }));
       setTimeout(() => setError(''), 4000);
     } finally {
       if (container && container.parentNode) {
@@ -466,7 +468,7 @@ export default function CustomerProfile() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-500">Memuat profil...</p>
+          <p className="text-gray-500">{t("profile.loadingProfile")}</p>
         </div>
       </div>
     );
@@ -476,12 +478,12 @@ export default function CustomerProfile() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 font-semibold mb-4">{error || "Profil tidak ditemukan."}</p>
+          <p className="text-red-500 font-semibold mb-4">{error || t("profile.profileNotFound")}</p>
           <button
             onClick={() => navigate("/")}
             className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
           >
-            Kembali ke Home
+            {t("profile.backToHome")}
           </button>
         </div>
       </div>
@@ -489,10 +491,10 @@ export default function CustomerProfile() {
   }
 
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
-    { id: "profile", label: "Profil Saya", icon: <User className="w-5 h-5" /> },
-    { id: "tickets", label: "Tiket Saya", icon: <Ticket className="w-5 h-5" /> },
-    { id: "transactions", label: "Riwayat Transaksi", icon: <FileText className="w-5 h-5" /> },
-    { id: "points", label: "Poin & Voucher", icon: <Gift className="w-5 h-5" /> },
+    { id: "profile", label: t("profile.tabProfile"), icon: <User className="w-5 h-5" /> },
+    { id: "tickets", label: t("profile.tabTickets"), icon: <Ticket className="w-5 h-5" /> },
+    { id: "transactions", label: t("profile.tabTransactions"), icon: <FileText className="w-5 h-5" /> },
+    { id: "points", label: t("profile.tabPoints"), icon: <Gift className="w-5 h-5" /> },
   ];
 
   return (
@@ -501,15 +503,15 @@ export default function CustomerProfile() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Akun Saya</h1>
-              <p className="text-sm text-gray-600 mt-1">Kelola profil, tiket, dan riwayat transaksi Anda</p>
+              <h1 className="text-3xl font-bold text-gray-900">{t("profile.myAccount")}</h1>
+              <p className="text-sm text-gray-600 mt-1">{t("profile.managePageSubtitle")}</p>
             </div>
             <button
               onClick={handleGoHome}
               className="flex items-center gap-2 px-4 py-2 text-orange-600 hover:bg-orange-50 rounded-lg transition"
             >
               <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Home</span>
+              <span className="text-sm font-medium">{t("profile.home")}</span>
             </button>
           </div>
         </div>
@@ -561,7 +563,7 @@ export default function CustomerProfile() {
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={avatarUploading}
                     className="absolute bottom-0 right-0 bg-white border-2 border-orange-300 rounded-full p-1.5 hover:bg-orange-50 transition shadow"
-                    title="Ganti foto profil"
+                    title={t("profile.changeProfilePhoto")}
                   >
                     {avatarUploading ? (
                       <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
@@ -582,7 +584,7 @@ export default function CustomerProfile() {
                 <div className="flex gap-2 flex-wrap justify-center mt-4">
                   {profile.role.map((r) => (
                     <span key={r} className="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
-                      {r === "ORGANIZER" ? "Organizer" : "Customer"}
+                      {r === "ORGANIZER" ? t("profile.roleOrganizer") : t("profile.roleCustomer")}
                     </span>
                   ))}
                 </div>
@@ -590,19 +592,19 @@ export default function CustomerProfile() {
                 <div className="w-full mt-4 rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 p-3">
                   <div className="flex items-center justify-center gap-2">
                     <Coins className="w-4 h-4 text-orange-500" />
-                    <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Poin Aktif</span>
+                    <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">{t("profile.activePoints")}</span>
                   </div>
                   <p className="text-2xl font-extrabold text-orange-600 mt-1">{availablePoints.toLocaleString("id-ID")}</p>
                 </div>
                 <div className="w-full border-t border-gray-200 mt-4 pt-4 text-center">
-                  <p className="text-xs text-gray-500">Bergabung sejak</p>
+                  <p className="text-xs text-gray-500">{t("profile.joinedSince")}</p>
                   <p className="text-sm font-semibold text-gray-700 mt-1">{joinDate}</p>
                 </div>
                 <div className="w-full border-t border-gray-200 mt-4 pt-4">
-                  <p className="text-xs text-gray-500 mb-2">Kode Referral</p>
+                  <p className="text-xs text-gray-500 mb-2">{t("profile.referralCode")}</p>
                   <div className="flex items-center justify-center gap-2 bg-gray-50 rounded-lg p-2">
                     <span className="font-mono font-bold text-sm text-gray-800">{profile.referral_code}</span>
-                    <button onClick={handleCopy} className="p-1 hover:bg-gray-200 rounded transition" title="Salin kode referral">
+                    <button onClick={handleCopy} className="p-1 hover:bg-gray-200 rounded transition" title={t("profile.copyReferralCode")}>
                       {copied ? (
                         <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                       ) : (
@@ -619,8 +621,8 @@ export default function CustomerProfile() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900">Informasi Profil</h3>
-                    <p className="text-sm text-gray-600 mt-1">Ubah data pribadi akun Anda</p>
+                    <h3 className="text-lg font-bold text-gray-900">{t("profile.profileInfo")}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{t("profile.editPersonalDataSubtitle")}</p>
                   </div>
                   {!editing ? (
                     <div className="flex gap-2">
@@ -629,14 +631,14 @@ export default function CustomerProfile() {
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition font-semibold text-sm"
                       >
                         <Lock className="w-4 h-4" />
-                        Ubah Password
+                        {t("profile.changePassword")}
                       </button>
                       <button
                         onClick={handleEdit}
                         className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition font-semibold text-sm"
                       >
                         <Edit2 className="w-4 h-4" />
-                        Edit
+                        {t("profile.edit")}
                       </button>
                     </div>
                   ) : (
@@ -646,7 +648,7 @@ export default function CustomerProfile() {
                         className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold text-sm"
                       >
                         <X className="w-4 h-4" />
-                        Batal
+                        {t("profile.cancel")}
                       </button>
                       <button
                         onClick={handleSave}
@@ -654,7 +656,7 @@ export default function CustomerProfile() {
                         className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition font-semibold text-sm disabled:opacity-60"
                       >
                         <Save className="w-4 h-4" />
-                        {saving ? "Menyimpan..." : "Simpan"}
+                        {saving ? t("profile.saving") : t("profile.save")}
                       </button>
                     </div>
                   )}
@@ -668,10 +670,10 @@ export default function CustomerProfile() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {[
-                    { key: "full_name", label: "Nama Lengkap" },
-                    { key: "email", label: "Email", type: "email" },
-                    { key: "birth_date", label: "Tanggal Lahir", type: "date" },
-                    { key: "gender", label: "Jenis Kelamin" },
+                    { key: "full_name", label: t("profile.fieldFullName") },
+                    { key: "email", label: t("profile.fieldEmail"), type: "email" },
+                    { key: "birth_date", label: t("profile.fieldBirthDate"), type: "date" },
+                    { key: "gender", label: t("profile.fieldGender") },
                   ].map(({ key, label, type }) => (
                     <div key={key}>
                       <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
@@ -684,9 +686,9 @@ export default function CustomerProfile() {
                             onChange={(e) => handleChange(key as keyof EditableDraft, e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"
                           >
-                            <option value="">Pilih jenis kelamin</option>
-                            <option value="Male">Laki-laki</option>
-                            <option value="Female">Perempuan</option>
+                            <option value="">{t("profile.selectGender")}</option>
+                            <option value="Male">{t("profile.genderMale")}</option>
+                            <option value="Female">{t("profile.genderFemale")}</option>
                           </select>
                         ) : (
                           <input
@@ -711,7 +713,7 @@ export default function CustomerProfile() {
                   ))}
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
-                      Alamat
+                      {t("profile.fieldAddress")}
                     </label>
                     {editing ? (
                       <textarea
@@ -736,12 +738,12 @@ export default function CustomerProfile() {
         {activeTab === "tickets" && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Tiket Saya</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t("profile.tabTickets")}</h2>
               <button
                 onClick={handleRefreshTickets}
                 disabled={isRefreshing}
                 className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
-                title="Refresh"
+                title={t("profile.refresh")}
               >
                 <RefreshCw className={`w-5 h-5 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
               </button>
@@ -749,7 +751,7 @@ export default function CustomerProfile() {
             {ticketsLoading ? (
               <div className="text-center py-12">
                 <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
-                <p className="text-gray-600">Memuat tiket...</p>
+                <p className="text-gray-600">{t("profile.loadingTickets")}</p>
               </div>
             ) : tickets.length > 0 ? (
               <div className="grid gap-4">
@@ -770,26 +772,26 @@ export default function CustomerProfile() {
                           ? "bg-green-100 text-green-700" 
                           : "bg-gray-200 text-gray-600"
                       }`}>
-                        {ticket.status === "active" ? "✓ Aktif" : "✗ Tidak Aktif"}
+                        {ticket.status === "active" ? t("profile.ticketActive") : t("profile.ticketInactive")}
                       </span>
                     </div>
 
                     {/* Ticket Information Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-500 font-semibold mb-1">KODE TIKET</p>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">{t("profile.labelTicketCode")}</p>
                         <p className="font-mono font-bold text-orange-600 text-sm md:text-lg break-words">{ticket.ticket_code}</p>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-500 font-semibold mb-1">JENIS TIKET</p>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">{t("profile.labelTicketType")}</p>
                         <p className="font-semibold text-gray-900">{ticket.ticket_type}</p>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-500 font-semibold mb-1">JUMLAH</p>
-                        <p className="font-semibold text-gray-900">{ticket.quantity} tiket</p>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">{t("profile.labelQuantity")}</p>
+                        <p className="font-semibold text-gray-900">{ticket.quantity} {t("profile.ticketUnitSuffix")}</p>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-500 font-semibold mb-1">HARGA/TIKET</p>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">{t("profile.labelPricePerTicket")}</p>
                         <p className="font-semibold text-gray-900">Rp{ticket.ticket_price?.toLocaleString("id-ID")}</p>
                       </div>
                     </div>
@@ -797,7 +799,7 @@ export default function CustomerProfile() {
                     {/* Event & Purchase Details */}
                     <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
                       <div>
-                        <p className="text-xs text-gray-500 font-semibold mb-1">📅 TANGGAL ACARA</p>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">{t("profile.labelEventDate")}</p>
                         {ticket.eventStartDate ? (
                           <p className="text-sm text-gray-900 font-medium">
                             {new Date(ticket.eventStartDate).toLocaleDateString("id-ID", {
@@ -813,7 +815,7 @@ export default function CustomerProfile() {
                         )}
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 font-semibold mb-1">🛒 TANGGAL PEMBELIAN</p>
+                        <p className="text-xs text-gray-500 font-semibold mb-1">{t("profile.labelPurchaseDate")}</p>
                         <p className="text-sm text-gray-900 font-medium">
                           {new Date(ticket.purchase_date).toLocaleDateString("id-ID", {
                             year: "numeric",
@@ -826,12 +828,12 @@ export default function CustomerProfile() {
 
                     {/* Instructions */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                      <p className="text-xs font-semibold text-blue-900 mb-2">📋 CARA PENGGUNAAN:</p>
+                      <p className="text-xs font-semibold text-blue-900 mb-2">{t("profile.usageInstructionsTitle")}</p>
                       <ul className="text-xs text-blue-800 space-y-1 list-disc list-inside">
-                        <li>Tunjukkan kode tiket <span className="font-mono font-bold">{ticket.ticket_code}</span> saat check-in</li>
-                        <li>Bisa ditunjukkan via screenshot atau print</li>
-                        <li>Pastikan hadir 15 menit sebelum acara dimulai</li>
-                        <li>Siapkan identitas diri asli saat check-in</li>
+                        <li>{t("profile.usageInstruction1", { code: ticket.ticket_code })}</li>
+                        <li>{t("profile.usageInstruction2")}</li>
+                        <li>{t("profile.usageInstruction3")}</li>
+                        <li>{t("profile.usageInstruction4")}</li>
                       </ul>
                     </div>
 
@@ -840,22 +842,22 @@ export default function CustomerProfile() {
                       <button
                         onClick={() => setReviewModal({ ticketId: ticket.id, eventId: ticket.id })}
                         className="w-full px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-700 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                        title="Berikan rating dan ulasan untuk event ini"
+                        title={t("profile.giveRatingTitle")}
                       >
                         <Star size={18} />
-                        Beri Rating
+                        {t("profile.giveRating")}
                       </button>
                       {ticket.status === "active" && (
                         <button
                           onClick={() => handleSaveTicket(ticket)}
                           className="w-full px-4 py-3 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                          title="Download dan simpan tiket digital ke perangkat Anda"
-                          aria-label="Simpan tiket digital"
+                          title={t("profile.saveTicketTitle")}
+                          aria-label={t("profile.saveTicketAriaLabel")}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                           </svg>
-                          Simpan Tiket
+                          {t("profile.saveTicket")}
                         </button>
                       )}
                     </div>
@@ -865,8 +867,8 @@ export default function CustomerProfile() {
             ) : (
               <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                 <Ticket className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-600 font-medium">Belum ada tiket</p>
-                <p className="text-sm text-gray-500 mt-1">Pesan event untuk mendapatkan tiket</p>
+                <p className="text-gray-600 font-medium">{t("profile.noTicketsYet")}</p>
+                <p className="text-sm text-gray-500 mt-1">{t("profile.bookEventForTickets")}</p>
               </div>
             )}
           </div>
@@ -877,7 +879,7 @@ export default function CustomerProfile() {
           <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
             <div className="bg-white w-full sm:w-full sm:max-w-2xl rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-3xl sm:rounded-t-2xl">
-                <h3 className="text-lg font-bold text-gray-900">Beri Rating & Ulasan</h3>
+                <h3 className="text-lg font-bold text-gray-900">{t("profile.giveRatingReview")}</h3>
                 <button
                   onClick={() => setReviewModal(null)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition"
@@ -904,12 +906,12 @@ export default function CustomerProfile() {
         {activeTab === "transactions" && (
           <div>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Riwayat Transaksi</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{t("profile.tabTransactions")}</h2>
               <button
                 onClick={handleRefreshTransactions}
                 disabled={isRefreshing}
                 className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50"
-                title="Refresh"
+                title={t("profile.refresh")}
               >
                 <RefreshCw className={`w-5 h-5 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`} />
               </button>
@@ -917,7 +919,7 @@ export default function CustomerProfile() {
             {transactionsLoading ? (
               <div className="text-center py-12">
                 <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
-                <p className="text-gray-600">Memuat transaksi...</p>
+                <p className="text-gray-600">{t("profile.loadingTransactions")}</p>
               </div>
             ) : transactions.length > 0 ? (
               <div className="grid gap-4">
@@ -930,7 +932,7 @@ export default function CustomerProfile() {
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-900">{transaction.event_title}</h3>
                         <p className="text-sm text-gray-600 mt-1">
-                          Metode: <span className="font-medium">{transaction.payment_method}</span>
+                          {t("profile.methodLabel")}<span className="font-medium">{transaction.payment_method}</span>
                         </p>
                         <p className="text-xs text-gray-500 mt-2">
                           {new Date(transaction.purchase_date).toLocaleDateString("id-ID", {
@@ -957,10 +959,10 @@ export default function CustomerProfile() {
                             }`}
                           >
                             {transaction.status === "success"
-                              ? "Berhasil"
+                              ? t("profile.statusSuccess")
                               : transaction.status === "pending"
-                                ? "Menunggu"
-                                : "Gagal"}
+                                ? t("profile.statusPending")
+                                : t("profile.statusFailed")}
                           </span>
                         </div>
                         {transaction.status === "pending" && (
@@ -968,7 +970,7 @@ export default function CustomerProfile() {
                             onClick={() => navigate(`/payment/${transaction.id}`)}
                             className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition text-sm font-semibold"
                           >
-                            <span>Lanjutkan</span>
+                            <span>{t("profile.continue")}</span>
                             <ArrowRight className="w-4 h-4" />
                           </button>
                         )}
@@ -977,7 +979,7 @@ export default function CustomerProfile() {
                             onClick={() => navigate(`/payment/${transaction.id}`)}
                             className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition text-xs font-semibold"
                           >
-                            Lihat Detail
+                            {t("profile.viewDetail")}
                           </button>
                         )}
                       </div>
@@ -988,11 +990,11 @@ export default function CustomerProfile() {
             ) : (
               <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
                 <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-600 font-medium">Belum ada transaksi</p>
-                <p className="text-sm text-gray-500 mt-1">Transaksi Anda akan muncul di sini</p>
+                <p className="text-gray-600 font-medium">{t("profile.noTransactionsYet")}</p>
+                <p className="text-sm text-gray-500 mt-1">{t("profile.transactionsWillAppearHere")}</p>
                 {error && (
                   <p className="text-sm text-red-600 mt-3 px-4">
-                    <span className="font-semibold">Error:</span> {error}
+                    <span className="font-semibold">{t("profile.errorLabel")}</span> {error}
                   </p>
                 )}
               </div>
@@ -1004,16 +1006,16 @@ export default function CustomerProfile() {
         {activeTab === "points" && (
           <div className="space-y-6">
             <div className="bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl p-6 text-white">
-              <p className="text-sm font-semibold opacity-80 uppercase tracking-wide">Poin Aktif</p>
+              <p className="text-sm font-semibold opacity-80 uppercase tracking-wide">{t("profile.activePoints")}</p>
               <p className="text-4xl font-extrabold mt-1">{availablePoints.toLocaleString("id-ID")}</p>
-              <p className="text-xs opacity-70 mt-1">Poin yang dapat digunakan untuk diskon pembelian tiket</p>
+              <p className="text-xs opacity-70 mt-1">{t("profile.activePointsSubtitle")}</p>
             </div>
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-900 mb-4">Riwayat Poin</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t("profile.pointsHistory")}</h3>
               {pointsLoading ? (
-                <div className="text-center py-8 text-gray-400">Memuat...</div>
+                <div className="text-center py-8 text-gray-400">{t("profile.loadingGeneric")}</div>
               ) : pointsHistory.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">Belum ada riwayat poin</div>
+                <div className="text-center py-8 text-gray-400">{t("profile.noPointsHistoryYet")}</div>
               ) : (
                 <div className="space-y-3">
                   {pointsHistory.map((h: any) => {
@@ -1021,14 +1023,14 @@ export default function CustomerProfile() {
                     return (
                       <div key={h.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
                         <div>
-                          <p className="text-sm font-semibold text-gray-800">+{h.points.toLocaleString("id-ID")} poin</p>
+                          <p className="text-sm font-semibold text-gray-800">{t("profile.pointsEarned", { points: h.points.toLocaleString("id-ID") })}</p>
                           <p className="text-xs text-gray-500 mt-0.5">
-                            Berlaku hingga:{" "}
+                            {t("profile.validUntil")}{" "}
                             {new Date(h.expires_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                           </p>
                         </div>
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${expired ? "bg-gray-100 text-gray-500" : "bg-green-100 text-green-700"}`}>
-                          {expired ? "Kadaluarsa" : "Aktif"}
+                          {expired ? t("profile.pointsExpired") : t("profile.pointsActive")}
                         </span>
                       </div>
                     );
@@ -1037,9 +1039,9 @@ export default function CustomerProfile() {
               )}
             </div>
             <div className="bg-white rounded-2xl border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-900 mb-4">Voucher Saya</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t("profile.myVouchers")}</h3>
               {coupons.length === 0 ? (
-                <div className="text-center py-8 text-gray-400">Belum ada voucher</div>
+                <div className="text-center py-8 text-gray-400">{t("profile.noVouchersYet")}</div>
               ) : (
                 <div className="space-y-3">
                   {coupons.map((c: any) => {
@@ -1052,11 +1054,11 @@ export default function CustomerProfile() {
                             <p className="font-bold text-sm text-gray-900">{c.name}</p>
                             <p className="font-mono text-lg font-extrabold text-orange-600 mt-1">{c.promotion_code}</p>
                             <p className="text-xs text-gray-500 mt-1">
-                              Diskon {c.discount_amount}% • Berlaku hingga {new Date(c.expires_at).toLocaleDateString("id-ID")}
+                              {t("profile.voucherDiscountInfo", { percent: c.discount_amount, date: new Date(c.expires_at).toLocaleDateString("id-ID") })}
                             </p>
                           </div>
                           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${expired ? "bg-gray-100 text-gray-500" : used ? "bg-red-100 text-red-600" : "bg-green-100 text-green-700"}`}>
-                            {expired ? "Kadaluarsa" : used ? "Terpakai" : "Aktif"}
+                            {expired ? t("profile.voucherExpired") : used ? t("profile.voucherUsed") : t("profile.voucherActive")}
                           </span>
                         </div>
                       </div>
@@ -1075,7 +1077,7 @@ export default function CustomerProfile() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Lock className="w-5 h-5 text-orange-500" /> Ubah Password
+                <Lock className="w-5 h-5 text-orange-500" /> {t("profile.changePassword")}
               </h3>
               <button
                 onClick={() => { setPwdModal(false); setPwdError(""); setPwdSuccess(""); setPwdForm({ current: "", next: "", confirm: "" }); }}
@@ -1092,9 +1094,9 @@ export default function CustomerProfile() {
             )}
             <div className="space-y-4">
               {[
-                { key: "current", label: "Password Lama" },
-                { key: "next", label: "Password Baru" },
-                { key: "confirm", label: "Konfirmasi Password Baru" },
+                { key: "current", label: t("profile.oldPassword") },
+                { key: "next", label: t("profile.newPassword") },
+                { key: "confirm", label: t("profile.confirmNewPassword") },
               ].map(({ key, label }) => (
                 <div key={key}>
                   <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">{label}</label>
@@ -1112,18 +1114,18 @@ export default function CustomerProfile() {
                 onClick={() => { setPwdModal(false); setPwdError(""); setPwdForm({ current: "", next: "", confirm: "" }); }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold text-sm"
               >
-                Batal
+                {t("profile.cancel")}
               </button>
               <button
                 onClick={handleChangePassword}
                 disabled={pwdSaving}
                 className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition font-semibold text-sm disabled:opacity-60"
               >
-                {pwdSaving ? "Menyimpan..." : "Simpan Password"}
+                {pwdSaving ? t("profile.saving") : t("profile.savePassword")}
               </button>
             </div>
             <div className="mt-4 text-center">
-              <a href="/forgot-password" className="text-xs text-orange-500 hover:underline">Lupa password lama?</a>
+              <a href="/forgot-password" className="text-xs text-orange-500 hover:underline">{t("profile.forgotOldPassword")}</a>
             </div>
           </div>
         </div>

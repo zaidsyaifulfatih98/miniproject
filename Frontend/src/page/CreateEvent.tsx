@@ -4,6 +4,7 @@ import { Upload, X, AlertCircle, CheckCircle } from "lucide-react";
 import axios from "axios";
 import { createEventSchema } from "../schemas/event.schema";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -32,25 +33,26 @@ interface Toast {
 }
 
 const CATEGORIES = [
-  { value: "KONSER", label: "Konser" },
-  { value: "WORKSHOP", label: "Workshop" },
-  { value: "SEMINAR", label: "Seminar" },
-  { value: "FESTIVAL", label: "Festival" },
-  { value: "OLAHRAGA", label: "Olahraga" },
-  { value: "LAINNYA", label: "Lainnya" },
+  { value: "KONSER", labelKey: "categoryKonser" },
+  { value: "WORKSHOP", labelKey: "categoryWorkshop" },
+  { value: "SEMINAR", labelKey: "categorySeminar" },
+  { value: "FESTIVAL", labelKey: "categoryFestival" },
+  { value: "OLAHRAGA", labelKey: "categoryOlahraga" },
+  { value: "LAINNYA", labelKey: "categoryLainnya" },
 ];
 
 const STATUS_OPTIONS = [
-  { value: "DRAFT", label: "Draft" },
-  { value: "PENDING", label: "Pending" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "REJECTED", label: "Rejected" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "CANCELLED", label: "Cancelled" },
+  { value: "DRAFT", labelKey: "statusDraft" },
+  { value: "PENDING", labelKey: "statusPending" },
+  { value: "ACTIVE", labelKey: "statusActive" },
+  { value: "REJECTED", labelKey: "statusRejected" },
+  { value: "COMPLETED", labelKey: "statusCompleted" },
+  { value: "CANCELLED", labelKey: "statusCancelled" },
 ];
 
 export default function CreateEvent() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -129,21 +131,21 @@ export default function CreateEvent() {
     }
 
     // Extra checks not covered by schema
-    if (!formData.location.trim()) newErrors.location = "Lokasi harus diisi";
-    if (!formData.startDate) newErrors.startDate = "Tanggal mulai harus diisi";
-    if (!formData.endDate) newErrors.endDate = "Tanggal berakhir harus diisi";
+    if (!formData.location.trim()) newErrors.location = t("createEvent.validationLocationRequired");
+    if (!formData.startDate) newErrors.startDate = t("createEvent.validationStartDateRequired");
+    if (!formData.endDate) newErrors.endDate = t("createEvent.validationEndDateRequired");
     if (formData.startDate && formData.endDate && new Date(formData.endDate) <= new Date(formData.startDate)) {
-      newErrors.endDate = "Tanggal berakhir harus setelah tanggal mulai";
+      newErrors.endDate = t("createEvent.validationEndDateAfterStart");
     }
-    if (!formData.startTime) newErrors.startTime = "Waktu mulai harus diisi";
-    if (!formData.endTime) newErrors.endTime = "Waktu berakhir harus diisi";
+    if (!formData.startTime) newErrors.startTime = t("createEvent.validationStartTimeRequired");
+    if (!formData.endTime) newErrors.endTime = t("createEvent.validationEndTimeRequired");
     if (!formData.description.trim() || formData.description.length < 20) {
-      newErrors.description = "Deskripsi minimal 20 karakter";
+      newErrors.description = t("createEvent.validationDescriptionMinLength");
     }
     if (formData.price > 0 && formData.price < 10000) {
-      newErrors.price = "Harga minimal Rp 10.000";
+      newErrors.price = t("createEvent.validationPriceMinimum");
     }
-    if (!formData.image) newErrors.image = "Gambar event harus diunggah";
+    if (!formData.image) newErrors.image = t("createEvent.validationImageRequired");
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -161,12 +163,12 @@ export default function CreateEvent() {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, image: "Ukuran gambar maksimal 2MB" }));
+      setErrors((prev) => ({ ...prev, image: t("createEvent.validationImageMaxSize") }));
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({ ...prev, image: "File harus berupa gambar (JPG, PNG)" }));
+      setErrors((prev) => ({ ...prev, image: t("createEvent.validationImageType") }));
       return;
     }
 
@@ -209,7 +211,7 @@ export default function CreateEvent() {
     e.preventDefault();
 
     if (!validateForm()) {
-      showToast("Mohon perbaiki form terlebih dahulu", "error");
+      showToast(t("createEvent.toastFixFormFirst"), "error");
       return;
     }
 
@@ -243,16 +245,16 @@ export default function CreateEvent() {
       });
 
       if (response.data.success) {
-        showToast("Event berhasil dibuat!", "success");
+        showToast(t("createEvent.toastEventCreated"), "success");
         setTimeout(() => {
           navigate("/dashboard");
         }, 2000);
       } else {
-        showToast(response.data.message || "Gagal membuat event", "error");
+        showToast(response.data.message || t("createEvent.toastEventCreateFailed"), "error");
       }
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.message || "Terjadi kesalahan saat membuat event";
+        error.response?.data?.message || t("createEvent.toastGenericError");
       showToast(errorMessage, "error");
     } finally {
       setSubmitting(false);
@@ -264,7 +266,7 @@ export default function CreateEvent() {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat...</p>
+          <p className="text-gray-600">{t("createEvent.loadingLabel")}</p>
         </div>
       </div>
     );
@@ -290,8 +292,8 @@ export default function CreateEvent() {
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Buat Event Baru</h1>
-          <p className="text-gray-600">Isi informasi event Anda untuk mulai menerima pemesanan tiket</p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">{t("createEvent.pageTitle")}</h1>
+          <p className="text-gray-600">{t("createEvent.pageSubtitle")}</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -299,7 +301,7 @@ export default function CreateEvent() {
             {/* Image Upload */}
             <div className="mb-8">
               <label className="block text-lg font-semibold text-gray-900 mb-4">
-                Gambar Event
+                {t("createEvent.labelEventImage")}
               </label>
               <div className="relative">
                 {imagePreview ? (
@@ -323,8 +325,8 @@ export default function CreateEvent() {
                 ) : (
                   <label className="border-2 border-dashed border-orange-300 rounded-2xl p-12 text-center cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-all bg-white block min-h-80 flex flex-col items-center justify-center">
                     <Upload className="mx-auto mb-4 text-orange-500" size={48} />
-                    <p className="text-gray-900 font-semibold text-lg mb-2">Klik untuk upload gambar</p>
-                    <p className="text-sm text-gray-500">JPG atau PNG, maksimal 2MB</p>
+                    <p className="text-gray-900 font-semibold text-lg mb-2">{t("createEvent.uploadClickPrompt")}</p>
+                    <p className="text-sm text-gray-500">{t("createEvent.uploadHint")}</p>
                     <input
                       type="file"
                       accept="image/jpeg,image/png"
@@ -344,18 +346,18 @@ export default function CreateEvent() {
 
             {/* Basic Info Section */}
             <div className="mb-8 pb-8 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Informasi Dasar</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">{t("createEvent.sectionBasicInfo")}</h2>
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nama Event
+                  {t("createEvent.labelEventName")}
                 </label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Contoh: Konser Malam Minggu"
+                  placeholder={t("createEvent.placeholderEventName")}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
                     errors.title
                       ? "border-red-500 focus:ring-red-200"
@@ -372,14 +374,14 @@ export default function CreateEvent() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lokasi
+                  {t("createEvent.labelLocation")}
                 </label>
                 <input
                   type="text"
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  placeholder="Contoh: Jakarta Convention Center"
+                  placeholder={t("createEvent.placeholderLocation")}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
                     errors.location
                       ? "border-red-500 focus:ring-red-200"
@@ -396,7 +398,7 @@ export default function CreateEvent() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kategori
+                  {t("createEvent.labelCategory")}
                 </label>
                 <select
                   name="category"
@@ -406,7 +408,7 @@ export default function CreateEvent() {
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat.value} value={cat.value}>
-                      {cat.label}
+                      {t(`createEvent.${cat.labelKey}`)}
                     </option>
                   ))}
                 </select>
@@ -414,7 +416,7 @@ export default function CreateEvent() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status
+                  {t("createEvent.labelStatus")}
                 </label>
                 <select
                   name="status"
@@ -424,7 +426,7 @@ export default function CreateEvent() {
                 >
                   {STATUS_OPTIONS.map((status) => (
                     <option key={status.value} value={status.value}>
-                      {status.label}
+                      {t(`createEvent.${status.labelKey}`)}
                     </option>
                   ))}
                 </select>
@@ -433,7 +435,7 @@ export default function CreateEvent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tanggal Mulai
+                    {t("createEvent.labelStartDate")}
                   </label>
                   <input
                     type="date"
@@ -456,7 +458,7 @@ export default function CreateEvent() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tanggal Berakhir
+                    {t("createEvent.labelEndDate")}
                   </label>
                   <input
                     type="date"
@@ -481,7 +483,7 @@ export default function CreateEvent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Waktu Mulai
+                    {t("createEvent.labelStartTime")}
                   </label>
                   <input
                     type="time"
@@ -504,7 +506,7 @@ export default function CreateEvent() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Waktu Berakhir
+                    {t("createEvent.labelEndTime")}
                   </label>
                   <input
                     type="time"
@@ -529,18 +531,18 @@ export default function CreateEvent() {
 
             {/* Venue & Pricing */}
             <div className="mb-8 pb-8 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Venue & Harga</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">{t("createEvent.sectionVenuePricing")}</h2>
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Kapasitas Venue
+                  {t("createEvent.labelVenueCapacity")}
                 </label>
                 <input
                   type="number"
                   name="totalSeats"
                   value={formData.totalSeats || ""}
                   onChange={handleInputChange}
-                  placeholder="Contoh: 5000"
+                  placeholder={t("createEvent.placeholderVenueCapacity")}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
                     errors.totalSeats
                       ? "border-red-500 focus:ring-red-200"
@@ -557,14 +559,14 @@ export default function CreateEvent() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Harga Tiket (Rp)
+                  {t("createEvent.labelTicketPrice")}
                 </label>
                 <input
                   type="number"
                   name="price"
                   value={formData.price || ""}
                   onChange={handleInputChange}
-                  placeholder="Contoh: 150000 (atau 0 untuk gratis)"
+                  placeholder={t("createEvent.placeholderTicketPrice")}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition ${
                     errors.price
                       ? "border-red-500 focus:ring-red-200"
@@ -578,23 +580,23 @@ export default function CreateEvent() {
                   </p>
                 )}
                 <p className="text-gray-500 text-xs mt-2">
-                  Masukkan 0 untuk event gratis
+                  {t("createEvent.hintFreeEvent")}
                 </p>
               </div>
             </div>
 
             {/* Description */}
             <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Deskripsi Event</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">{t("createEvent.sectionDescription")}</h2>
 
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Deskripsi Lengkap
+                {t("createEvent.labelFullDescription")}
               </label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                placeholder="Jelaskan detail event Anda, termasuk topik yang akan dibahas, pembicara, fasilitas, dll..."
+                placeholder={t("createEvent.placeholderFullDescription")}
                 rows={8}
                 className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition resize-none ${
                   errors.description
@@ -609,7 +611,7 @@ export default function CreateEvent() {
                 </p>
               )}
               <p className="text-gray-500 text-xs mt-2">
-                Minimal 20 karakter • Jelaskan dengan detail untuk menarik pembeli tiket
+                {t("createEvent.hintDescriptionLength")}
               </p>
             </div>
 
@@ -620,14 +622,14 @@ export default function CreateEvent() {
                 onClick={() => navigate("/dashboard")}
                 className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition cursor-pointer"
               >
-                Batal
+                {t("createEvent.cancelButton")}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="flex-1 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition cursor-pointer"
               >
-                {submitting ? "Membuat Event..." : "Buat Event"}
+                {submitting ? t("createEvent.submittingButton") : t("createEvent.submitButton")}
               </button>
             </div>
           </form>
@@ -635,13 +637,13 @@ export default function CreateEvent() {
 
         {/* Helper Text */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">💡 Tips Membuat Event yang Sukses:</h3>
+          <h3 className="font-semibold text-blue-900 mb-2">{t("createEvent.tipsTitle")}</h3>
           <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-            <li>Gunakan judul yang menarik dan deskriptif</li>
-            <li>Sertakan gambar berkualitas tinggi yang mewakili event Anda</li>
-            <li>Berikan deskripsi detail tentang acara, pembicara, dan fasilitas</li>
-            <li>Atur harga yang kompetitif untuk menarik pembeli tiket</li>
-            <li>Pastikan semua informasi (tanggal, waktu, lokasi) sudah benar</li>
+            <li>{t("createEvent.tip1")}</li>
+            <li>{t("createEvent.tip2")}</li>
+            <li>{t("createEvent.tip3")}</li>
+            <li>{t("createEvent.tip4")}</li>
+            <li>{t("createEvent.tip5")}</li>
           </ul>
         </div>
       </div>

@@ -21,6 +21,7 @@ import {
   Area,
 } from "recharts";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -54,16 +55,13 @@ function formatRupiah(n: number) {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-function mapTicketType(t: DBTicketType): string {
-  const map: Record<DBTicketType, string> = {
-    FREE: "Free",
-    EARLY_BIRD: "Early Bird",
-    REGULAR: "Regular",
-    VIP: "VIP",
-    VVIP: "VVIP",
-  };
-  return map[t] ?? t;
-}
+const ticketTypeLabelKey: Record<DBTicketType, string> = {
+  FREE: "report.ticketFree",
+  EARLY_BIRD: "report.ticketEarlyBird",
+  REGULAR: "report.ticketRegular",
+  VIP: "report.ticketVip",
+  VVIP: "report.ticketVvip",
+};
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -88,6 +86,7 @@ function StatCard({ label, value, color }: { label: string; value: string; color
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Report() {
+  const { t } = useLanguage();
   const [bookings, setBookings] = useState<BookingAPI[]>([]);
   const [loading, setLoading] = useState(true);
   const [organizerEvents, setOrganizerEvents] = useState<OrganizerEvent[]>([]);
@@ -141,12 +140,12 @@ export default function Report() {
   // ─── Real demographics from birth_date ────────────────────────────────────
   const currentYear = new Date().getFullYear();
   const ageGroupDefs = [
-    { name: "< 18 tahun",  min: 0,  max: 17  },
-    { name: "18–24 tahun", min: 18, max: 24  },
-    { name: "25–34 tahun", min: 25, max: 34  },
-    { name: "35–44 tahun", min: 35, max: 44  },
-    { name: "45–54 tahun", min: 45, max: 54  },
-    { name: "55+ tahun",   min: 55, max: 999 },
+    { name: t("report.ageGroupUnder18"), min: 0,  max: 17  },
+    { name: t("report.ageGroup18to24"), min: 18, max: 24  },
+    { name: t("report.ageGroup25to34"), min: 25, max: 34  },
+    { name: t("report.ageGroup35to44"), min: 35, max: 44  },
+    { name: t("report.ageGroup45to54"), min: 45, max: 54  },
+    { name: t("report.ageGroup55plus"),   min: 55, max: 999 },
   ];
   const demographicsData = (() => {
     const seenUsers = new Set<string>();
@@ -232,9 +231,9 @@ export default function Report() {
   const totalBkgTS = timeSeriesData.reduce((s, d) => s + d.bookings, 0);
 
   const TIME_VIEW_LABELS: Record<typeof timeView, string> = {
-    year: "Per Tahun",
-    month: "Per Bulan (12 bln terakhir)",
-    day: "Per Hari (30 hari terakhir)",
+    year: t("report.timeViewLabelYear"),
+    month: t("report.timeViewLabelMonth"),
+    day: t("report.timeViewLabelDay"),
   };
 
   // ─── Real hourly trend from bookings.createdAt ────────────────────────────
@@ -250,14 +249,18 @@ export default function Report() {
     })).filter((d) => d.pembelian > 0);
   })();
 
-  const salesData = doneBookings.map((b) => ({
-    id: b.display_id ?? b.id.slice(0, 8).toUpperCase(),
-    event: b.event?.title ?? "–",
-    tiket: mapTicketType((b.ticket?.type ?? "REGULAR") as DBTicketType),
-    qty: b.quantity ?? 0,
-    total: Number(b.total_price ?? 0),
-    tanggal: b.createdAt.slice(0, 10),
-  }));
+  const salesData = doneBookings.map((b) => {
+    const dbType = (b.ticket?.type ?? "REGULAR") as DBTicketType;
+    return {
+      id: b.display_id ?? b.id.slice(0, 8).toUpperCase(),
+      event: b.event?.title ?? "–",
+      dbTicketType: dbType,
+      tiket: t(ticketTypeLabelKey[dbType]),
+      qty: b.quantity ?? 0,
+      total: Number(b.total_price ?? 0),
+      tanggal: b.createdAt.slice(0, 10),
+    };
+  });
 
   const grossRevenue = doneBookings.reduce((s, b) => s + Number(b.total_price ?? 0), 0);
   const netRevenue   = doneBookings.reduce((s, b) => s + Number(b.final_price ?? 0), 0);
@@ -267,10 +270,10 @@ export default function Report() {
   const financialData = { grossRevenue, tax, platformFee, netRevenue };
 
   const financialBarData = [
-    { name: "Pendapatan Kotor", value: financialData.grossRevenue },
-    { name: "Pajak (10%)", value: financialData.tax },
-    { name: "Fee Platform (5%)", value: financialData.platformFee },
-    { name: "Pendapatan Bersih", value: financialData.netRevenue },
+    { name: t("report.cardGrossRevenue"), value: financialData.grossRevenue },
+    { name: t("report.cardTax"), value: financialData.tax },
+    { name: t("report.cardPlatformFee"), value: financialData.platformFee },
+    { name: t("report.cardNetRevenue"), value: financialData.netRevenue },
   ];
 
   // ─── Real funnel data for selected event (from DB) ──────────────────────────
@@ -281,20 +284,20 @@ export default function Report() {
   };
 
   const funnelData = [
-    { name: "Halaman Detail Tiket", value: funnelStats.detail, fill: "#6366f1" },
-    { name: "Halaman Checkout", value: funnelStats.checkout, fill: "#8b5cf6" },
-    { name: "Pembayaran Selesai", value: funnelStats.done, fill: "#a855f7" },
+    { name: t("report.funnelNameDetail"), value: funnelStats.detail, fill: "#6366f1" },
+    { name: t("report.funnelNameCheckout"), value: funnelStats.checkout, fill: "#8b5cf6" },
+    { name: t("report.funnelNameDone"), value: funnelStats.done, fill: "#a855f7" },
   ];
 
   const pctFmt = (num: number, den: number) =>
     den > 0 ? `${((num / den) * 100).toFixed(1)}%` : "–";
 
   const conversionRates = [
-    { label: "Konversi Detail → Checkout", pct: pctFmt(funnelStats.checkout, funnelStats.detail) },
-    { label: "Konversi Checkout → Bayar", pct: pctFmt(funnelStats.done, funnelStats.checkout) },
-    { label: "Konversi Overall", pct: pctFmt(funnelStats.done, funnelStats.detail) },
+    { label: t("report.conversionDetailToCheckout"), pct: pctFmt(funnelStats.checkout, funnelStats.detail) },
+    { label: t("report.conversionCheckoutToPay"), pct: pctFmt(funnelStats.done, funnelStats.checkout) },
+    { label: t("report.conversionOverall"), pct: pctFmt(funnelStats.done, funnelStats.detail) },
     {
-      label: "Drop-off Total",
+      label: t("report.dropoffTotal"),
       pct: funnelStats.detail > 0
         ? `${(((funnelStats.detail - funnelStats.done) / funnelStats.detail) * 100).toFixed(1)}%`
         : "–",
@@ -302,7 +305,14 @@ export default function Report() {
   ];
 
   function exportToCSV() {
-    const headers = ["ID Transaksi", "Event", "Jenis Tiket", "Qty", "Total (Rp)", "Tanggal"];
+    const headers = [
+      t("report.csvHeaderTransactionId"),
+      t("report.csvHeaderEvent"),
+      t("report.csvHeaderTicketType"),
+      t("report.csvHeaderQty"),
+      t("report.csvHeaderTotal"),
+      t("report.csvHeaderDate"),
+    ];
     const rows = salesData.map((r) => [r.id, r.event, r.tiket, r.qty, r.total, r.tanggal]);
     const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -317,24 +327,24 @@ export default function Report() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 space-y-10">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Dashboard Laporan</h1>
-        <p className="text-gray-500 mt-1 text-sm">Rekap performa, analitik, dan keuangan event Anda</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{t("report.pageTitle")}</h1>
+        <p className="text-gray-500 mt-1 text-sm">{t("report.pageSubtitle")}</p>
       </div>
 
       {/* ── INSIGHT ─────────────────────────────────────────────────────────── */}
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <SectionHeader
-            title="Insight — Funnel Pengunjung"
-            subtitle="Tracking halaman: Detail Tiket → Checkout → Pembayaran Selesai"
+            title={t("report.sectionFunnelTitle")}
+            subtitle={t("report.sectionFunnelSubtitle")}
           />
           {/* Event selector */}
           <div className="flex-shrink-0">
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Pilih Event
+              {t("report.selectEventLabel")}
             </label>
             {organizerEvents.length === 0 ? (
-              <p className="text-xs text-gray-400 italic">Belum ada event</p>
+              <p className="text-xs text-gray-400 italic">{t("report.noEventsYet")}</p>
             ) : (
               <select
                 value={selectedEventId}
@@ -353,9 +363,9 @@ export default function Report() {
 
         {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-          <StatCard label="Detail Tiket Dilihat" value={funnelStats.detail.toLocaleString("id-ID")} color="bg-indigo-50 text-indigo-800" />
-          <StatCard label="Masuk Checkout" value={funnelStats.checkout.toLocaleString("id-ID")} color="bg-purple-50 text-purple-800" />
-          <StatCard label="Pembayaran Selesai" value={funnelStats.done.toLocaleString("id-ID")} color="bg-fuchsia-50 text-fuchsia-800" />
+          <StatCard label={t("report.statDetailViews")} value={funnelStats.detail.toLocaleString("id-ID")} color="bg-indigo-50 text-indigo-800" />
+          <StatCard label={t("report.statCheckoutViews")} value={funnelStats.checkout.toLocaleString("id-ID")} color="bg-purple-50 text-purple-800" />
+          <StatCard label={t("report.statPaymentDone")} value={funnelStats.done.toLocaleString("id-ID")} color="bg-fuchsia-50 text-fuchsia-800" />
         </div>
 
         {/* Conversion rates */}
@@ -373,7 +383,7 @@ export default function Report() {
           <ResponsiveContainer width="100%" height="100%">
             <FunnelChart>
               <Tooltip
-                formatter={(val) => [`${Number(val).toLocaleString("id-ID")} pengunjung`]}
+                formatter={(val) => [t("report.funnelTooltipVisitors", { count: Number(val).toLocaleString("id-ID") })]}
               />
               <Funnel dataKey="value" data={funnelData} isAnimationActive>
                 {funnelData.map((entry, index) => (
@@ -390,8 +400,8 @@ export default function Report() {
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <SectionHeader
-            title="Statistik Penjualan Berdasarkan Waktu"
-            subtitle="Pendapatan, tiket terjual, dan jumlah transaksi dalam periode tertentu"
+            title={t("report.sectionTimeStatsTitle")}
+            subtitle={t("report.sectionTimeStatsSubtitle")}
           />
           {/* Granularity toggle */}
           <div className="flex gap-2 flex-shrink-0">
@@ -405,7 +415,7 @@ export default function Report() {
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
-                {v === "year" ? "Tahun" : v === "month" ? "Bulan" : "Hari"}
+                {v === "year" ? t("report.timeViewYear") : v === "month" ? t("report.timeViewMonth") : t("report.timeViewDay")}
               </button>
             ))}
           </div>
@@ -417,27 +427,27 @@ export default function Report() {
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="rounded-2xl p-5 bg-indigo-50">
-            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500 opacity-80">Pendapatan Bersih</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500 opacity-80">{t("report.summaryNetRevenue")}</p>
             <p className="text-xl font-bold text-indigo-800 mt-1">{formatRupiah(totalRevTS)}</p>
           </div>
           <div className="rounded-2xl p-5 bg-purple-50">
-            <p className="text-xs font-semibold uppercase tracking-wide text-purple-500 opacity-80">Tiket Terjual</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-purple-500 opacity-80">{t("report.summaryTicketsSold")}</p>
             <p className="text-xl font-bold text-purple-800 mt-1">{totalTixTS.toLocaleString("id-ID")}</p>
           </div>
           <div className="rounded-2xl p-5 bg-sky-50">
-            <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 opacity-80">Total Transaksi</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-sky-500 opacity-80">{t("report.summaryTotalTransactions")}</p>
             <p className="text-xl font-bold text-sky-800 mt-1">{totalBkgTS.toLocaleString("id-ID")}</p>
           </div>
         </div>
 
         {/* Revenue bar + tickets line */}
         {loading ? (
-          <div className="h-80 flex items-center justify-center text-gray-400 text-sm">Memuat data…</div>
+          <div className="h-80 flex items-center justify-center text-gray-400 text-sm">{t("report.loadingData")}</div>
         ) : timeSeriesData.length === 0 ? (
-          <div className="h-80 flex items-center justify-center text-gray-400 text-sm">Belum ada data untuk periode ini.</div>
+          <div className="h-80 flex items-center justify-center text-gray-400 text-sm">{t("report.noDataForPeriod")}</div>
         ) : (
           <>
-            <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">Pendapatan & Tiket Terjual</h3>
+            <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">{t("report.chartRevenueTicketsTitle")}</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={timeSeriesData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
@@ -472,8 +482,8 @@ export default function Report() {
                       boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                     }}
                     formatter={(val, name) => {
-                      if (name === "revenue") return [formatRupiah(Number(val)), "Pendapatan"];
-                      if (name === "tickets") return [`${Number(val).toLocaleString("id-ID")} tiket`, "Tiket Terjual"];
+                      if (name === "revenue") return [formatRupiah(Number(val)), t("report.legendNetRevenue")];
+                      if (name === "tickets") return [t("report.ticketsUnitLabel", { count: Number(val).toLocaleString("id-ID") }), t("report.legendTicketsSold")];
                       return [val, name];
                     }}
                   />
@@ -482,7 +492,7 @@ export default function Report() {
                     iconSize={10}
                     formatter={(value) => (
                       <span className="text-xs text-gray-600">
-                        {value === "revenue" ? "Pendapatan Bersih" : "Tiket Terjual"}
+                        {value === "revenue" ? t("report.legendNetRevenue") : t("report.legendTicketsSold")}
                       </span>
                     )}
                   />
@@ -507,7 +517,7 @@ export default function Report() {
             </div>
 
             {/* Bookings count bar chart */}
-            <h3 className="text-sm font-semibold text-gray-600 mb-3 mt-8 uppercase tracking-wide">Jumlah Transaksi</h3>
+            <h3 className="text-sm font-semibold text-gray-600 mb-3 mt-8 uppercase tracking-wide">{t("report.chartTransactionCountTitle")}</h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={timeSeriesData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
@@ -524,7 +534,7 @@ export default function Report() {
                       border: "none",
                       boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
                     }}
-                    formatter={(val) => [`${Number(val).toLocaleString("id-ID")} transaksi`, "Transaksi"]}
+                    formatter={(val) => [t("report.transactionsUnitLabel", { count: Number(val).toLocaleString("id-ID") }), t("report.legendTransactions")]}
                   />
                   <Bar dataKey="bookings" fill="#0ea5e9" radius={[6, 6, 0, 0]} barSize={timeView === "year" ? 40 : timeView === "month" ? 22 : 8} />
                 </BarChart>
@@ -538,8 +548,8 @@ export default function Report() {
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <SectionHeader
-            title="Laporan Penjualan"
-            subtitle="Riwayat transaksi tiket seluruh event"
+            title={t("report.sectionSalesReportTitle")}
+            subtitle={t("report.sectionSalesReportSubtitle")}
           />
           <div className="flex gap-3 flex-shrink-0">
             <button
@@ -549,7 +559,7 @@ export default function Report() {
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
               </svg>
-              Ekspor CSV
+              {t("report.exportCsvButton")}
             </button>
           </div>
         </div>
@@ -558,22 +568,22 @@ export default function Report() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                <th className="px-5 py-3 text-left font-semibold">ID Transaksi</th>
-                <th className="px-5 py-3 text-left font-semibold">Event</th>
-                <th className="px-5 py-3 text-left font-semibold">Jenis Tiket</th>
-                <th className="px-5 py-3 text-right font-semibold">Qty</th>
-                <th className="px-5 py-3 text-right font-semibold">Total</th>
-                <th className="px-5 py-3 text-left font-semibold">Tanggal</th>
+                <th className="px-5 py-3 text-left font-semibold">{t("report.columnTransactionId")}</th>
+                <th className="px-5 py-3 text-left font-semibold">{t("report.columnEvent")}</th>
+                <th className="px-5 py-3 text-left font-semibold">{t("report.columnTicketType")}</th>
+                <th className="px-5 py-3 text-right font-semibold">{t("report.columnQty")}</th>
+                <th className="px-5 py-3 text-right font-semibold">{t("report.columnTotal")}</th>
+                <th className="px-5 py-3 text-left font-semibold">{t("report.columnDate")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-6 text-center text-gray-400">Memuat data…</td>
+                  <td colSpan={6} className="px-5 py-6 text-center text-gray-400">{t("report.loadingData")}</td>
                 </tr>
               ) : salesData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-5 py-6 text-center text-gray-400">Belum ada transaksi.</td>
+                  <td colSpan={6} className="px-5 py-6 text-center text-gray-400">{t("report.noTransactionsYet")}</td>
                 </tr>
               ) : (
                 <>
@@ -583,8 +593,8 @@ export default function Report() {
                       <td className="px-5 py-3.5 text-gray-700">{row.event}</td>
                       <td className="px-5 py-3.5">
                         <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                          row.tiket === "VIP" ? "bg-amber-100 text-amber-700" :
-                          row.tiket === "Regular" ? "bg-sky-100 text-sky-700" :
+                          row.dbTicketType === "VIP" || row.dbTicketType === "VVIP" ? "bg-amber-100 text-amber-700" :
+                          row.dbTicketType === "REGULAR" ? "bg-sky-100 text-sky-700" :
                           "bg-emerald-100 text-emerald-700"
                         }`}>{row.tiket}</span>
                       </td>
@@ -603,14 +613,14 @@ export default function Report() {
       {/* ── ANALITIK PEMBELI ─────────────────────────────────────────────────── */}
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <SectionHeader
-          title="Analitik Pembeli"
-          subtitle="Demografi pembeli dan tren waktu pembelian teramai"
+          title={t("report.sectionBuyerAnalyticsTitle")}
+          subtitle={t("report.sectionBuyerAnalyticsSubtitle")}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Pie – demographics */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Demografi Usia Pembeli</h3>
+            <h3 className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">{t("report.chartAgeDemographicsTitle")}</h3>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -640,7 +650,7 @@ export default function Report() {
 
           {/* Line – hourly trend */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">Tren Waktu Pembelian (per Jam)</h3>
+            <h3 className="text-sm font-semibold text-gray-600 mb-4 uppercase tracking-wide">{t("report.chartHourlyTrendTitle")}</h3>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={hourlyTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -649,7 +659,7 @@ export default function Report() {
                   <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} />
                   <Tooltip
                     contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}
-                    formatter={(val) => [`${val} pembelian`]}
+                    formatter={(val) => [t("report.purchaseUnitLabel", { count: String(val) })]}
                   />
                   <Line
                     type="monotone"
@@ -669,26 +679,26 @@ export default function Report() {
       {/* ── LAPORAN KEUANGAN ─────────────────────────────────────────────────── */}
       <section className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         <SectionHeader
-          title="Laporan Keuangan"
-          subtitle="Rekapitulasi pajak, fee platform, dan pendapatan bersih"
+          title={t("report.sectionFinancialReportTitle")}
+          subtitle={t("report.sectionFinancialReportSubtitle")}
         />
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="rounded-2xl p-5 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Pendapatan Kotor</p>
+            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{t("report.cardGrossRevenue")}</p>
             <p className="text-xl font-bold mt-1">{formatRupiah(financialData.grossRevenue)}</p>
           </div>
           <div className="rounded-2xl p-5 bg-gradient-to-br from-rose-500 to-rose-600 text-white">
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Pajak (10%)</p>
+            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{t("report.cardTax")}</p>
             <p className="text-xl font-bold mt-1">{formatRupiah(financialData.tax)}</p>
           </div>
           <div className="rounded-2xl p-5 bg-gradient-to-br from-amber-500 to-amber-600 text-white">
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Fee Platform (5%)</p>
+            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{t("report.cardPlatformFee")}</p>
             <p className="text-xl font-bold mt-1">{formatRupiah(financialData.platformFee)}</p>
           </div>
           <div className="rounded-2xl p-5 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
-            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">Pendapatan Bersih</p>
+            <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{t("report.cardNetRevenue")}</p>
             <p className="text-xl font-bold mt-1">{formatRupiah(financialData.netRevenue)}</p>
           </div>
         </div>
@@ -722,19 +732,19 @@ export default function Report() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                <th className="px-5 py-3 text-left font-semibold">Komponen</th>
-                <th className="px-5 py-3 text-right font-semibold">Jumlah (Rp)</th>
-                <th className="px-5 py-3 text-right font-semibold">Persentase</th>
+                <th className="px-5 py-3 text-left font-semibold">{t("report.breakdownColumnComponent")}</th>
+                <th className="px-5 py-3 text-right font-semibold">{t("report.breakdownColumnAmount")}</th>
+                <th className="px-5 py-3 text-right font-semibold">{t("report.breakdownColumnPercentage")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {[
-                { label: "Pendapatan Kotor", amount: financialData.grossRevenue, pct: "100%", color: "text-indigo-600" },
-                { label: "Pajak (PPh/PPN)", amount: -financialData.tax, pct: "-10%", color: "text-rose-600" },
-                { label: "Fee Platform", amount: -financialData.platformFee, pct: "-5%", color: "text-amber-600" },
-                { label: "Pendapatan Bersih", amount: financialData.netRevenue, pct: "85%", color: "text-emerald-600" },
+                { label: t("report.breakdownGrossRevenue"), amount: financialData.grossRevenue, pct: "100%", color: "text-indigo-600" },
+                { label: t("report.breakdownTax"), amount: -financialData.tax, pct: "-10%", color: "text-rose-600" },
+                { label: t("report.breakdownPlatformFee"), amount: -financialData.platformFee, pct: "-5%", color: "text-amber-600" },
+                { label: t("report.breakdownNetRevenue"), amount: financialData.netRevenue, pct: "85%", color: "text-emerald-600" },
               ].map((row) => (
-                <tr key={row.label} className={`hover:bg-gray-50/60 transition-colors ${row.label === "Pendapatan Bersih" ? "font-bold bg-emerald-50/40" : ""}`}>
+                <tr key={row.label} className={`hover:bg-gray-50/60 transition-colors ${row.label === t("report.breakdownNetRevenue") ? "font-bold bg-emerald-50/40" : ""}`}>
                   <td className="px-5 py-3.5 text-gray-700">{row.label}</td>
                   <td className={`px-5 py-3.5 text-right font-semibold ${row.color}`}>{formatRupiah(Math.abs(row.amount))}</td>
                   <td className={`px-5 py-3.5 text-right font-semibold ${row.color}`}>{row.pct}</td>

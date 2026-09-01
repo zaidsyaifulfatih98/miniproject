@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Camera, Lock, Coins } from "lucide-react";
 import { getUserFromCookie, setUserCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -23,6 +24,7 @@ interface UserProfile {
 type EditableDraft = Pick<UserProfile, "full_name" | "email" | "birth_date" | "gender" | "address">;
 
 export default function Admin() {
+  const { t } = useLanguage();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<EditableDraft>({
@@ -73,7 +75,7 @@ export default function Admin() {
       .then((res) => {
         if (res?.data?.data) setAvailablePoints(res.data.data.available_points ?? 0);
       })
-      .catch(() => setError("Gagal memuat profil."))
+      .catch(() => setError(t("admin.loadProfileError")))
       .finally(() => setLoading(false));
   }, []);
 
@@ -104,7 +106,7 @@ export default function Admin() {
       setProfile((prev) => prev ? { ...prev, ...res.data.data } : prev);
       setEditing(false);
     } catch {
-      setError("Gagal menyimpan perubahan.");
+      setError(t("admin.saveChangesError"));
     } finally {
       setSaving(false);
     }
@@ -141,7 +143,7 @@ export default function Admin() {
         window.dispatchEvent(new Event("storage"));
       }
     } catch {
-      setError("Gagal mengunggah foto.");
+      setError(t("admin.uploadPhotoError"));
     } finally {
       setAvatarUploading(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
@@ -149,8 +151,8 @@ export default function Admin() {
   }
 
   async function handleChangePassword() {
-    if (pwdForm.next !== pwdForm.confirm) { setPwdError("Password baru tidak cocok"); return; }
-    if (pwdForm.next.length < 6) { setPwdError("Password baru minimal 6 karakter"); return; }
+    if (pwdForm.next !== pwdForm.confirm) { setPwdError(t("admin.passwordMismatch")); return; }
+    if (pwdForm.next.length < 6) { setPwdError(t("admin.passwordTooShort")); return; }
     setPwdSaving(true); setPwdError(""); setPwdSuccess("");
     try {
       await axios.post(
@@ -158,11 +160,11 @@ export default function Admin() {
         { currentPassword: pwdForm.current, newPassword: pwdForm.next },
         { withCredentials: true }
       );
-      setPwdSuccess("Password berhasil diubah!");
+      setPwdSuccess(t("admin.passwordChanged"));
       setPwdForm({ current: "", next: "", confirm: "" });
       setTimeout(() => { setPwdModal(false); setPwdSuccess(""); }, 1500);
     } catch (err: any) {
-      setPwdError(err.response?.data?.message || "Gagal mengubah password");
+      setPwdError(err.response?.data?.message || t("admin.changePasswordError"));
     } finally {
       setPwdSaving(false);
     }
@@ -179,7 +181,7 @@ export default function Admin() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Memuat profil...</p>
+        <p className="text-gray-400 text-sm">{t("admin.loadingProfile")}</p>
       </div>
     );
   }
@@ -187,24 +189,24 @@ export default function Admin() {
   if (error || !profile) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-red-500 text-sm">{error || "Profil tidak ditemukan."}</p>
+        <p className="text-red-500 text-sm">{error || t("admin.profileNotFound")}</p>
       </div>
     );
   }
 
   const fields: { key: keyof EditableDraft; label: string; type?: string }[] = [
-    { key: "full_name", label: "Nama Lengkap" },
-    { key: "email", label: "Email", type: "email" },
-    { key: "birth_date", label: "Tanggal Lahir", type: "date" },
-    { key: "gender", label: "Jenis Kelamin" },
-    { key: "address", label: "Alamat" },
+    { key: "full_name", label: t("admin.fieldFullName") },
+    { key: "email", label: t("admin.fieldEmail"), type: "email" },
+    { key: "birth_date", label: t("admin.fieldBirthDate"), type: "date" },
+    { key: "gender", label: t("admin.fieldGender") },
+    { key: "address", label: t("admin.fieldAddress") },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Profil Saya</h1>
-        <p className="text-gray-500 text-sm mt-1">Kelola informasi akun Anda</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{t("admin.pageTitle")}</h1>
+        <p className="text-gray-500 text-sm mt-1">{t("admin.pageSubtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -228,7 +230,7 @@ export default function Admin() {
                 onClick={() => avatarInputRef.current?.click()}
                 disabled={avatarUploading}
                 className="absolute bottom-0 right-0 bg-white border-2 border-orange-300 rounded-full p-1.5 hover:bg-orange-50 transition shadow"
-                title="Ganti foto profil"
+                title={t("admin.changePhotoTitle")}
               >
                 {avatarUploading ? (
                   <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
@@ -250,7 +252,7 @@ export default function Admin() {
               <div className="flex gap-1.5 flex-wrap justify-center mt-2">
                 {profile.role.map((r) => (
                   <span key={r} className="px-3 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
-                    {r === "ORGANIZER" ? "Organizer" : "Customer"}
+                    {r === "ORGANIZER" ? t("admin.roleOrganizer") : t("admin.roleCustomer")}
                   </span>
                 ))}
               </div>
@@ -258,20 +260,20 @@ export default function Admin() {
             <div className="w-full rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-100 p-3 text-center">
               <div className="flex items-center justify-center gap-1.5 mb-1">
                 <Coins className="w-4 h-4 text-orange-500" />
-                <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">Poin Aktif</span>
+                <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">{t("admin.activePoints")}</span>
               </div>
               <p className="text-2xl font-extrabold text-orange-600">{availablePoints.toLocaleString("id-ID")}</p>
             </div>
             <div className="w-full border-t border-gray-100 pt-4 text-center">
-              <p className="text-xs text-gray-400">Bergabung sejak</p>
+              <p className="text-xs text-gray-400">{t("admin.joinedSince")}</p>
               <p className="text-sm font-semibold text-gray-700 mt-0.5">{joinDate}</p>
             </div>
             <div className="w-full border-t border-gray-100 pt-4">
               <div className="text-center">
-                <p className="text-xs text-gray-400">Kode Referral</p>
+                <p className="text-xs text-gray-400">{t("admin.referralCode")}</p>
                 <div className="flex items-center justify-center gap-1.5 mt-0.5">
                   <span className="font-mono font-bold text-sm text-gray-800 tracking-wider">{profile.referral_code}</span>
-                  <button onClick={handleCopy} title="Salin kode referral" className="text-gray-400 hover:text-indigo-500 transition-colors">
+                  <button onClick={handleCopy} title={t("admin.copyReferralCode")} className="text-gray-400 hover:text-indigo-500 transition-colors">
                     {copied ? (
                       <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -293,8 +295,8 @@ export default function Admin() {
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="font-bold text-gray-800">Informasi Profil</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Data pribadi akun Anda</p>
+                <h2 className="font-bold text-gray-800">{t("admin.profileInfoTitle")}</h2>
+                <p className="text-xs text-gray-500 mt-0.5">{t("admin.profileInfoSubtitle")}</p>
               </div>
               {!editing ? (
                 <div className="flex gap-2">
@@ -303,7 +305,7 @@ export default function Admin() {
                     className="flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors"
                   >
                     <Lock className="w-4 h-4" />
-                    Ubah Password
+                    {t("admin.changePasswordButton")}
                   </button>
                   <button
                     onClick={handleEdit}
@@ -312,13 +314,13 @@ export default function Admin() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Edit Profil
+                    {t("admin.editProfileButton")}
                   </button>
                 </div>
               ) : (
                 <div className="flex gap-2">
                   <button onClick={handleCancel} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
-                    Batal
+                    {t("admin.cancelButton")}
                   </button>
                   <button
                     onClick={handleSave}
@@ -328,7 +330,7 @@ export default function Admin() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    {saving ? "Menyimpan..." : "Simpan"}
+                    {saving ? t("admin.saving") : t("admin.saveButton")}
                   </button>
                 </div>
               )}
@@ -356,9 +358,9 @@ export default function Admin() {
                         onChange={(e) => handleChange(key, e.target.value)}
                         className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                       >
-                        <option value="">Pilih jenis kelamin</option>
-                        <option value="Male">Laki-laki</option>
-                        <option value="Female">Perempuan</option>
+                        <option value="">{t("admin.selectGenderPlaceholder")}</option>
+                        <option value="Male">{t("admin.genderMale")}</option>
+                        <option value="Female">{t("admin.genderFemale")}</option>
                       </select>
                     ) : (
                       <input
@@ -372,7 +374,7 @@ export default function Admin() {
                     <div className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm text-gray-800 min-h-[46px]">
                       {key === "birth_date" && profile[key]
                         ? new Date(profile[key]).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
-                        : profile[key] || "-"}
+                        : profile[key] || t("admin.emptyValue")}
                     </div>
                   )}
                 </div>
@@ -388,7 +390,7 @@ export default function Admin() {
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Lock className="w-5 h-5 text-orange-500" /> Ubah Password
+              <Lock className="w-5 h-5 text-orange-500" /> {t("admin.changePasswordModalTitle")}
             </h3>
             <button
               onClick={() => { setPwdModal(false); setPwdError(""); setPwdSuccess(""); setPwdForm({ current: "", next: "", confirm: "" }); }}
@@ -405,9 +407,9 @@ export default function Admin() {
           )}
           <div className="space-y-4">
             {[
-              { key: "current", label: "Password Lama" },
-              { key: "next", label: "Password Baru" },
-              { key: "confirm", label: "Konfirmasi Password Baru" },
+              { key: "current", label: t("admin.fieldCurrentPassword") },
+              { key: "next", label: t("admin.fieldNewPassword") },
+              { key: "confirm", label: t("admin.fieldConfirmPassword") },
             ].map(({ key, label }) => (
               <div key={key}>
                 <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">{label}</label>
@@ -425,18 +427,18 @@ export default function Admin() {
               onClick={() => { setPwdModal(false); setPwdError(""); setPwdForm({ current: "", next: "", confirm: "" }); }}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-semibold text-sm"
             >
-              Batal
+              {t("admin.cancelButton")}
             </button>
             <button
               onClick={handleChangePassword}
               disabled={pwdSaving}
               className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition font-semibold text-sm disabled:opacity-60"
             >
-              {pwdSaving ? "Menyimpan..." : "Simpan Password"}
+              {pwdSaving ? t("admin.saving") : t("admin.savePasswordButton")}
             </button>
           </div>
           <div className="mt-4 text-center">
-            <a href="/forgot-password" className="text-xs text-orange-500 hover:underline">Lupa password lama?</a>
+            <a href="/forgot-password" className="text-xs text-orange-500 hover:underline">{t("admin.forgotOldPassword")}</a>
           </div>
         </div>
       </div>

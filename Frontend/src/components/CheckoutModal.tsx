@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { X, ChevronRight, ChevronLeft, Plus, Minus } from "lucide-react";
 import { trackFunnel } from "../utils/tracker";
 import { getUserFromCookie, removeUserCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -70,6 +71,7 @@ export default function CheckoutModal({
   tickets,
 }: CheckoutModalProps) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [step, setStep] = useState(1);
   const [selectedTickets, setSelectedTickets] = useState<SelectedTicket[]>([]);
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
@@ -187,12 +189,12 @@ export default function CheckoutModal({
   // Submit handler
   const handleSubmit = async () => {
     if (selectedTickets.length === 0) {
-      setError("Pilih minimal 1 tiket");
+      setError(t("checkoutModal.errorSelectAtLeastOneTicket"));
       return;
     }
 
     if (!isPersonalInfoValid) {
-      setError("Data personal tidak lengkap");
+      setError(t("checkoutModal.errorIncompletePersonalInfo"));
       return;
     }
 
@@ -238,7 +240,7 @@ export default function CheckoutModal({
             navigate(`/login?returnTo=/event/${event.id}?openCheckout=true`);
             return;
           }
-          setError(data.message || "Gagal membuat booking");
+          setError(data.message || t("checkoutModal.errorBookingFailed"));
           return;
         }
 
@@ -252,7 +254,7 @@ export default function CheckoutModal({
       onClose();
       navigate(`/payment/${firstBookingId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t("checkoutModal.errorGeneric"));
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +277,7 @@ export default function CheckoutModal({
           }}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900">Checkout</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t("checkoutModal.title")}</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -302,17 +304,17 @@ export default function CheckoutModal({
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Pilih Tiket
+                        {t("checkoutModal.step1Title")}
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
-                        Anda bisa memilih lebih dari satu jenis tiket
+                        {t("checkoutModal.step1Subtitle")}
                       </p>
                     </div>
 
                     {displayTickets.length === 0 ? (
                       <div className="bg-gray-50 rounded-lg p-6 text-center">
                         <p className="text-gray-600">
-                          Tidak ada tiket yang tersedia
+                          {t("checkoutModal.noTicketsAvailable")}
                         </p>
                       </div>
                     ) : (
@@ -339,7 +341,7 @@ export default function CheckoutModal({
                                     </p>
                                   )}
                                   <p className="text-xs text-gray-500 mt-2">
-                                    Tersisa: {available} tiket
+                                    {t("checkoutModal.remainingTickets", { count: available })}
                                   </p>
                                 </div>
                                 <span className="font-bold text-orange-500 ml-4">
@@ -388,13 +390,13 @@ export default function CheckoutModal({
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Data Pribadi
+                        {t("checkoutModal.step2Title")}
                       </h3>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Lengkap
+                        {t("checkoutModal.fullNameLabel")}
                       </label>
                       <input
                         type="text"
@@ -406,13 +408,13 @@ export default function CheckoutModal({
                           })
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Masukkan nama lengkap"
+                        placeholder={t("checkoutModal.fullNamePlaceholder")}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email
+                        {t("checkoutModal.emailLabel")}
                       </label>
                       <input
                         type="email"
@@ -424,13 +426,13 @@ export default function CheckoutModal({
                           })
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Masukkan email"
+                        placeholder={t("checkoutModal.emailPlaceholder")}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Telepon
+                        {t("checkoutModal.phoneLabel")}
                       </label>
                       <input
                         type="tel"
@@ -442,7 +444,7 @@ export default function CheckoutModal({
                           })
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                        placeholder="Masukkan nomor telepon"
+                        placeholder={t("checkoutModal.phonePlaceholder")}
                       />
                     </div>
                   </div>
@@ -452,7 +454,7 @@ export default function CheckoutModal({
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        {isFreeTicket ? "Konfirmasi Pesanan" : "Pembayaran & Promo"}
+                        {isFreeTicket ? t("checkoutModal.step3TitleConfirm") : t("checkoutModal.step3TitlePayment")}
                       </h3>
                     </div>
 
@@ -460,7 +462,7 @@ export default function CheckoutModal({
                       <>
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Metode Pembayaran
+                            {t("checkoutModal.paymentMethodLabel")}
                           </label>
                           <select
                             value={paymentData.method}
@@ -472,15 +474,15 @@ export default function CheckoutModal({
                             }
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                           >
-                            <option value="BANK_TRANSFER">Transfer Bank</option>
-                            <option value="E_WALLET">E-Wallet</option>
-                            <option value="CREDIT_CARD">Kartu Kredit</option>
+                            <option value="BANK_TRANSFER">{t("checkoutModal.paymentMethodBankTransfer")}</option>
+                            <option value="E_WALLET">{t("checkoutModal.paymentMethodEwallet")}</option>
+                            <option value="CREDIT_CARD">{t("checkoutModal.paymentMethodCreditCard")}</option>
                           </select>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Kode Voucher (Opsional)
+                            {t("checkoutModal.voucherCodeLabel")}
                           </label>
                           <select
                             value={paymentData.voucherCode}
@@ -492,7 +494,7 @@ export default function CheckoutModal({
                             }
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                           >
-                            <option value="">-- Pilih Voucher --</option>
+                            <option value="">{t("checkoutModal.voucherCodePlaceholder")}</option>
                             {availableVouchers.map((voucher: any) => (
                               <option key={voucher.id} value={voucher.promotion_code}>
                                 {voucher.promotion_code} - {voucher.name}
@@ -517,14 +519,14 @@ export default function CheckoutModal({
                                 className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
                               />
                               <span className="text-sm font-medium text-gray-700">
-                                Gunakan Poin
+                                {t("checkoutModal.usePoints")}
                               </span>
                             </label>
                           </div>
                           {paymentData.usePoints && (
                             <div className="mt-3 ml-8">
                               <label className="block text-xs text-gray-600 mb-2">
-                                Jumlah Poin
+                                {t("checkoutModal.pointsAmountLabel")}
                               </label>
                               <input
                                 type="number"
@@ -547,18 +549,18 @@ export default function CheckoutModal({
 
                     {isFreeTicket && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p className="text-green-900 font-medium">✓ Acara Gratis!</p>
+                        <p className="text-green-900 font-medium">{t("checkoutModal.freeEventBadge")}</p>
                         <p className="text-sm text-green-700 mt-2">
-                          Tiket Anda akan langsung aktif setelah konfirmasi. Tidak perlu pembayaran.
+                          {t("checkoutModal.freeEventNotice")}
                         </p>
                       </div>
                     )}
 
                     {isFreeTicket && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p className="text-green-900 font-medium">✓ Acara Gratis!</p>
+                        <p className="text-green-900 font-medium">{t("checkoutModal.freeEventBadge")}</p>
                         <p className="text-sm text-green-700 mt-2">
-                          Tiket Anda akan langsung aktif setelah konfirmasi. Tidak perlu pembayaran.
+                          {t("checkoutModal.freeEventNotice")}
                         </p>
                       </div>
                     )}
@@ -566,7 +568,7 @@ export default function CheckoutModal({
                     {/* Summary untuk tiket gratis & bayar */}
                     <div className="bg-gray-50 rounded-lg p-4">
                       <p className="text-sm font-medium text-gray-700 mb-3">
-                        Ringkasan Pesanan:
+                        {t("checkoutModal.orderSummary")}
                       </p>
                       <div className="space-y-2 text-sm">
                         {selectedTickets.map((ticket) => (
@@ -588,41 +590,41 @@ export default function CheckoutModal({
                     {!isFreeTicket && (
                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <p className="text-sm font-medium text-blue-900 mb-2">
-                          📋 Catatan:
+                          {t("checkoutModal.noteLabel")}
                         </p>
                         <p className="text-xs text-blue-800">
-                          Nomor Virtual Account akan ditampilkan setelah Anda mengklik tombol "Konfirmasi Pembayaran"
+                          {t("checkoutModal.vaNoteStep3")}
                         </p>
                       </div>
                     )}
 
                     <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
                       <div className="flex justify-between text-gray-600">
-                        <span>Subtotal</span>
+                        <span>{t("checkoutModal.subtotal")}</span>
                         <span>{formatPrice(subtotal)}</span>
                       </div>
                       {!isFreeTicket && (
                         <div className="flex justify-between text-gray-600">
-                          <span>Biaya Layanan</span>
+                          <span>{t("checkoutModal.serviceCharge")}</span>
                           <span>{formatPrice(serviceCharge)}</span>
                         </div>
                       )}
                       {discount > 0 && (
                         <div className="flex justify-between text-green-600">
-                          <span>Diskon</span>
+                          <span>{t("checkoutModal.discount")}</span>
                           <span>-{formatPrice(discount)}</span>
                         </div>
                       )}
                       {pointsReduction > 0 && (
                         <div className="flex justify-between text-blue-600">
-                          <span>Potongan Poin</span>
+                          <span>{t("checkoutModal.pointsDeduction")}</span>
                           <span>-{formatPrice(pointsReduction)}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">
-                      <span>Total Bayar</span>
+                      <span>{t("checkoutModal.totalPayment")}</span>
                       <span className="text-orange-600">
                         {formatPrice(finalPrice)}
                       </span>
@@ -634,22 +636,22 @@ export default function CheckoutModal({
                   <div className="space-y-4">
                     <div>
                       <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Konfirmasi Pemesanan
+                        {t("checkoutModal.step4Title")}
                       </h3>
                     </div>
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <p className="text-sm font-medium text-blue-900 mb-2">
-                        ℹ️ Informasi Penting:
+                        {t("checkoutModal.importantInfoLabel")}
                       </p>
                       <p className="text-xs text-blue-800">
-                        Nomor Virtual Account dan instruksi pembayaran akan ditampilkan di halaman pembayaran setelah Anda mengklik tombol Konfirmasi.
+                        {t("checkoutModal.vaNoteStep4")}
                       </p>
                     </div>
 
                     <div>
                       <p className="text-sm font-medium text-gray-700 mb-2">
-                        Ringkasan Pesanan:
+                        {t("checkoutModal.orderSummary")}
                       </p>
                       <div className="space-y-2 text-sm">
                         {selectedTickets.map((ticket) => (
@@ -670,29 +672,29 @@ export default function CheckoutModal({
 
                     <div className="border-t border-gray-200 pt-3 space-y-2 text-sm">
                       <div className="flex justify-between text-gray-600">
-                        <span>Subtotal</span>
+                        <span>{t("checkoutModal.subtotal")}</span>
                         <span>{formatPrice(subtotal)}</span>
                       </div>
                       <div className="flex justify-between text-gray-600">
-                        <span>Biaya Layanan</span>
+                        <span>{t("checkoutModal.serviceCharge")}</span>
                         <span>{formatPrice(serviceCharge)}</span>
                       </div>
                       {discount > 0 && (
                         <div className="flex justify-between text-green-600">
-                          <span>Diskon</span>
+                          <span>{t("checkoutModal.discount")}</span>
                           <span>-{formatPrice(discount)}</span>
                         </div>
                       )}
                       {pointsReduction > 0 && (
                         <div className="flex justify-between text-blue-600">
-                          <span>Potongan Poin</span>
+                          <span>{t("checkoutModal.pointsDeduction")}</span>
                           <span>-{formatPrice(pointsReduction)}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">
-                      <span>Total Bayar</span>
+                      <span>{t("checkoutModal.totalPayment")}</span>
                       <span className="text-orange-600">
                         {formatPrice(finalPrice)}
                       </span>
@@ -711,27 +713,27 @@ export default function CheckoutModal({
 
             {/* Summary (Sticky) */}
             <div className="hidden lg:flex flex-col w-96 border-l border-gray-200 bg-gray-50 p-6 overflow-y-auto">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Ringkasan</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t("checkoutModal.summaryTitle")}</h3>
 
               {/* Event Info */}
               <div className="mb-6 pb-4 border-b border-gray-200">
-                <p className="text-xs text-gray-500 font-medium mb-1">Event</p>
+                <p className="text-xs text-gray-500 font-medium mb-1">{t("checkoutModal.eventLabel")}</p>
                 <p className="font-semibold text-gray-900 text-sm">
                   {event.title}
                 </p>
                 <p className="text-xs text-gray-600 mt-1">
-                  Penyelenggara: {event.organizer.full_name}
+                  {t("checkoutModal.organizerLabel", { name: event.organizer.full_name })}
                 </p>
               </div>
 
               {/* Selected Tickets */}
               <div className="mb-6 pb-4 border-b border-gray-200">
                 <p className="text-xs text-gray-500 font-medium mb-3">
-                  Tiket yang Dipilih
+                  {t("checkoutModal.selectedTicketsLabel")}
                 </p>
                 {selectedTickets.length === 0 ? (
                   <p className="text-xs text-gray-500 italic">
-                    Belum ada tiket
+                    {t("checkoutModal.noTicketsYet")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -753,22 +755,22 @@ export default function CheckoutModal({
               {/* Price Breakdown */}
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
+                  <span>{t("checkoutModal.subtotal")}</span>
                   <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Biaya Layanan</span>
+                  <span>{t("checkoutModal.serviceCharge")}</span>
                   <span className="font-medium">{formatPrice(serviceCharge)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Diskon</span>
+                    <span>{t("checkoutModal.discount")}</span>
                     <span className="font-medium">-{formatPrice(discount)}</span>
                   </div>
                 )}
                 {pointsReduction > 0 && (
                   <div className="flex justify-between text-blue-600">
-                    <span>Potongan Poin</span>
+                    <span>{t("checkoutModal.pointsDeduction")}</span>
                     <span className="font-medium">
                       -{formatPrice(pointsReduction)}
                     </span>
@@ -777,7 +779,7 @@ export default function CheckoutModal({
               </div>
 
               <div className="border-t border-gray-300 mt-4 pt-4 flex justify-between font-bold text-base">
-                <span>Total</span>
+                <span>{t("checkoutModal.total")}</span>
                 <span className="text-orange-600">
                   {formatPrice(finalPrice)}
                 </span>
@@ -797,18 +799,18 @@ export default function CheckoutModal({
               }`}
             >
               <ChevronLeft size={18} />
-              Kembali
+              {t("checkoutModal.back")}
             </button>
 
             {step < (isFreeTicket ? 3 : 4) ? (
               <button
                 onClick={() => {
                   if (step === 1 && selectedTickets.length === 0) {
-                    setError("Pilih minimal 1 tiket");
+                    setError(t("checkoutModal.errorSelectAtLeastOneTicket"));
                     return;
                   }
                   if (step === 2 && !isPersonalInfoValid) {
-                    setError("Data personal tidak lengkap");
+                    setError(t("checkoutModal.errorIncompletePersonalInfo"));
                     return;
                   }
                   setError(null);
@@ -816,7 +818,7 @@ export default function CheckoutModal({
                 }}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors active:scale-95"
               >
-                Lanjut
+                {t("checkoutModal.next")}
                 <ChevronRight size={18} />
               </button>
             ) : (
@@ -825,7 +827,7 @@ export default function CheckoutModal({
                 disabled={isLoading}
                 className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white rounded-lg font-medium transition-colors active:scale-95 disabled:cursor-not-allowed"
               >
-                {isLoading ? "Memproses..." : isFreeTicket ? "Konfirmasi & Dapatkan Tiket" : "Konfirmasi Pembayaran"}
+                {isLoading ? t("checkoutModal.processing") : isFreeTicket ? t("checkoutModal.confirmAndGetTicket") : t("checkoutModal.confirmPayment")}
               </button>
             )}
           </div>

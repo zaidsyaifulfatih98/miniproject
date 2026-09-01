@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { Check, X, Loader } from "lucide-react";
 import { formatCurrency, validateVoucher } from "../utils/discountCalculator";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -30,6 +31,7 @@ export default function VoucherInput({
   onVoucherRemove,
   appliedVoucher,
 }: VoucherInputProps) {
+  const { t } = useLanguage();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -41,7 +43,7 @@ export default function VoucherInput({
     setSuccess(false);
 
     if (!code.trim()) {
-      setError("Masukkan kode voucher");
+      setError(t("voucherInput.enterCode"));
       return;
     }
 
@@ -62,7 +64,7 @@ export default function VoucherInput({
       );
 
       if (!validation.isValid) {
-        setError(validation.error || "Voucher tidak valid");
+        setError(validation.error || t("voucherInput.invalidVoucherDefault"));
         return;
       }
 
@@ -73,7 +75,7 @@ export default function VoucherInput({
       setTimeout(() => setSuccess(false), 2000);
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || "Voucher tidak ditemukan atau tidak valid";
+        err.response?.data?.message || t("voucherInput.notFoundDefault");
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -87,12 +89,12 @@ export default function VoucherInput({
           <div className="flex items-start gap-3">
             <Check className="w-5 h-5 text-green-600 mt-0.5" />
             <div>
-              <p className="font-semibold text-green-900">Voucher Diterapkan</p>
+              <p className="font-semibold text-green-900">{t("voucherInput.appliedTitle")}</p>
               <p className="text-sm text-green-700 mt-1">
                 {appliedVoucher.name} ({appliedVoucher.promotion_code})
               </p>
               <p className="text-sm text-green-700">
-                Diskon: {formatCurrency(appliedVoucher.discount_amount)}
+                {t("voucherInput.discountLabel")}: {formatCurrency(appliedVoucher.discount_amount)}
               </p>
             </div>
           </div>
@@ -100,7 +102,7 @@ export default function VoucherInput({
             onClick={onVoucherRemove}
             className="text-green-600 hover:text-green-700 font-semibold text-sm"
           >
-            Hapus
+            {t("voucherInput.remove")}
           </button>
         </div>
       </div>
@@ -109,7 +111,7 @@ export default function VoucherInput({
 
   return (
     <div className="space-y-3">
-      <label className="block text-sm font-semibold text-gray-700">Punya Kode Voucher?</label>
+      <label className="block text-sm font-semibold text-gray-700">{t("voucherInput.haveVoucherCode")}</label>
 
       <form onSubmit={handleApply} className="flex gap-2">
         <input
@@ -120,7 +122,7 @@ export default function VoucherInput({
             setError("");
             setSuccess(false);
           }}
-          placeholder="Masukkan kode voucher"
+          placeholder={t("voucherInput.placeholder")}
           disabled={loading}
           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100 uppercase"
         />
@@ -132,10 +134,10 @@ export default function VoucherInput({
           {loading ? (
             <>
               <Loader className="w-4 h-4 animate-spin" />
-              Validasi...
+              {t("voucherInput.validating")}
             </>
           ) : (
-            "Terapkan"
+            t("voucherInput.apply")
           )}
         </button>
       </form>
@@ -150,7 +152,7 @@ export default function VoucherInput({
       {success && (
         <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
           <Check className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-          <p className="text-sm text-green-700">Voucher berhasil diterapkan!</p>
+          <p className="text-sm text-green-700">{t("voucherInput.appliedSuccess")}</p>
         </div>
       )}
     </div>

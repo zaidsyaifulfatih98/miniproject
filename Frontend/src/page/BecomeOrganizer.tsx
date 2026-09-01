@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Award, Zap, Tag, ArrowRight } from "lucide-react";
 import UpgradeOrganizerModal from "../components/UpgradeOrganizerModal";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 interface User {
   id: string;
@@ -10,6 +11,7 @@ interface User {
 }
 
 export default function BecomeOrganizer() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export default function BecomeOrganizer() {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat...</p>
+          <p className="text-gray-600">{t("becomeOrganizer.loading")}</p>
         </div>
       </div>
     );
@@ -79,16 +81,16 @@ export default function BecomeOrganizer() {
             {/* Left Content */}
             <div className="text-white">
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 sm:mb-5 leading-tight">
-                Berdayakan acara Anda dan jangkau ribuan penggemar tiket
+                {t("becomeOrganizer.heroTitle")}
               </h1>
               <p className="text-sm sm:text-base lg:text-lg text-orange-100 mb-6 sm:mb-8 leading-relaxed max-w-lg">
-                Kami menyediakan solusi manajemen acara terpadu yang memudahkan Anda menjual tiket, mengelola peserta, dan mengembangkan bisnis acara Anda dengan teknologi terdepan.
+                {t("becomeOrganizer.heroSubtitle")}
               </p>
               <button
                 onClick={handleStartAsOrganizer}
                 className="inline-flex items-center gap-2 px-6 sm:px-8 py-2 sm:py-3 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors cursor-pointer text-sm sm:text-base"
               >
-                {user ? "Mulai Jadi Organizer" : "Mulai Sekarang"}
+                {user ? t("becomeOrganizer.startAsOrganizer") : t("becomeOrganizer.startNow")}
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
@@ -122,8 +124,8 @@ export default function BecomeOrganizer() {
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <Award className="w-6 h-6 text-orange-500" />
             <div>
-              <p className="text-xs sm:text-sm text-gray-600 font-medium">Keuntungan Organizer</p>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Fitur Unggulan</h2>
+              <p className="text-xs sm:text-sm text-gray-600 font-medium">{t("becomeOrganizer.organizerBenefits")}</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{t("becomeOrganizer.featuresTitle")}</h2>
             </div>
           </div>
 
@@ -135,10 +137,10 @@ export default function BecomeOrganizer() {
                 <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
                   <Award className="text-orange-600" size={18} />
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-gray-900">Kontrol Penuh</h3>
+                <h3 className="text-sm sm:text-base font-bold text-gray-900">{t("becomeOrganizer.feature1Title")}</h3>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Mulai menjual tiket dalam hitungan menit. Dapatkan kontrol penuh atas segala aspek acara Anda mulai dari tanggal, kapasitas, jenis tiket, hingga detail lainnya.
+                {t("becomeOrganizer.feature1Description")}
               </p>
             </div>
 
@@ -148,10 +150,10 @@ export default function BecomeOrganizer() {
                 <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
                   <Zap className="text-orange-600" size={18} />
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-gray-900">Teknologi Terdepan</h3>
+                <h3 className="text-sm sm:text-base font-bold text-gray-900">{t("becomeOrganizer.feature2Title")}</h3>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Manfaatkan teknologi terkini dengan integrasi canggih dan fitur otomasi untuk menangani kebutuhan penjualan tiket yang kompleks sekalipun.
+                {t("becomeOrganizer.feature2Description")}
               </p>
             </div>
 
@@ -161,10 +163,10 @@ export default function BecomeOrganizer() {
                 <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
                   <Tag className="text-orange-600" size={18} />
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-gray-900">Jual Dimana Saja</h3>
+                <h3 className="text-sm sm:text-base font-bold text-gray-900">{t("becomeOrganizer.feature3Title")}</h3>
               </div>
               <p className="text-xs text-gray-600 leading-relaxed">
-                Jual tiket langsung dari website Anda atau manfaatkan portal penjualan mandiri yang dapat disesuaikan dan responsif untuk mobile.
+                {t("becomeOrganizer.feature3Description")}
               </p>
             </div>
           </div>
@@ -184,18 +186,18 @@ export default function BecomeOrganizer() {
 
             {/* Content */}
             <div className="order-1 md:order-2">
-              <p className="text-xs sm:text-sm text-orange-600 font-medium mb-2">Testimoni & Keberhasilan</p>
+              <p className="text-xs sm:text-sm text-orange-600 font-medium mb-2">{t("becomeOrganizer.testimonialsLabel")}</p>
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
-                Seribu Acara Telah Dipercayai
+                {t("becomeOrganizer.testimonialsTitle")}
               </h2>
               <p className="text-sm sm:text-base text-gray-600 mb-3 leading-relaxed">
-                Bergabunglah dengan ribuan penyelenggara acara yang telah mempercayai platform kami untuk mengelola tiket dan peserta mereka. Dari konser musik kecil hingga festival besar, kami siap mendukung kesuksesan acara Anda.
+                {t("becomeOrganizer.testimonialsParagraph1")}
               </p>
               <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed">
-                Dengan fitur lengkap, keamanan terjamin, dan customer support yang responsif, kami memastikan pengalaman terbaik untuk Anda dan peserta acara Anda.
+                {t("becomeOrganizer.testimonialsParagraph2")}
               </p>
               <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                ✓ Dipercaya oleh 10,000+ penyelenggara acara di seluruh Indonesia
+                {t("becomeOrganizer.testimonialsTrust")}
               </p>
             </div>
           </div>
@@ -205,12 +207,12 @@ export default function BecomeOrganizer() {
       {/* CTA Section */}
       <section className="bg-gray-50 py-8 sm:py-10 md:py-14 px-4 sm:px-6 lg:px-8 min-h-80 sm:min-h-96 flex items-center">
         <div className="max-w-2xl mx-auto w-full text-center">
-          <p className="text-xs sm:text-sm text-orange-600 font-medium mb-2">Siap Memulai</p>
+          <p className="text-xs sm:text-sm text-orange-600 font-medium mb-2">{t("becomeOrganizer.ctaLabel")}</p>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4 leading-tight">
-            Jadilah Organizer dan Kelola Acara Anda
+            {t("becomeOrganizer.ctaTitle")}
           </h2>
           <p className="text-sm sm:text-base text-gray-600 mb-6 leading-relaxed">
-            Dapatkan akses penuh ke fitur-fitur canggih untuk mengelola acara Anda dengan lebih mudah dan menjangkau ribuan pembeli tiket.
+            {t("becomeOrganizer.ctaSubtitle")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center flex-wrap">
@@ -218,7 +220,7 @@ export default function BecomeOrganizer() {
               onClick={handleStartAsOrganizer}
               className="inline-flex items-center gap-2 px-6 sm:px-8 py-2 sm:py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-full transition-colors cursor-pointer text-sm sm:text-base"
             >
-              Mulai Jadi Organizer
+              {t("becomeOrganizer.startAsOrganizer")}
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>

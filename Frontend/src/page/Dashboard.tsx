@@ -14,6 +14,7 @@ import {
   Cell,
 } from "recharts";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -21,14 +22,6 @@ const API_BASE = import.meta.env.VITE_API_BASE;
 
 const MONTH_ID = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 const BAR_COLORS = ["#6366f1", "#8b5cf6", "#a855f7", "#c084fc", "#e879f9", "#f0abfc"];
-
-const quickLinks = [
-  { label: "Kelola Event", desc: "Buat, edit, & hapus event", href: "/event", gradient: "from-indigo-500 to-indigo-600" },
-  { label: "Kelola Tiket", desc: "Atur kuota & harga tiket", href: "/ticket", gradient: "from-purple-500 to-purple-600" },
-  { label: "Transaksi", desc: "Pantau semua pembayaran", href: "/transactions", gradient: "from-sky-500 to-sky-600" },
-  { label: "Customers", desc: "Data & riwayat pembeli", href: "/customers", gradient: "from-emerald-500 to-emerald-600" },
-  { label: "Laporan", desc: "Ekspor CSV & analitik", href: "/report", gradient: "from-amber-500 to-amber-600" },
-];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,21 +64,29 @@ function formatShort(n: number): string {
   return "Rp " + n.toLocaleString("id-ID");
 }
 
-function mapStatus(s: string): string {
-  if (s === "DONE") return "Berhasil";
-  if (s === "REJECTED" || s === "CANCELLED" || s === "EXPIRED") return "Gagal";
-  return "Pending";
+function mapStatus(s: string): "success" | "failed" | "pending" {
+  if (s === "DONE") return "success";
+  if (s === "REJECTED" || s === "CANCELLED" || s === "EXPIRED") return "failed";
+  return "pending";
 }
 
 const statusStyle: Record<string, string> = {
-  Berhasil: "bg-emerald-100 text-emerald-700",
-  Pending: "bg-amber-100 text-amber-700",
-  Gagal: "bg-rose-100 text-rose-700",
+  success: "bg-emerald-100 text-emerald-700",
+  pending: "bg-amber-100 text-amber-700",
+  failed: "bg-rose-100 text-rose-700",
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const { t } = useLanguage();
+  const quickLinks = [
+    { label: t("dashboard.quickLinkManageEventLabel"), desc: t("dashboard.quickLinkManageEventDesc"), href: "/event", gradient: "from-indigo-500 to-indigo-600" },
+    { label: t("dashboard.quickLinkManageTicketLabel"), desc: t("dashboard.quickLinkManageTicketDesc"), href: "/ticket", gradient: "from-purple-500 to-purple-600" },
+    { label: t("dashboard.quickLinkTransactionsLabel"), desc: t("dashboard.quickLinkTransactionsDesc"), href: "/transactions", gradient: "from-sky-500 to-sky-600" },
+    { label: t("dashboard.quickLinkCustomersLabel"), desc: t("dashboard.quickLinkCustomersDesc"), href: "/customers", gradient: "from-emerald-500 to-emerald-600" },
+    { label: t("dashboard.quickLinkReportLabel"), desc: t("dashboard.quickLinkReportDesc"), href: "/report", gradient: "from-amber-500 to-amber-600" },
+  ];
   const [bookings, setBookings] = useState<BookingRaw[]>([]);
   const [events, setEvents] = useState<EventRaw[]>([]);
   const [users, setUsers] = useState<UserRaw[]>([]);
@@ -155,9 +156,9 @@ export default function Dashboard() {
   // ── Stats cards ──────────────────────────────────────────────────────────────
   const stats = [
     {
-      label: "Total Event",
+      label: t("dashboard.statTotalEvent"),
       value: totalEvents.toLocaleString("id-ID"),
-      change: `+${eventsThisMonth} bulan ini`,
+      change: t("dashboard.statChangeThisMonth", { count: eventsThisMonth }),
       positive: true,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -168,9 +169,9 @@ export default function Dashboard() {
       href: "/event",
     },
     {
-      label: "Total Tiket Terjual",
+      label: t("dashboard.statTotalTicketsSold"),
       value: totalTicketsSold.toLocaleString("id-ID"),
-      change: `${ticketChangePct >= 0 ? "+" : ""}${ticketChangePct}% dari bulan lalu`,
+      change: t("dashboard.statChangeVsLastMonth", { sign: ticketChangePct >= 0 ? "+" : "", pct: ticketChangePct }),
       positive: ticketChangePct >= 0,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -181,9 +182,9 @@ export default function Dashboard() {
       href: "/ticket",
     },
     {
-      label: "Total Transaksi",
+      label: t("dashboard.statTotalTransactions"),
       value: totalTransactions.toLocaleString("id-ID"),
-      change: `+${transactionsToday} hari ini`,
+      change: t("dashboard.statChangeToday", { count: transactionsToday }),
       positive: true,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -194,9 +195,9 @@ export default function Dashboard() {
       href: "/transactions",
     },
     {
-      label: "Total Customer",
+      label: t("dashboard.statTotalCustomer"),
       value: totalCustomers.toLocaleString("id-ID"),
-      change: `+${newCustomersThisWeek} minggu ini`,
+      change: t("dashboard.statChangeThisWeek", { count: newCustomersThisWeek }),
       positive: true,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -207,9 +208,9 @@ export default function Dashboard() {
       href: "/customers",
     },
     {
-      label: "Pendapatan Bersih",
+      label: t("dashboard.statNetRevenue"),
       value: formatShort(netRevenue),
-      change: `${revenueChangePct >= 0 ? "+" : ""}${revenueChangePct}% bulan ini`,
+      change: t("dashboard.statChangePctThisMonth", { sign: revenueChangePct >= 0 ? "+" : "", pct: revenueChangePct }),
       positive: revenueChangePct >= 0,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -270,43 +271,43 @@ export default function Dashboard() {
 
   const overviewCards = [
     {
-      title: "Event", href: "/event", icon: "🗓️", accentBg: "bg-indigo-500",
+      title: t("dashboard.overviewEventTitle"), href: "/event", icon: "🗓️", accentBg: "bg-indigo-500",
       metrics: [
-        { label: "Aktif", value: activeEvents.toLocaleString("id-ID") },
-        { label: "Draft", value: draftEvents.toLocaleString("id-ID") },
-        { label: "Selesai", value: completedEvents.toLocaleString("id-ID") },
+        { label: t("dashboard.metricActive"), value: activeEvents.toLocaleString("id-ID") },
+        { label: t("dashboard.metricDraft"), value: draftEvents.toLocaleString("id-ID") },
+        { label: t("dashboard.metricCompleted"), value: completedEvents.toLocaleString("id-ID") },
       ],
     },
     {
-      title: "Tiket", href: "/ticket", icon: "🎟️", accentBg: "bg-purple-500",
+      title: t("dashboard.overviewTicketTitle"), href: "/ticket", icon: "🎟️", accentBg: "bg-purple-500",
       metrics: [
-        { label: "Terjual", value: totalTicketsSold.toLocaleString("id-ID") },
-        { label: "Tersisa", value: remainingSeats.toLocaleString("id-ID") },
-        { label: "Event", value: totalEvents.toLocaleString("id-ID") },
+        { label: t("dashboard.metricSold"), value: totalTicketsSold.toLocaleString("id-ID") },
+        { label: t("dashboard.metricRemaining"), value: remainingSeats.toLocaleString("id-ID") },
+        { label: t("dashboard.overviewEventTitle"), value: totalEvents.toLocaleString("id-ID") },
       ],
     },
     {
-      title: "Transaksi", href: "/transactions", icon: "📋", accentBg: "bg-sky-500",
+      title: t("dashboard.overviewTransactionTitle"), href: "/transactions", icon: "📋", accentBg: "bg-sky-500",
       metrics: [
-        { label: "Berhasil", value: doneCount.toLocaleString("id-ID") },
-        { label: "Pending", value: pendingCount.toLocaleString("id-ID") },
-        { label: "Gagal", value: failedCount.toLocaleString("id-ID") },
+        { label: t("dashboard.metricSuccess"), value: doneCount.toLocaleString("id-ID") },
+        { label: t("dashboard.metricPending"), value: pendingCount.toLocaleString("id-ID") },
+        { label: t("dashboard.metricFailed"), value: failedCount.toLocaleString("id-ID") },
       ],
     },
     {
-      title: "Customers", href: "/customers", icon: "👥", accentBg: "bg-emerald-500",
+      title: t("dashboard.overviewCustomersTitle"), href: "/customers", icon: "👥", accentBg: "bg-emerald-500",
       metrics: [
-        { label: "Total", value: totalCustomers.toLocaleString("id-ID") },
-        { label: "Baru (bln)", value: newCustomersThisMonth.toLocaleString("id-ID") },
-        { label: "Minggu ini", value: newCustomersThisWeek.toLocaleString("id-ID") },
+        { label: t("dashboard.metricTotal"), value: totalCustomers.toLocaleString("id-ID") },
+        { label: t("dashboard.metricNewMonth"), value: newCustomersThisMonth.toLocaleString("id-ID") },
+        { label: t("dashboard.metricNewWeek"), value: newCustomersThisWeek.toLocaleString("id-ID") },
       ],
     },
     {
-      title: "Laporan", href: "/report", icon: "📊", accentBg: "bg-amber-500",
+      title: t("dashboard.overviewReportTitle"), href: "/report", icon: "📊", accentBg: "bg-amber-500",
       metrics: [
-        { label: "Pendapatan", value: formatShort(netRevenue).replace("Rp ", "") },
-        { label: "Pajak", value: formatShort(grossRevenue * 0.1).replace("Rp ", "") },
-        { label: "Fee", value: formatShort(grossRevenue * 0.05).replace("Rp ", "") },
+        { label: t("dashboard.metricRevenue"), value: formatShort(netRevenue).replace("Rp ", "") },
+        { label: t("dashboard.metricTax"), value: formatShort(grossRevenue * 0.1).replace("Rp ", "") },
+        { label: t("dashboard.metricFee"), value: formatShort(grossRevenue * 0.05).replace("Rp ", "") },
       ],
     },
   ];
@@ -317,8 +318,8 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500 text-sm mt-1">Selamat datang kembali! Berikut ringkasan aktivitas Anda hari ini.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{t("dashboard.pageTitle")}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t("dashboard.welcomeMessage")}</p>
         </div>
         <span className="text-xs text-gray-400 bg-white border border-gray-200 px-3 py-1.5 rounded-xl self-start sm:self-auto">
           {new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
@@ -354,10 +355,10 @@ export default function Dashboard() {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-bold text-gray-800">Tren Pendapatan</h2>
-              <p className="text-xs text-gray-500 mt-0.5">6 bulan terakhir</p>
+              <h2 className="font-bold text-gray-800">{t("dashboard.revenueTrendTitle")}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{t("dashboard.last6Months")}</p>
             </div>
-            <Link to="/report" className="text-xs text-indigo-600 font-semibold hover:underline">Lihat Laporan →</Link>
+            <Link to="/report" className="text-xs text-indigo-600 font-semibold hover:underline">{t("dashboard.viewReport")}</Link>
           </div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -385,10 +386,10 @@ export default function Dashboard() {
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-bold text-gray-800">Tiket Terjual per Event</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Top 6 event aktif</p>
+              <h2 className="font-bold text-gray-800">{t("dashboard.ticketsSoldPerEventTitle")}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{t("dashboard.top6ActiveEvents")}</p>
             </div>
-            <Link to="/ticket" className="text-xs text-indigo-600 font-semibold hover:underline">Lihat Tiket →</Link>
+            <Link to="/ticket" className="text-xs text-indigo-600 font-semibold hover:underline">{t("dashboard.viewTickets")}</Link>
           </div>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
@@ -398,7 +399,7 @@ export default function Dashboard() {
                 <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} />
                 <Tooltip
                   contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}
-                  formatter={(val) => [`${val} tiket`]}
+                  formatter={(val) => [`${val} ${t("dashboard.ticketsTooltipSuffix")}`]}
                 />
                 <Bar dataKey="terjual" radius={[6, 6, 0, 0]}>
                   {ticketByEvent.map((_e, i) => (
@@ -418,32 +419,32 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="font-bold text-gray-800">Transaksi Terbaru</h2>
-              <p className="text-xs text-gray-500 mt-0.5">5 transaksi terakhir</p>
+              <h2 className="font-bold text-gray-800">{t("dashboard.recentTransactionsTitle")}</h2>
+              <p className="text-xs text-gray-500 mt-0.5">{t("dashboard.last5Transactions")}</p>
             </div>
-            <Link to="/transactions" className="text-xs text-indigo-600 font-semibold hover:underline">Lihat Semua →</Link>
+            <Link to="/transactions" className="text-xs text-indigo-600 font-semibold hover:underline">{t("dashboard.viewAll")}</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="text-xs text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                  <th className="pb-3 text-left font-semibold">ID</th>
-                  <th className="pb-3 text-left font-semibold">Customer</th>
-                  <th className="pb-3 text-left font-semibold hidden sm:table-cell">Event</th>
-                  <th className="pb-3 text-right font-semibold">Total</th>
-                  <th className="pb-3 text-center font-semibold">Status</th>
+                  <th className="pb-3 text-left font-semibold">{t("dashboard.columnId")}</th>
+                  <th className="pb-3 text-left font-semibold">{t("dashboard.columnCustomer")}</th>
+                  <th className="pb-3 text-left font-semibold hidden sm:table-cell">{t("dashboard.columnEvent")}</th>
+                  <th className="pb-3 text-right font-semibold">{t("dashboard.columnTotal")}</th>
+                  <th className="pb-3 text-center font-semibold">{t("dashboard.columnStatus")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {recentTransactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="py-3.5 pr-3 font-mono text-xs text-indigo-500 font-semibold">{t.id}</td>
-                    <td className="py-3.5 pr-3 text-gray-700 text-sm font-medium">{t.customer}</td>
-                    <td className="py-3.5 pr-3 text-gray-500 text-xs hidden sm:table-cell">{t.event}</td>
-                    <td className="py-3.5 text-right font-semibold text-gray-800 text-sm">{formatRupiah(t.total)}</td>
+                {recentTransactions.map((tx) => (
+                  <tr key={tx.id} className="hover:bg-gray-50/60 transition-colors">
+                    <td className="py-3.5 pr-3 font-mono text-xs text-indigo-500 font-semibold">{tx.id}</td>
+                    <td className="py-3.5 pr-3 text-gray-700 text-sm font-medium">{tx.customer}</td>
+                    <td className="py-3.5 pr-3 text-gray-500 text-xs hidden sm:table-cell">{tx.event}</td>
+                    <td className="py-3.5 text-right font-semibold text-gray-800 text-sm">{formatRupiah(tx.total)}</td>
                     <td className="py-3.5 text-center">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusStyle[t.status]}`}>
-                        {t.status}
+                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusStyle[tx.status]}`}>
+                        {t(`dashboard.status${tx.status.charAt(0).toUpperCase()}${tx.status.slice(1)}`)}
                       </span>
                     </td>
                   </tr>
@@ -455,8 +456,8 @@ export default function Dashboard() {
 
         {/* Quick Links (1/3 width) */}
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-bold text-gray-800 mb-1">Navigasi Cepat</h2>
-          <p className="text-xs text-gray-500 mb-5">Akses menu utama</p>
+          <h2 className="font-bold text-gray-800 mb-1">{t("dashboard.quickNavTitle")}</h2>
+          <p className="text-xs text-gray-500 mb-5">{t("dashboard.quickNavDesc")}</p>
           <div className="flex flex-col gap-3">
             {quickLinks.map((link) => (
               <Link
@@ -479,8 +480,8 @@ export default function Dashboard() {
 
       {/* ── Page Overview Cards ──────────────────────────────────────────────── */}
       <div>
-        <h2 className="font-bold text-gray-800 mb-1">Overview Halaman</h2>
-        <p className="text-xs text-gray-500 mb-5">Ringkasan kondisi tiap modul</p>
+        <h2 className="font-bold text-gray-800 mb-1">{t("dashboard.pageOverviewTitle")}</h2>
+        <p className="text-xs text-gray-500 mb-5">{t("dashboard.pageOverviewDesc")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {overviewCards.map((card) => (
             <Link

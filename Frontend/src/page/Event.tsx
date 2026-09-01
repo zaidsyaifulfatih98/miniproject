@@ -1,6 +1,7 @@
 ﻿
 import { useState, useRef, useEffect, useCallback } from "react";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -37,13 +38,13 @@ const statusColor: Record<EventStatus, string> = {
   CANCELLED: "bg-red-50 text-red-400",
 };
 
-const statusLabel: Record<EventStatus, string> = {
-  DRAFT:     "Draft",
-  PENDING:   "Pending",
-  ACTIVE:    "Active",
-  REJECTED:  "Rejected",
-  COMPLETED: "Completed",
-  CANCELLED: "Cancelled",
+const statusLabelKey: Record<EventStatus, string> = {
+  DRAFT:     "statusDraft",
+  PENDING:   "statusPending",
+  ACTIVE:    "statusActive",
+  REJECTED:  "statusRejected",
+  COMPLETED: "statusCompleted",
+  CANCELLED: "statusCancelled",
 };
 
 const categoryColor: Record<string, string> = {
@@ -55,7 +56,25 @@ const categoryColor: Record<string, string> = {
   LAINNYA: "bg-gray-100 text-gray-600",
 };
 
-const categoryLabel: Record<string, string> = {
+const categoryLabelKey: Record<string, string> = {
+  KONSER: "categoryKonser",
+  WORKSHOP: "categoryWorkshop",
+  SEMINAR: "categorySeminar",
+  FESTIVAL: "categoryFestival",
+  OLAHRAGA: "categoryOlahraga",
+  LAINNYA: "categoryLainnya",
+};
+
+const categoryValueToKey: Record<EventCategory, string> = {
+  Konser: "categoryKonser",
+  Workshop: "categoryWorkshop",
+  Seminar: "categorySeminar",
+  Festival: "categoryFestival",
+  Olahraga: "categoryOlahraga",
+  Lainnya: "categoryLainnya",
+};
+
+const categoryCodeToValue: Record<string, EventCategory> = {
   KONSER: "Konser",
   WORKSHOP: "Workshop",
   SEMINAR: "Seminar",
@@ -80,6 +99,7 @@ const emptyForm = {
 };
 
 export default function Event() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +123,7 @@ export default function Event() {
       if (search) params.set("search", search);
       if (user?.id) params.set("organizer_id", user.id);
       const res = await fetch(`${API_BASE}/events?${params.toString()}`);
-      if (!res.ok) throw new Error("Gagal memuat data event");
+      if (!res.ok) throw new Error(t("event.errorLoadFailed"));
       const json = await res.json();
       setEvents(json.data ?? []);
     } catch (err: any) {
@@ -120,21 +140,21 @@ export default function Event() {
 
   function validate() {
     const e: Partial<Record<keyof typeof emptyForm, string>> = {};
-    if (!form.title.trim()) e.title = "Nama event wajib diisi.";
-    if (!form.location.trim()) e.location = "Lokasi wajib diisi.";
-    if (!form.dateStart) e.dateStart = "Tanggal mulai wajib diisi.";
-    if (!form.dateEnd) e.dateEnd = "Tanggal berakhir wajib diisi.";
+    if (!form.title.trim()) e.title = t("event.validationTitleRequired");
+    if (!form.location.trim()) e.location = t("event.validationLocationRequired");
+    if (!form.dateStart) e.dateStart = t("event.validationStartDateRequired");
+    if (!form.dateEnd) e.dateEnd = t("event.validationEndDateRequired");
     if (form.dateStart && form.dateEnd && form.dateEnd < form.dateStart)
-      e.dateEnd = "Tanggal berakhir tidak boleh sebelum tanggal mulai.";
-    if (!form.timeStart) e.timeStart = "Waktu mulai wajib diisi.";
-    if (!form.timeEnd) e.timeEnd = "Waktu selesai wajib diisi.";
+      e.dateEnd = t("event.validationEndDateBeforeStart");
+    if (!form.timeStart) e.timeStart = t("event.validationStartTimeRequired");
+    if (!form.timeEnd) e.timeEnd = t("event.validationEndTimeRequired");
     if (form.timeStart && form.timeEnd && form.timeEnd <= form.timeStart)
-      e.timeEnd = "Waktu selesai harus setelah waktu mulai.";
+      e.timeEnd = t("event.validationEndTimeBeforeStart");
     if (!form.total_seats || isNaN(Number(form.total_seats)) || Number(form.total_seats) <= 0)
-      e.total_seats = "Kapasitas venue harus lebih dari 0.";
+      e.total_seats = t("event.validationCapacityInvalid");
     if (!form.price || isNaN(Number(form.price)) || Number(form.price) < 0)
-      e.price = "Harga tidak valid.";
-    if (!form.description.trim()) e.description = "Deskripsi wajib diisi.";
+      e.price = t("event.validationPriceInvalid");
+    if (!form.description.trim()) e.description = t("event.validationDescriptionRequired");
     return e;
   }
 
@@ -173,7 +193,7 @@ export default function Event() {
       });
       if (!res.ok) {
         const json = await res.json();
-        throw new Error(json.message ?? "Terjadi kesalahan");
+        throw new Error(json.message ?? t("event.errorGeneric"));
       }
       setForm(emptyForm);
       setErrors({});
@@ -229,7 +249,7 @@ export default function Event() {
       price: ev.price,
       banner: imageUrl ?? "",
       description: ev.description ?? "",
-      category: (ev.category ? (categoryLabel[ev.category] as EventCategory) : "Konser") ?? "Konser",
+      category: (ev.category ? categoryCodeToValue[ev.category] : "Konser") ?? "Konser",
       status: ev.status,
     });
     setEditId(ev.id);
@@ -240,7 +260,7 @@ export default function Event() {
   async function handleDelete(id: string) {
     try {
       const res = await fetch(`${API_BASE}/events/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Gagal menghapus event");
+      if (!res.ok) throw new Error(t("event.errorDeleteFailed"));
       fetchEvents();
     } catch (err: any) {
       setError(err.message);
@@ -259,8 +279,8 @@ export default function Event() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Manajemen Event</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Kelola semua event yang tersedia</p>
+          <h1 className="text-xl font-bold text-gray-800">{t("event.pageTitle")}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t("event.pageSubtitle")}</p>
         </div>
         <button
           onClick={() => { setShowForm(true); setForm(emptyForm); setEditId(null); setErrors({}); }}
@@ -269,7 +289,7 @@ export default function Event() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          Tambah Event
+          {t("event.addEventButton")}
         </button>
       </div>
 
@@ -286,7 +306,7 @@ export default function Event() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-gray-800">
-                {editId !== null ? "Edit Event" : "Tambah Event Baru"}
+                {editId !== null ? t("event.modalEditTitle") : t("event.modalAddTitle")}
               </h2>
               <button onClick={handleCloseForm} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -297,7 +317,7 @@ export default function Event() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Banner */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Banner / Gambar Event</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelBanner")}</label>
                 <div
                   className="w-full border-2 border-dashed border-gray-200 rounded-lg p-3 flex flex-col items-center gap-2 cursor-pointer hover:border-orange-300 transition-colors"
                   onClick={() => bannerInputRef.current?.click()}
@@ -309,25 +329,25 @@ export default function Event() {
                       <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <p className="text-xs text-gray-400">Klik untuk upload gambar (JPG, PNG)</p>
+                      <p className="text-xs text-gray-400">{t("event.bannerUploadHint")}</p>
                     </>
                   )}
                   <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerChange} />
                 </div>
                 {form.banner && (
                   <button type="button" onClick={() => setForm((prev) => ({ ...prev, banner: "" }))} className="mt-1 text-xs text-red-400 hover:text-red-600">
-                    Hapus gambar
+                    {t("event.removeImage")}
                   </button>
                 )}
               </div>
 
-              
+
               {/* Nama Event */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Nama Event</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelEventName")}</label>
                 <input
                   name="title" value={form.title} onChange={handleChange}
-                  placeholder="cth. Konser Malam Minggu"
+                  placeholder={t("event.placeholderEventName")}
                   className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.title ? "border-red-400" : "border-gray-200"}`}
                 />
                 {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
@@ -335,10 +355,10 @@ export default function Event() {
 
               {/* Lokasi */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Lokasi</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelLocation")}</label>
                 <input
                   name="location" value={form.location} onChange={handleChange}
-                  placeholder="cth. Jakarta Convention Center"
+                  placeholder={t("event.placeholderLocation")}
                   className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.location ? "border-red-400" : "border-gray-200"}`}
                 />
                 {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
@@ -347,7 +367,7 @@ export default function Event() {
               {/* Tanggal Mulai & Berakhir */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Mulai</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelStartDate")}</label>
                   <input
                     type="date" name="dateStart" value={form.dateStart} onChange={handleChange}
                     className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.dateStart ? "border-red-400" : "border-gray-200"}`}
@@ -355,7 +375,7 @@ export default function Event() {
                   {errors.dateStart && <p className="text-xs text-red-500 mt-1">{errors.dateStart}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Tanggal Berakhir</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelEndDate")}</label>
                   <input
                     type="date" name="dateEnd" value={form.dateEnd} onChange={handleChange}
                     min={form.dateStart || undefined}
@@ -368,7 +388,7 @@ export default function Event() {
               {/* Waktu Mulai & Selesai */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Waktu Mulai</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelStartTime")}</label>
                   <input
                     type="time" name="timeStart" value={form.timeStart} onChange={handleChange}
                     className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.timeStart ? "border-red-400" : "border-gray-200"}`}
@@ -376,7 +396,7 @@ export default function Event() {
                   {errors.timeStart && <p className="text-xs text-red-500 mt-1">{errors.timeStart}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Waktu Selesai</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelEndTime")}</label>
                   <input
                     type="time" name="timeEnd" value={form.timeEnd} onChange={handleChange}
                     className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.timeEnd ? "border-red-400" : "border-gray-200"}`}
@@ -388,19 +408,19 @@ export default function Event() {
               {/* Kapasitas & Harga */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Kapasitas Venue</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelVenueCapacity")}</label>
                   <input
                     type="number" name="total_seats" value={form.total_seats} onChange={handleChange} min={1}
-                    placeholder="cth. 5000"
+                    placeholder={t("event.placeholderVenueCapacity")}
                     className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.total_seats ? "border-red-400" : "border-gray-200"}`}
                   />
                   {errors.total_seats && <p className="text-xs text-red-500 mt-1">{errors.total_seats}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Harga (Rp)</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelPrice")}</label>
                   <input
                     type="number" name="price" value={form.price} onChange={handleChange} min={0}
-                    placeholder="cth. 150000"
+                    placeholder={t("event.placeholderPrice")}
                     className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${errors.price ? "border-red-400" : "border-gray-200"}`}
                   />
                   {errors.price && <p className="text-xs text-red-500 mt-1">{errors.price}</p>}
@@ -410,25 +430,25 @@ export default function Event() {
               {/* Kategori & Status */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Kategori</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelCategory")}</label>
                   <select name="category" value={form.category} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                    {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+                    {CATEGORIES.map((c) => <option key={c} value={c}>{t(`event.${categoryValueToKey[c]}`)}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelStatus")}</label>
                   <select name="status" value={form.status} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400">
-                    {STATUSES.map((s) => <option key={s} value={s}>{statusLabel[s]}</option>)}
+                    {STATUSES.map((s) => <option key={s} value={s}>{t(`event.${statusLabelKey[s]}`)}</option>)}
                   </select>
                 </div>
               </div>
 
               {/* Deskripsi */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Deskripsi</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("event.labelDescription")}</label>
                 <textarea
                   name="description" value={form.description} onChange={handleChange} rows={3}
-                  placeholder="Deskripsi singkat tentang event..."
+                  placeholder={t("event.placeholderDescription")}
                   className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 resize-none ${errors.description ? "border-red-400" : "border-gray-200"}`}
                 />
                 {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
@@ -436,10 +456,10 @@ export default function Event() {
 
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={handleCloseForm} className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                  Batal
+                  {t("event.cancelButton")}
                 </button>
                 <button type="submit" className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors">
-                  {editId !== null ? "Simpan Perubahan" : "Simpan Event"}
+                  {editId !== null ? t("event.saveChangesButton") : t("event.saveEventButton")}
                 </button>
               </div>
             </form>
@@ -456,7 +476,7 @@ export default function Event() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari event atau lokasi..."
+            placeholder={t("event.searchPlaceholder")}
             className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
           />
         </div>
@@ -465,18 +485,18 @@ export default function Event() {
           onChange={(e) => setFilterCategory(e.target.value as EventCategory | "Semua")}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
-          <option value="Semua">Semua Kategori</option>
-          {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+          <option value="Semua">{t("event.filterAllCategories")}</option>
+          {CATEGORIES.map((c) => <option key={c} value={c}>{t(`event.${categoryValueToKey[c]}`)}</option>)}
         </select>
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value as EventStatus | "Semua")}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
-          <option value="Semua">Semua Status</option>
-          {STATUSES.map((s) => <option key={s} value={s}>{statusLabel[s]}</option>)}
+          <option value="Semua">{t("event.filterAllStatuses")}</option>
+          {STATUSES.map((s) => <option key={s} value={s}>{t(`event.${statusLabelKey[s]}`)}</option>)}
         </select>
-        <span className="text-xs text-gray-400 ml-auto">{events.length} event ditemukan</span>
+        <span className="text-xs text-gray-400 ml-auto">{t("event.eventsFoundCount", { count: events.length })}</span>
       </div>
 
       {/* Event List */}
@@ -485,25 +505,25 @@ export default function Event() {
         <table className="w-full text-sm min-w-[700px]">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Lokasi</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal & Waktu</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kapasitas</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kategori</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnEvent")}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnLocation")}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnDateTime")}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnCapacity")}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnCategory")}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnPrice")}</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("event.columnStatus")}</th>
               <th className="px-5 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {loading ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td>
+                <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">{t("event.loadingData")}</td>
               </tr>
             ) : events.length === 0 ? (
               <tr>
                 <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
-                  Tidak ada event yang ditemukan.
+                  {t("event.noEventsFound")}
                 </td>
               </tr>
             ) : (
@@ -552,18 +572,18 @@ export default function Event() {
                   <td className="px-5 py-4">
                     {ev.category ? (
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${categoryColor[ev.category] ?? "bg-gray-100 text-gray-600"}`}>
-                        {categoryLabel[ev.category] ?? ev.category}
+                        {categoryLabelKey[ev.category] ? t(`event.${categoryLabelKey[ev.category]}`) : ev.category}
                       </span>
                     ) : "-"}
                   </td>
                   <td className="px-5 py-4 text-gray-600">
                     {Number(ev.price) === 0
-                      ? "Gratis"
+                      ? t("event.priceFree")
                       : `Rp ${Number(ev.price).toLocaleString("id-ID")}`}
                   </td>
                   <td className="px-5 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[ev.status]}`}>
-                      {statusLabel[ev.status]}
+                      {t(`event.${statusLabelKey[ev.status]}`)}
                     </span>
                   </td>
                   <td className="px-5 py-4">
@@ -571,7 +591,7 @@ export default function Event() {
                       <button
                         onClick={() => handleEdit(ev)}
                         className="text-gray-400 hover:text-orange-500 transition-colors"
-                        title="Edit event"
+                        title={t("event.editEventTitle")}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -580,7 +600,7 @@ export default function Event() {
                       <button
                         onClick={() => handleDelete(ev.id)}
                         className="text-gray-400 hover:text-red-500 transition-colors"
-                        title="Hapus event"
+                        title={t("event.deleteEventTitle")}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

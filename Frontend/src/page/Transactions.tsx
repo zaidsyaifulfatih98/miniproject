@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -15,6 +16,7 @@ interface ProofModalProps {
 }
 
 function ProofModal({ bookingId, proofUrl, displayId, onApprove, onReject, onClose }: ProofModalProps) {
+  const { t } = useLanguage();
   const [rejectMode, setRejectMode] = useState(false);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +37,7 @@ function ProofModal({ bookingId, proofUrl, displayId, onApprove, onReject, onClo
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <h2 className="font-semibold text-gray-800">Bukti Pembayaran</h2>
+            <h2 className="font-semibold text-gray-800">{t("transactions.proofModalTitle")}</h2>
             <p className="text-xs text-gray-400 mt-0.5 font-mono">{displayId}</p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
@@ -47,22 +49,22 @@ function ProofModal({ bookingId, proofUrl, displayId, onApprove, onReject, onClo
         <div className="p-6">
           {proofUrl ? (
             <a href={proofUrl} target="_blank" rel="noopener noreferrer">
-              <img src={proofUrl} alt="Bukti Pembayaran" className="w-full rounded-xl border border-gray-200 object-contain max-h-80 cursor-zoom-in hover:opacity-90 transition" />
+              <img src={proofUrl} alt={t("transactions.proofModalTitle")} className="w-full rounded-xl border border-gray-200 object-contain max-h-80 cursor-zoom-in hover:opacity-90 transition" />
             </a>
           ) : (
             <div className="w-full h-48 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-sm">
-              Belum ada bukti pembayaran
+              {t("transactions.noProofYet")}
             </div>
           )}
 
           {rejectMode ? (
             <div className="mt-5 space-y-3">
-              <label className="block text-sm font-medium text-gray-700">Alasan penolakan</label>
+              <label className="block text-sm font-medium text-gray-700">{t("transactions.rejectReasonLabel")}</label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
-                placeholder="Contoh: Bukti pembayaran tidak jelas / nominal tidak sesuai..."
+                placeholder={t("transactions.rejectReasonPlaceholder")}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-red-300 resize-none"
               />
               <div className="flex gap-3">
@@ -70,14 +72,14 @@ function ProofModal({ bookingId, proofUrl, displayId, onApprove, onReject, onClo
                   onClick={() => setRejectMode(false)}
                   className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition"
                 >
-                  Batal
+                  {t("transactions.cancelButton")}
                 </button>
                 <button
                   onClick={handleReject}
                   disabled={!reason.trim() || loading}
                   className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition disabled:opacity-50"
                 >
-                  {loading ? "Memproses..." : "Konfirmasi Tolak"}
+                  {loading ? t("transactions.processing") : t("transactions.confirmRejectButton")}
                 </button>
               </div>
             </div>
@@ -87,14 +89,14 @@ function ProofModal({ bookingId, proofUrl, displayId, onApprove, onReject, onClo
                 onClick={() => setRejectMode(true)}
                 className="flex-1 py-2.5 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition"
               >
-                ✕ Tolak
+                {t("transactions.rejectButton")}
               </button>
               <button
                 onClick={handleApprove}
                 disabled={loading}
                 className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition disabled:opacity-50"
               >
-                {loading ? "Memproses..." : "✓ Konfirmasi"}
+                {loading ? t("transactions.processing") : t("transactions.confirmButton")}
               </button>
             </div>
           )}
@@ -173,11 +175,27 @@ const statusColor: Record<TxStatus, string> = {
   Gagal:    "bg-red-100 text-red-600",
 };
 
+const ticketTypeLabelKey: Record<TicketType, string> = {
+  Free: "transactions.ticketFree",
+  "Early Bird": "transactions.ticketEarlyBird",
+  Reguler: "transactions.ticketRegular",
+  VIP: "transactions.ticketVip",
+  VVIP: "transactions.ticketVvip",
+};
+
+const statusLabelKey: Record<TxStatus, string> = {
+  Berhasil: "transactions.statusSuccess",
+  Menunggu: "transactions.statusPending",
+  Expired: "transactions.statusExpired",
+  Gagal: "transactions.statusFailed",
+};
+
 function formatDate(d: string) {
   return new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
 export default function Transactions() {
+  const { t } = useLanguage();
   const [bookings, setBookings]       = useState<BookingAPI[]>([]);
   const [loading, setLoading]         = useState(true);
   const [tab, setTab]                 = useState<"transaksi" | "statistik">("transaksi");
@@ -210,11 +228,11 @@ export default function Transactions() {
     });
     const data = await res.json();
     if (data.success) {
-      setActionMsg({ text: "Pembayaran dikonfirmasi. Email notifikasi dikirim.", ok: true });
+      setActionMsg({ text: t("transactions.paymentConfirmedMsg"), ok: true });
       setProofBooking(null);
       fetchBookings();
     } else {
-      setActionMsg({ text: data.message || "Gagal konfirmasi", ok: false });
+      setActionMsg({ text: data.message || t("transactions.confirmFailedMsg"), ok: false });
     }
     setTimeout(() => setActionMsg(null), 4000);
   };
@@ -229,11 +247,11 @@ export default function Transactions() {
     });
     const data = await res.json();
     if (data.success) {
-      setActionMsg({ text: "Transaksi ditolak. Aset & email notifikasi telah diproses.", ok: true });
+      setActionMsg({ text: t("transactions.transactionRejectedMsg"), ok: true });
       setProofBooking(null);
       fetchBookings();
     } else {
-      setActionMsg({ text: data.message || "Gagal menolak", ok: false });
+      setActionMsg({ text: data.message || t("transactions.rejectFailedMsg"), ok: false });
     }
     setTimeout(() => setActionMsg(null), 4000);
   };
@@ -324,8 +342,8 @@ export default function Transactions() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Penjualan & Transaksi</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Rekap transaksi dan statistik performa penjualan tiket</p>
+          <h1 className="text-xl font-bold text-gray-800">{t("transactions.pageTitle")}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t("transactions.pageSubtitle")}</p>
         </div>
       </div>
 
@@ -340,10 +358,10 @@ export default function Transactions() {
             </div>
             <div>
               <p className="font-semibold text-amber-800 text-sm">
-                {needsReviewTx.length} transaksi menunggu konfirmasi pembayaran
+                {t("transactions.needsReviewAlertTitle", { count: needsReviewTx.length })}
               </p>
               <p className="text-xs text-amber-600 mt-0.5">
-                Customer sudah mengirim bukti pembayaran. Tinjau dan konfirmasi sekarang.
+                {t("transactions.needsReviewAlertSubtitle")}
               </p>
             </div>
           </div>
@@ -363,7 +381,7 @@ export default function Transactions() {
             ))}
             {needsReviewTx.length > 3 && (
               <span className="inline-flex items-center px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-semibold">
-                +{needsReviewTx.length - 3} lainnya
+                {t("transactions.moreOthers", { count: needsReviewTx.length - 3 })}
               </span>
             )}
           </div>
@@ -373,15 +391,15 @@ export default function Transactions() {
       {/* Tabs + Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 flex-wrap">
         <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-          {(["transaksi", "statistik"] as const).map((t) => (
+          {(["transaksi", "statistik"] as const).map((tabKey) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabKey}
+              onClick={() => setTab(tabKey)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === t ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                tab === tabKey ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              {t === "transaksi" ? "Daftar Transaksi" : "Statistik"}
+              {tabKey === "transaksi" ? t("transactions.tabTransactions") : t("transactions.tabStatistics")}
             </button>
           ))}
         </div>
@@ -390,7 +408,7 @@ export default function Transactions() {
           onChange={(e) => setFilterEvent(e.target.value === "Semua" ? "Semua" : e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
-          <option value="Semua">Semua Event</option>
+          <option value="Semua">{t("transactions.allEvents")}</option>
           {eventList.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
         </select>
       </div>
@@ -401,11 +419,11 @@ export default function Transactions() {
           {/* Summary mini-cards */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
             {[
-              { label: "Total Pendapatan", value: `Rp ${(txRevenue / 1_000_000).toFixed(1)}jt`, color: "text-green-600", bg: "bg-green-50" },
-              { label: "Berhasil",  value: successTx.length,  color: "text-green-600",  bg: "bg-green-50" },
-              { label: "Menunggu",  value: pendingTx.length,  color: "text-yellow-600", bg: "bg-yellow-50" },
-              { label: "Expired",   value: expiredTx.length,  color: "text-gray-500",   bg: "bg-gray-100" },
-              { label: "Gagal",     value: failedTx.length,   color: "text-red-500",    bg: "bg-red-50" },
+              { label: t("transactions.summaryTotalRevenue"), value: `Rp ${(txRevenue / 1_000_000).toFixed(1)}jt`, color: "text-green-600", bg: "bg-green-50" },
+              { label: t("transactions.summarySuccess"),  value: successTx.length,  color: "text-green-600",  bg: "bg-green-50" },
+              { label: t("transactions.summaryPending"),  value: pendingTx.length,  color: "text-yellow-600", bg: "bg-yellow-50" },
+              { label: t("transactions.summaryExpired"),   value: expiredTx.length,  color: "text-gray-500",   bg: "bg-gray-100" },
+              { label: t("transactions.summaryFailed"),     value: failedTx.length,   color: "text-red-500",    bg: "bg-red-50" },
             ].map((c) => (
               <div key={c.label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg ${c.bg} flex items-center justify-center flex-none`}>
@@ -428,7 +446,7 @@ export default function Transactions() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Cari ID, nama, atau email..."
+                placeholder={t("transactions.searchPlaceholder")}
                 className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
@@ -437,13 +455,13 @@ export default function Transactions() {
               onChange={(e) => setFilterStatus(e.target.value as TxStatus | "Semua")}
               className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
             >
-              <option value="Semua">Semua Status</option>
-              <option value="Berhasil">Berhasil</option>
-              <option value="Menunggu">Menunggu</option>
-              <option value="Expired">Expired</option>
-              <option value="Gagal">Gagal</option>
+              <option value="Semua">{t("transactions.allStatus")}</option>
+              <option value="Berhasil">{t("transactions.statusSuccess")}</option>
+              <option value="Menunggu">{t("transactions.statusPending")}</option>
+              <option value="Expired">{t("transactions.statusExpired")}</option>
+              <option value="Gagal">{t("transactions.statusFailed")}</option>
             </select>
-            <span className="text-xs text-gray-400 ml-auto">{filteredTx.length} transaksi</span>
+            <span className="text-xs text-gray-400 ml-auto">{t("transactions.transactionCount", { count: filteredTx.length })}</span>
           </div>
 
           {/* Table */}
@@ -452,25 +470,25 @@ export default function Transactions() {
             <table className="w-full text-sm min-w-[1000px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">ID Transaksi</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Pembeli</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiket</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Qty</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Total</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Setelah Diskon</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Promo</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tanggal</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnTransactionId")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnBuyer")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnEvent")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnTicket")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnQty")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnTotal")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnAfterDiscount")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnPromo")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnDate")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnStatus")}</th>
+                  <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnActions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {loading ? (
-                  <tr><td colSpan={11} className="text-center py-12 text-gray-400 text-sm">Memuat data...</td></tr>
+                  <tr><td colSpan={11} className="text-center py-12 text-gray-400 text-sm">{t("transactions.loading")}</td></tr>
                 ) : filteredTx.length === 0 ? (
                   <tr>
-                    <td colSpan={11} className="text-center py-12 text-gray-400 text-sm">Tidak ada transaksi ditemukan.</td>
+                    <td colSpan={11} className="text-center py-12 text-gray-400 text-sm">{t("transactions.noTransactionsFound")}</td>
                   </tr>
                 ) : (
                   <>
@@ -490,7 +508,7 @@ export default function Transactions() {
                       <td className="px-5 py-4 text-gray-600 text-xs max-w-[140px] truncate">{b.event?.title ?? "-"}</td>
                       <td className="px-5 py-4">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[uiTicketType]}`}>
-                          {uiTicketType}
+                          {t(ticketTypeLabelKey[uiTicketType])}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-gray-600">{b.quantity ?? 0}</td>
@@ -510,12 +528,12 @@ export default function Transactions() {
                       <td className="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">{formatDate(b.createdAt)}</td>
                       <td className="px-5 py-4">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor[uiStatus]}`}>
-                          {uiStatus}
+                          {t(statusLabelKey[uiStatus])}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right">
                         {b.status === "WAITING_FOR_PAYMENTS" && (
-                          <span className="text-xs text-yellow-600 font-medium">Menunggu Bukti</span>
+                          <span className="text-xs text-yellow-600 font-medium">{t("transactions.actionWaitingProof")}</span>
                         )}
                         {b.status === "WAITING_FOR_CONFIRMATION" && (
                           <button
@@ -526,17 +544,17 @@ export default function Transactions() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            <span>Tinjau Bukti</span>
+                            <span>{t("transactions.reviewProofButton")}</span>
                           </button>
                         )}
                         {b.status === "DONE" && (
-                          <span className="text-xs text-gray-500 font-medium">Selesai</span>
+                          <span className="text-xs text-gray-500 font-medium">{t("transactions.actionDone")}</span>
                         )}
                         {b.status === "EXPIRED" && (
-                          <span className="text-xs text-gray-400 font-medium">Kadaluarsa</span>
+                          <span className="text-xs text-gray-400 font-medium">{t("transactions.actionExpired")}</span>
                         )}
                         {(b.status === "REJECTED" || b.status === "CANCELLED") && (
-                          <span className="text-xs text-red-500 font-medium">Ditolak</span>
+                          <span className="text-xs text-red-500 font-medium">{t("transactions.actionRejected")}</span>
                         )}
                       </td>
                     </tr>
@@ -556,9 +574,9 @@ export default function Transactions() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                label: "Total Tiket Terjual",
+                label: t("transactions.statTotalTicketsSold"),
                 value: totalSold.toLocaleString("id-ID"),
-                sub: `dari transaksi berhasil`,
+                sub: t("transactions.statTotalTicketsSoldSub"),
                 color: "text-orange-500",
                 bg: "bg-orange-50",
                 icon: (
@@ -568,9 +586,9 @@ export default function Transactions() {
                 ),
               },
               {
-                label: "Total Pendapatan",
+                label: t("transactions.statTotalRevenue"),
                 value: `Rp ${(totalRevenue / 1_000_000).toFixed(1)}jt`,
-                sub: `dari ${successTx.length} booking selesai`,
+                sub: t("transactions.statTotalRevenueSub", { count: successTx.length }),
                 color: "text-green-600",
                 bg: "bg-green-50",
                 icon: (
@@ -580,9 +598,9 @@ export default function Transactions() {
                 ),
               },
               {
-                label: "Tingkat Keberhasilan",
+                label: t("transactions.statSuccessRate"),
                 value: `${successRate}%`,
-                sub: `${successTx.length} dari ${totalTx} transaksi`,
+                sub: t("transactions.statSuccessRateSub", { success: successTx.length, total: totalTx }),
                 color: "text-blue-600",
                 bg: "bg-blue-50",
                 icon: (
@@ -592,9 +610,9 @@ export default function Transactions() {
                 ),
               },
               {
-                label: "Pakai Promo",
+                label: t("transactions.statUsedPromo"),
                 value: withPromo.length.toLocaleString("id-ID"),
-                sub: "booking dengan kode promo",
+                sub: t("transactions.statUsedPromoSub"),
                 color: "text-purple-600",
                 bg: "bg-purple-50",
                 icon: (
@@ -619,7 +637,7 @@ export default function Transactions() {
           {byEvent.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Pendapatan per Event</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">{t("transactions.chartRevenuePerEvent")}</h3>
                 <div className="space-y-3">
                   {byEvent.map(({ ev, evRevenue }) => {
                     const barPct = Math.round((evRevenue / maxRevenue) * 100);
@@ -638,7 +656,7 @@ export default function Transactions() {
                 </div>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 p-5">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Tiket Terjual per Event</h3>
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">{t("transactions.chartTicketsSoldPerEvent")}</h3>
                 <div className="space-y-3">
                   {byEvent.map(({ ev, evSold }) => {
                     const barPct = Math.round((evSold / maxSold) * 100);
@@ -646,7 +664,7 @@ export default function Transactions() {
                       <div key={ev.id}>
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs text-gray-600 truncate max-w-[55%]">{ev.title}</span>
-                          <span className="text-xs font-semibold text-gray-700">{evSold} tiket</span>
+                          <span className="text-xs font-semibold text-gray-700">{t("transactions.ticketsCountLabel", { count: evSold })}</span>
                         </div>
                         <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{ width: `${barPct}%` }} />
@@ -662,26 +680,26 @@ export default function Transactions() {
           {/* Per-Event Breakdown Table */}
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-700">Performa per Event</h3>
+              <h3 className="text-sm font-semibold text-gray-700">{t("transactions.performancePerEventTitle")}</h3>
             </div>
             <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[700px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tiket Terjual</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Perbandingan</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Pendapatan</th>
-                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Promo</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnEvent")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnTicketsSold")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnComparison")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnRevenue")}</th>
+                  <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("transactions.columnPromo")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {byEvent.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-10 text-gray-400 text-sm">Tidak ada data untuk ditampilkan.</td></tr>
+                  <tr><td colSpan={5} className="text-center py-10 text-gray-400 text-sm">{t("transactions.noDataToDisplay")}</td></tr>
                 ) : byEvent.map(({ ev, evSold, evRevenue, evPromos }) => (
                     <tr key={ev.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-5 py-4 font-medium text-gray-800">{ev.title}</td>
-                      <td className="px-5 py-4 text-gray-600">{evSold} tiket</td>
+                      <td className="px-5 py-4 text-gray-600">{t("transactions.ticketsCountLabel", { count: evSold })}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <div className="w-28 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -693,7 +711,7 @@ export default function Transactions() {
                       <td className="px-5 py-4 text-gray-700 font-medium">Rp {evRevenue.toLocaleString("id-ID")}</td>
                       <td className="px-5 py-4">
                         <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${evPromos > 0 ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-400"}`}>
-                          {evPromos} promo
+                          {t("transactions.promoCountLabel", { count: evPromos })}
                         </span>
                       </td>
                     </tr>
@@ -705,17 +723,17 @@ export default function Transactions() {
           {byType.length > 0 && (
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="px-5 py-4 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-700">Performa per Tipe Tiket</h3>
+                <h3 className="text-sm font-semibold text-gray-700">{t("transactions.performancePerTypeTitle")}</h3>
               </div>
               <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {byType.map(({ type, sold, revenue }) => (
                     <div key={type} className="border border-gray-100 rounded-lg p-4 space-y-3">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[type]}`}>
-                        {type}
+                        {t(ticketTypeLabelKey[type])}
                       </span>
                       <div>
                         <p className="text-lg font-bold text-gray-800">{sold}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">tiket terjual</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{t("transactions.ticketsSoldLabel")}</p>
                       </div>
                       <p className="text-xs text-gray-500 font-medium">Rp {revenue.toLocaleString("id-ID")}</p>
                     </div>

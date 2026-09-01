@@ -1,18 +1,19 @@
 ﻿import { useState, useEffect, useCallback } from "react";
 import { createTicketSchema, updateTicketSchema } from "../schemas/ticket.schema";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 type TicketType = "FREE" | "EARLY_BIRD" | "REGULAR" | "VIP" | "VVIP";
 const TICKET_TYPES: TicketType[] = ["FREE", "EARLY_BIRD", "REGULAR", "VIP", "VVIP"];
 
-const ticketTypeLabel: Record<TicketType, string> = {
-  FREE: "Free",
-  EARLY_BIRD: "Early Bird",
-  REGULAR: "Reguler",
-  VIP: "VIP",
-  VVIP: "VVIP",
+const ticketTypeLabelKey: Record<TicketType, string> = {
+  FREE: "ticketTypeFree",
+  EARLY_BIRD: "ticketTypeEarlyBird",
+  REGULAR: "ticketTypeRegular",
+  VIP: "ticketTypeVip",
+  VVIP: "ticketTypeVvip",
 };
 
 const ticketTypeBadge: Record<TicketType, string> = {
@@ -47,6 +48,7 @@ const emptyTicketForm = {
 };
 
 export default function Ticket() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState<EventItem[]>([]);
   const [tickets, setTickets] = useState<TicketItem[]>([]);
   const [filterEventId, setFilterEventId] = useState<string>("Semua");
@@ -101,7 +103,7 @@ export default function Ticket() {
         if (!e[key]) e[key] = issue.message;
       });
     }
-    if (!editTicketId && !ticketForm.event_id) e.event_id = "Event wajib dipilih.";
+    if (!editTicketId && !ticketForm.event_id) e.event_id = t("ticket.validationEventRequired");
     return e;
   }
 
@@ -157,7 +159,7 @@ export default function Ticket() {
   }
 
   async function handleDeleteTicket(id: string) {
-    if (!confirm("Hapus tiket ini?")) return;
+    if (!confirm(t("ticket.confirmDeleteTicket"))) return;
     try {
       await fetch(`${API_BASE}/tickets/${id}`, { method: "DELETE" });
       fetchTickets();
@@ -175,8 +177,8 @@ export default function Ticket() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Manajemen Tiket</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Kelola tipe tiket dan kuota stok untuk setiap event</p>
+          <h1 className="text-xl font-bold text-gray-800">{t("ticket.pageTitle")}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t("ticket.pageSubtitle")}</p>
         </div>
         <button
           onClick={() => {
@@ -190,7 +192,7 @@ export default function Ticket() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
-          Tambah Tiket
+          {t("ticket.addTicketButton")}
         </button>
       </div>
 
@@ -201,7 +203,7 @@ export default function Ticket() {
           onChange={(e) => setFilterEventId(e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
         >
-          <option value="Semua">Semua Event</option>
+          <option value="Semua">{t("ticket.filterAllEvents")}</option>
           {events.map((ev) => (
             <option key={ev.id} value={ev.id}>{ev.title}</option>
           ))}
@@ -214,13 +216,13 @@ export default function Ticket() {
           <table className="w-full text-sm min-w-[800px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Event</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tipe</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Harga</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Kuota</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Terjual</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Sisa</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Deskripsi</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnEvent")}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnType")}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnPrice")}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnQuota")}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnSold")}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnRemaining")}</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("ticket.columnDescription")}</th>
                 <th className="px-5 py-3" />
               </tr>
             </thead>
@@ -228,24 +230,24 @@ export default function Ticket() {
               {tickets.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-12 text-gray-400 text-sm">
-                    Tidak ada tiket ditemukan.
+                    {t("ticket.noTicketsFound")}
                   </td>
                 </tr>
               ) : (
-                tickets.map((t) => {
-                  const sisa = t.quota - t.used_ticket;
-                  const pct = t.quota > 0 ? Math.round((t.used_ticket / t.quota) * 100) : 0;
+                tickets.map((tk) => {
+                  const sisa = tk.quota - tk.used_ticket;
+                  const pct = tk.quota > 0 ? Math.round((tk.used_ticket / tk.quota) * 100) : 0;
                   return (
-                    <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-4 text-gray-700 font-medium">{getEventName(t.event_id)}</td>
+                    <tr key={tk.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-4 text-gray-700 font-medium">{getEventName(tk.event_id)}</td>
                       <td className="px-5 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[t.type]}`}>
-                          {ticketTypeLabel[t.type]}
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ticketTypeBadge[tk.type]}`}>
+                          {t(`ticket.${ticketTypeLabelKey[tk.type]}`)}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-gray-700">Rp {Number(t.price).toLocaleString("id-ID")}</td>
-                      <td className="px-5 py-4 text-gray-700">{t.quota}</td>
-                      <td className="px-5 py-4 text-gray-700">{t.used_ticket}</td>
+                      <td className="px-5 py-4 text-gray-700">Rp {Number(tk.price).toLocaleString("id-ID")}</td>
+                      <td className="px-5 py-4 text-gray-700">{tk.quota}</td>
+                      <td className="px-5 py-4 text-gray-700">{tk.used_ticket}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -255,26 +257,26 @@ export default function Ticket() {
                             />
                           </div>
                           <span className={`text-xs font-medium ${sisa === 0 ? "text-red-500" : "text-gray-600"}`}>
-                            {sisa === 0 ? "Habis" : sisa}
+                            {sisa === 0 ? t("ticket.soldOut") : sisa}
                           </span>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-gray-500 text-xs max-w-[160px] truncate">{t.description}</td>
+                      <td className="px-5 py-4 text-gray-500 text-xs max-w-[160px] truncate">{tk.description}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
-                            onClick={() => handleEditTicket(t)}
+                            onClick={() => handleEditTicket(tk)}
                             className="text-gray-400 hover:text-orange-500 transition-colors"
-                            title="Edit tiket"
+                            title={t("ticket.editTicketTitle")}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                           </button>
                           <button
-                            onClick={() => handleDeleteTicket(t.id)}
+                            onClick={() => handleDeleteTicket(tk.id)}
                             className="text-gray-400 hover:text-red-500 transition-colors"
-                            title="Hapus tiket"
+                            title={t("ticket.deleteTicketTitle")}
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -297,7 +299,7 @@ export default function Ticket() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-bold text-gray-800">
-                {editTicketId !== null ? "Edit Tiket" : "Tambah Tiket Baru"}
+                {editTicketId !== null ? t("ticket.modalEditTitle") : t("ticket.modalAddTitle")}
               </h2>
               <button
                 onClick={() => { setShowTicketForm(false); setEditTicketId(null); }}
@@ -310,14 +312,14 @@ export default function Ticket() {
             </div>
             <form onSubmit={handleTicketSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Event</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("ticket.labelEvent")}</label>
                 <select
                   name="event_id"
                   value={ticketForm.event_id}
                   onChange={handleTicketChange}
                   className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${ticketErrors.event_id ? "border-red-400" : "border-gray-200"}`}
                 >
-                  <option value="">-- Pilih Event --</option>
+                  <option value="">{t("ticket.selectEventPlaceholder")}</option>
                   {events.map((ev) => (
                     <option key={ev.id} value={ev.id}>{ev.title}</option>
                   ))}
@@ -326,53 +328,53 @@ export default function Ticket() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Tipe Tiket</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("ticket.labelTicketType")}</label>
                   <select
                     name="type"
                     value={ticketForm.type}
                     onChange={handleTicketChange}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
                   >
-                    {TICKET_TYPES.map((t) => (
-                      <option key={t} value={t}>{ticketTypeLabel[t]}</option>
+                    {TICKET_TYPES.map((tt) => (
+                      <option key={tt} value={tt}>{t(`ticket.${ticketTypeLabelKey[tt]}`)}</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Harga (Rp)</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">{t("ticket.labelPrice")}</label>
                   <input
                     type="number"
                     name="price"
                     value={ticketForm.price}
                     onChange={handleTicketChange}
                     min={0}
-                    placeholder="cth. 250000"
+                    placeholder={t("ticket.placeholderPrice")}
                     className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${ticketErrors.price ? "border-red-400" : "border-gray-200"}`}
                   />
                   {ticketErrors.price && <p className="text-xs text-red-500 mt-1">{ticketErrors.price}</p>}
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Kuota / Stok Maksimal</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("ticket.labelQuota")}</label>
                 <input
                   type="number"
                   name="quota"
                   value={ticketForm.quota}
                   onChange={handleTicketChange}
                   min={1}
-                  placeholder="cth. 500"
+                  placeholder={t("ticket.placeholderQuota")}
                   className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 ${ticketErrors.quota ? "border-red-400" : "border-gray-200"}`}
                 />
                 {ticketErrors.quota && <p className="text-xs text-red-500 mt-1">{ticketErrors.quota}</p>}
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Deskripsi</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">{t("ticket.labelDescription")}</label>
                 <textarea
                   name="description"
                   value={ticketForm.description}
                   onChange={handleTicketChange}
                   rows={2}
-                  placeholder="Keuntungan atau catatan tiket ini..."
+                  placeholder={t("ticket.placeholderDescription")}
                   className={`w-full border rounded-lg px-3 py-2 text-sm resize-none outline-none focus:ring-2 focus:ring-orange-400 ${ticketErrors.description ? "border-red-400" : "border-gray-200"}`}
                 />
                 {ticketErrors.description && <p className="text-xs text-red-500 mt-1">{ticketErrors.description}</p>}
@@ -383,13 +385,13 @@ export default function Ticket() {
                   onClick={() => { setShowTicketForm(false); setEditTicketId(null); }}
                   className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
                 >
-                  Batal
+                  {t("ticket.cancelButton")}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium transition-colors"
                 >
-                  {editTicketId !== null ? "Simpan Perubahan" : "Simpan Tiket"}
+                  {editTicketId !== null ? t("ticket.saveChangesButton") : t("ticket.saveTicketButton")}
                 </button>
               </div>
             </form>

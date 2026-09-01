@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Calendar, Star, User } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface EventCardProps {
   id: string;
@@ -16,11 +17,11 @@ interface EventCardProps {
   review_count?: number;
 }
 
-function formatPrice(price?: number | string): string {
-  if (price === undefined || price === null) return 'GRATIS';
+function formatPrice(price: number | string | undefined, freeLabel: string): string {
+  if (price === undefined || price === null) return freeLabel;
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  if (isNaN(numPrice)) return 'GRATIS';
-  if (numPrice === 0 || numPrice < 0.01) return 'GRATIS';
+  if (isNaN(numPrice)) return freeLabel;
+  if (numPrice === 0 || numPrice < 0.01) return freeLabel;
   return 'Rp ' + Math.floor(numPrice).toLocaleString('id-ID');
 }
 
@@ -36,6 +37,7 @@ export default function EventCard({
   rating = 0,
   review_count = 0,
 }: EventCardProps) {
+  const { t } = useLanguage();
   const [imgError, setImgError] = useState(false);
 
   const eventDate = new Date(date_start).toLocaleDateString('id-ID', {
@@ -58,7 +60,7 @@ export default function EventCard({
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-              <span className="text-gray-600 text-sm">📸 Event Image</span>
+              <span className="text-gray-600 text-sm">{t("eventCard.eventImagePlaceholder")}</span>
             </div>
           )}
           {category && (
@@ -90,13 +92,13 @@ export default function EventCard({
           {/* Organizer */}
           <div className="flex items-center gap-1 sm:gap-1.5 text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
             <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="line-clamp-1">{organizer_name || 'Unknown Organizer'}</span>
+            <span className="line-clamp-1">{organizer_name || t("eventCard.unknownOrganizer")}</span>
           </div>
 
           {/* Footer */}
           <div className="mt-auto pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between">
             <span className="font-semibold text-orange-500 text-sm sm:text-base">
-              {formatPrice(price)}
+              {formatPrice(price, t("eventCard.free"))}
             </span>
             {review_count > 0 ? (
               <div className="flex items-center gap-1 ml-auto">
@@ -104,7 +106,7 @@ export default function EventCard({
                 <span className="text-xs sm:text-sm font-semibold text-gray-700">{rating.toFixed(1)}</span>
               </div>
             ) : (
-              <span className="text-[10px] sm:text-xs text-gray-500 ml-auto">Belum ada review</span>
+              <span className="text-[10px] sm:text-xs text-gray-500 ml-auto">{t("eventCard.noReviewsYet")}</span>
             )}
           </div>
         </div>

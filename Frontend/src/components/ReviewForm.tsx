@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Star, Send } from 'lucide-react';
 import axios from 'axios';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -17,6 +18,7 @@ export default function ReviewForm({
   hasUserReview = false,
   onReviewSubmitted,
 }: ReviewFormProps) {
+  const { t } = useLanguage();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -28,7 +30,7 @@ export default function ReviewForm({
     e.preventDefault();
 
     if (rating === 0) {
-      setError('Pilih rating terlebih dahulu');
+      setError(t('reviewForm.selectRatingFirst'));
       return;
     }
 
@@ -59,7 +61,7 @@ export default function ReviewForm({
     } catch (err: any) {
       const errorMsg =
         err.response?.data?.message ||
-        'Gagal mengirim review. Pastikan Anda sudah menyelesaikan event ini.';
+        t('reviewForm.submitFailedDefault');
       setError(errorMsg);
     } finally {
       setIsLoading(false);
@@ -69,20 +71,20 @@ export default function ReviewForm({
   return (
     <div className="bg-white rounded-lg border border-orange-200 p-6 shadow-md overflow-hidden">
       <div className="mb-4">
-        <h3 className="text-lg font-bold text-gray-900">Beri Rating & Review</h3>
+        <h3 className="text-lg font-bold text-gray-900">{t('reviewForm.heading')}</h3>
       </div>
 
       {hasUserReview ? (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
           <p className="text-sm text-gray-600 font-medium flex items-center justify-center gap-2">
-            <span className="text-lg">✓</span> Terima kasih! Anda sudah memberikan review untuk event ini
+            <span className="text-lg">✓</span> {t('reviewForm.alreadyReviewed')}
           </p>
         </div>
       ) : (
         <>
           {success && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-              ✅ Review berhasil dibuat! Terima kasih atas ulasan Anda.
+              ✅ {t('reviewForm.submitSuccess')}
             </div>
           )}
 
@@ -96,7 +98,7 @@ export default function ReviewForm({
             {/* Rating Stars */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Rating
+                {t('reviewForm.ratingLabel')}
               </label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -120,25 +122,25 @@ export default function ReviewForm({
                 ))}
               </div>
               {rating > 0 && (
-                <p className="text-sm text-orange-600 mt-2 font-medium">{rating} dari 5 bintang</p>
+                <p className="text-sm text-orange-600 mt-2 font-medium">{t('reviewForm.ratingOutOf', { rating })}</p>
               )}
             </div>
 
             {/* Comment */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Ulasan (Opsional)
+                {t('reviewForm.commentLabel')}
               </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value.slice(0, 500))}
-                placeholder="Bagikan pengalaman Anda tentang event ini..."
+                placeholder={t('reviewForm.commentPlaceholder')}
                 maxLength={500}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
               />
               <p className="text-xs text-gray-500 mt-1">
-                {comment.length}/500 karakter
+                {t('reviewForm.charCount', { count: comment.length })}
               </p>
             </div>
 
@@ -149,7 +151,7 @@ export default function ReviewForm({
               className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2"
             >
               <Send size={18} />
-              {isLoading ? 'Mengirim...' : 'Kirim Review'}
+              {isLoading ? t('reviewForm.sending') : t('reviewForm.submitButton')}
             </button>
           </form>
         </>

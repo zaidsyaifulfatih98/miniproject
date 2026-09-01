@@ -8,6 +8,7 @@ import ReviewForm from "../components/ReviewForm";
 import ReviewsList from "../components/ReviewsList";
 import { trackFunnel } from "../utils/tracker";
 import { getUserFromCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -57,6 +58,7 @@ interface Toast {
 }
 
 export default function DetailEvent() {
+  const { t } = useLanguage();
   const { eventId } = useParams<{ eventId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ export default function DetailEvent() {
       try {
         setLoading(true);
         const response = await fetch(`${API_BASE}/events/${eventId}`);
-        if (!response.ok) throw new Error("Event not found");
+        if (!response.ok) throw new Error(t("detailEvent.eventNotFoundShort"));
         const data = await response.json();
 
         if (data.success) {
@@ -91,10 +93,10 @@ export default function DetailEvent() {
             setIsCheckoutOpen(true);
           }
         } else {
-          throw new Error(data.message || "Failed to load event");
+          throw new Error(data.message || t("detailEvent.failedToLoadEvent"));
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load event");
+        setError(err instanceof Error ? err.message : t("detailEvent.failedToLoadEvent"));
       } finally {
         setLoading(false);
       }
@@ -178,12 +180,12 @@ export default function DetailEvent() {
 
   const getButtonState = () => {
     if (isEventEnded)
-      return { disabled: true, text: "Event Ended", color: "bg-gray-400" };
+      return { disabled: true, text: t("detailEvent.buttonEventEnded"), color: "bg-gray-400" };
     if (isSoldOut)
-      return { disabled: true, text: "Sold Out", color: "bg-gray-400" };
+      return { disabled: true, text: t("detailEvent.buttonSoldOut"), color: "bg-gray-400" };
     return {
       disabled: false,
-      text: "Beli Tiket",
+      text: t("detailEvent.buttonBuyTicket"),
       color: "bg-orange-500 hover:bg-orange-600",
     };
   };
@@ -212,10 +214,10 @@ export default function DetailEvent() {
   };
 
   const formatPrice = (price: number | string): string => {
-    if (price === undefined || price === null) return "GRATIS";
+    if (price === undefined || price === null) return t("detailEvent.free");
     const numPrice = typeof price === "string" ? parseFloat(price) : price;
-    if (isNaN(numPrice)) return "GRATIS";
-    if (numPrice === 0 || numPrice < 0.01) return "GRATIS";
+    if (isNaN(numPrice)) return t("detailEvent.free");
+    if (numPrice === 0 || numPrice < 0.01) return t("detailEvent.free");
     return "Rp " + Math.floor(numPrice).toLocaleString("id-ID");
   };
 
@@ -224,7 +226,7 @@ export default function DetailEvent() {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Memuat detail event...</p>
+          <p className="text-gray-600">{t("detailEvent.loadingDetail")}</p>
         </div>
       </div>
     );
@@ -235,7 +237,7 @@ export default function DetailEvent() {
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <p className="text-red-600 text-xl font-semibold">
-            {error || "Event tidak ditemukan"}
+            {error || t("detailEvent.eventNotFound")}
           </p>
         </div>
       </div>
@@ -322,10 +324,10 @@ export default function DetailEvent() {
                   : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              {tab === "deskripsi" && "Deskripsi"}
-              {tab === "tiket" && "Tiket"}
-              {tab === "syarat" && "Syarat"}
-              {tab === "review" && "Review"}
+              {tab === "deskripsi" && t("detailEvent.tabDescription")}
+              {tab === "tiket" && t("detailEvent.tabTicket")}
+              {tab === "syarat" && t("detailEvent.tabTerms")}
+              {tab === "review" && t("detailEvent.tabReview")}
               {activeTab === tab && (
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500"></div>
               )}
@@ -353,7 +355,7 @@ export default function DetailEvent() {
                       />
                     ) : (
                       <p className="text-gray-500 italic">
-                        Deskripsi event tidak tersedia
+                        {t("detailEvent.descriptionUnavailable")}
                       </p>
                     )}
                   </div>
@@ -366,15 +368,15 @@ export default function DetailEvent() {
               <div className="animate-fadeIn">
                 <div className="bg-white rounded-lg p-6 md:p-8 shadow-sm">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Pilih Tiket
+                    {t("detailEvent.selectTicket")}
                   </h2>
                   {isSoldOut ? (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-8 text-center">
                       <p className="text-red-600 font-semibold text-lg mb-2">
-                        Tiket Sudah Habis
+                        {t("detailEvent.ticketSoldOutTitle")}
                       </p>
                       <p className="text-red-500 text-sm">
-                        Event ini tidak memiliki tiket yang tersedia lagi
+                        {t("detailEvent.ticketSoldOutMessage")}
                       </p>
                     </div>
                   ) : event.tickets && event.tickets.length > 0 ? (
@@ -400,10 +402,10 @@ export default function DetailEvent() {
                             </span>
                           </div>
                           <div className="flex gap-4 text-sm text-gray-600">
-                            <span>Kuota: {ticket.quota}</span>
-                            <span>Terjual: {ticket.used_ticket}</span>
+                            <span>{t("detailEvent.quotaLabel")}: {ticket.quota}</span>
+                            <span>{t("detailEvent.soldLabel")}: {ticket.used_ticket}</span>
                             <span>
-                              Tersisa: {ticket.quota - ticket.used_ticket}
+                              {t("detailEvent.remainingLabel")}: {ticket.quota - ticket.used_ticket}
                             </span>
                           </div>
                         </div>
@@ -412,7 +414,7 @@ export default function DetailEvent() {
                   ) : (
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
                       <p className="text-gray-600">
-                        Informasi tiket tidak tersedia untuk event ini
+                        {t("detailEvent.ticketInfoUnavailable")}
                       </p>
                     </div>
                   )}
@@ -425,12 +427,11 @@ export default function DetailEvent() {
               <div className="animate-fadeIn">
                 <div className="bg-white rounded-lg p-6 md:p-8 shadow-sm">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Syarat dan Ketentuan
+                    {t("detailEvent.termsTitle")}
                   </h2>
                   <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed space-y-4">
                     <p className="text-gray-600">
-                      Syarat dan ketentuan untuk event ini belum tersedia.
-                      Hubungi penyelenggara untuk informasi lebih lanjut.
+                      {t("detailEvent.termsMessage")}
                     </p>
                   </div>
                 </div>
@@ -442,20 +443,19 @@ export default function DetailEvent() {
               <div className="animate-fadeIn">
                 <div className="bg-white rounded-lg p-6 md:p-8 shadow-sm">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                    Review & Rating
+                    {t("detailEvent.reviewRatingTitle")}
                   </h2>
                   {reviewsLoading ? (
                     <div className="text-center py-12">
                       <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mx-auto mb-3"></div>
-                      <p className="text-gray-600">Memuat review...</p>
+                      <p className="text-gray-600">{t("detailEvent.loadingReviews")}</p>
                     </div>
                   ) : (
                     <>
                       {userBooking ? (
                         <div className="mb-8 pb-8 border-b border-gray-200">
                           <p className="text-sm text-green-600 font-medium mb-4 flex items-center gap-2">
-                            <span className="text-lg">✓</span> Anda memiliki
-                            tiket untuk event ini
+                            <span className="text-lg">✓</span> {t("detailEvent.hasTicketMessage")}
                           </p>
                           <ReviewForm
                             eventId={eventId!}
@@ -486,8 +486,7 @@ export default function DetailEvent() {
                       ) : (
                         <div className="mb-8 pb-8 border-b border-gray-200 bg-orange-50 rounded-lg p-4">
                           <p className="text-sm text-orange-700 font-medium">
-                            Beli tiket event ini untuk dapat memberikan review
-                            dan rating
+                            {t("detailEvent.buyTicketToReview")}
                           </p>
                         </div>
                       )}
@@ -501,10 +500,10 @@ export default function DetailEvent() {
                       {reviews.length === 0 && (
                         <div className="text-center py-12">
                           <p className="text-gray-600 font-medium">
-                            Belum ada review untuk event ini
+                            {t("detailEvent.noReviewsYet")}
                           </p>
                           <p className="text-sm text-gray-500 mt-2">
-                            Jadilah yang pertama memberikan review
+                            {t("detailEvent.beFirstToReview")}
                           </p>
                         </div>
                       )}
@@ -528,14 +527,14 @@ export default function DetailEvent() {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                      <span className="text-gray-500 text-xs">No Image</span>
+                      <span className="text-gray-500 text-xs">{t("detailEvent.noImage")}</span>
                     </div>
                   )}
                 </div>
                 <div className="p-4 space-y-4">
                   <div>
                     <p className="text-xs text-gray-500 font-medium mb-1.5">
-                      Harga mulai dari
+                      {t("detailEvent.priceFrom")}
                     </p>
                     <p className="text-3xl font-bold text-orange-500">
                       {formatPrice(event.price)}
@@ -558,7 +557,7 @@ export default function DetailEvent() {
                     {event.location && (
                       <div>
                         <p className="text-xs text-gray-500 font-medium mb-1">
-                          Lokasi
+                          {t("detailEvent.locationLabel")}
                         </p>
                         <p className="text-sm font-medium text-gray-900 flex items-start gap-2">
                           <MapPin size={16} className="mt-0.5 flex-shrink-0" />
@@ -569,7 +568,7 @@ export default function DetailEvent() {
                     {event.start_event && (
                       <div>
                         <p className="text-xs text-gray-500 font-medium mb-1">
-                          Waktu
+                          {t("detailEvent.timeLabel")}
                         </p>
                         <p className="text-sm font-medium text-gray-900 flex items-start gap-2">
                           <Calendar
@@ -587,19 +586,19 @@ export default function DetailEvent() {
                     )}
                     <div>
                       <p className="text-xs text-gray-500 font-medium mb-1">
-                        Tiket Tersedia
+                        {t("detailEvent.ticketsAvailableLabel")}
                       </p>
                       <p className="text-sm font-medium text-gray-900">
                         {isSoldOut
-                          ? "Sold Out"
-                          : `${event.available_seats} tiket`}
+                          ? t("detailEvent.soldOutLabel")
+                          : t("detailEvent.ticketsCount", { count: event.available_seats })}
                       </p>
                     </div>
                   </div>
                   {event.organizer && (
                     <div className="py-3">
                       <p className="text-xs text-gray-500 font-medium mb-2.5">
-                        Diselenggarakan oleh
+                        {t("detailEvent.organizedBy")}
                       </p>
                       <button
                         onClick={() =>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, MapPin, Calendar, Star } from 'lucide-react';
 import axios from 'axios';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -64,6 +65,7 @@ function getAvatarColor(name: string): string {
 }
 
 export default function OrganizerProfile() {
+  const { t } = useLanguage();
   const { organizerId } = useParams();
   const navigate = useNavigate();
 
@@ -100,7 +102,7 @@ export default function OrganizerProfile() {
           setEvents(eventsRes.data.data || []);
         }
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Gagal memuat profil organizer');
+        setError(err.response?.data?.message || t('organizerProfile.failedToLoadProfile'));
       } finally {
         setLoading(false);
       }
@@ -116,7 +118,7 @@ export default function OrganizerProfile() {
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-600">Memuat profil organizer...</p>
+          <p className="mt-4 text-gray-600">{t('organizerProfile.loadingProfile')}</p>
         </div>
       </div>
     );
@@ -131,11 +133,11 @@ export default function OrganizerProfile() {
             className="flex items-center gap-2 text-orange-500 hover:text-orange-600 mb-8"
           >
             <ArrowLeft size={20} />
-            Kembali
+            {t('organizerProfile.back')}
           </button>
 
           <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg">
-            {error || 'Organizer tidak ditemukan'}
+            {error || t('organizerProfile.organizerNotFound')}
           </div>
         </div>
       </div>
@@ -151,7 +153,7 @@ export default function OrganizerProfile() {
           className="flex items-center gap-2 text-orange-500 hover:text-orange-600 mb-6 font-medium"
         >
           <ArrowLeft size={20} />
-          Kembali
+          {t('organizerProfile.back')}
         </button>
 
         {/* Header Profile Card */}
@@ -175,7 +177,7 @@ export default function OrganizerProfile() {
                 <div className="flex justify-center md:justify-start items-center gap-2 mb-4">
                   <div className="bg-orange-100 text-orange-700 px-4 py-2 rounded-full font-semibold flex items-center gap-2">
                     <Star size={18} className="fill-orange-500 text-orange-500" />
-                    {stats.averageRating.toFixed(1)} ({stats.totalReviews} ulasan)
+                    {stats.averageRating.toFixed(1)} {t('organizerProfile.reviewsCount', { count: stats.totalReviews })}
                   </div>
                 </div>
               )}
@@ -194,7 +196,7 @@ export default function OrganizerProfile() {
                 )}
                 <div className="flex justify-center md:justify-start items-center gap-2">
                   <Calendar size={18} className="text-orange-500" />
-                  <span>Bergabung {new Date(organizer.createdAt).toLocaleDateString('id-ID')}</span>
+                  <span>{t('organizerProfile.joined', { date: new Date(organizer.createdAt).toLocaleDateString('id-ID') })}</span>
                 </div>
               </div>
             </div>
@@ -204,15 +206,15 @@ export default function OrganizerProfile() {
         {/* Stats Section */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white border border-orange-200 rounded-lg p-6">
-            <p className="text-gray-600 text-sm mb-1">Total Event</p>
+            <p className="text-gray-600 text-sm mb-1">{t('organizerProfile.totalEvents')}</p>
             <p className="text-3xl font-bold text-orange-600">{events.length}</p>
           </div>
           <div className="bg-white border border-orange-200 rounded-lg p-6">
-            <p className="text-gray-600 text-sm mb-1">Total Ulasan</p>
+            <p className="text-gray-600 text-sm mb-1">{t('organizerProfile.totalReviews')}</p>
             <p className="text-3xl font-bold text-orange-600">{stats?.totalReviews || 0}</p>
           </div>
           <div className="bg-white border border-orange-200 rounded-lg p-6">
-            <p className="text-gray-600 text-sm mb-1">Rating Rata-rata</p>
+            <p className="text-gray-600 text-sm mb-1">{t('organizerProfile.averageRating')}</p>
             <p className="text-3xl font-bold text-orange-600">
               {(stats?.averageRating || 0).toFixed(1)}⭐
             </p>
@@ -221,12 +223,12 @@ export default function OrganizerProfile() {
 
         {/* Reviews Section */}
         <div className="bg-white border border-orange-200 rounded-lg p-6 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Ulasan dari Peserta</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('organizerProfile.reviewsFromAttendees')}</h2>
 
           {reviews.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              <p className="text-lg mb-2">Belum ada ulasan</p>
-              <p className="text-sm">Bagikan pengalaman Anda setelah menghadiri event ini</p>
+              <p className="text-lg mb-2">{t('organizerProfile.noReviewsYet')}</p>
+              <p className="text-sm">{t('organizerProfile.shareExperience')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -236,7 +238,7 @@ export default function OrganizerProfile() {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className="font-semibold text-gray-900">{review.user.full_name}</p>
-                        <p className="text-sm text-gray-500">untuk event: {review.event.title}</p>
+                        <p className="text-sm text-gray-500">{t('organizerProfile.forEvent', { title: review.event.title })}</p>
                       </div>
                       <div className="flex gap-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -268,7 +270,7 @@ export default function OrganizerProfile() {
         {/* Events Section */}
         {events.length > 0 && (
           <div className="bg-white border border-orange-200 rounded-lg p-6 shadow-sm mt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Event yang Diselenggarakan</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('organizerProfile.organizedEvents')}</h2>
             <div className="space-y-3">
               {events.map((event) => (
                 <div

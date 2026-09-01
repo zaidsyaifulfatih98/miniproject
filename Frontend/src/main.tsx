@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom'
+import { LanguageProvider } from './i18n/LanguageContext'
 import RootLayout from './layouts/RootLayout'
 import MainLayout from './layouts/MainLayout'
 import ScrollToTop from './components/ScrollToTop'
@@ -177,6 +178,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <LanguageProvider>
+      <RouterProvider router={router} />
+    </LanguageProvider>
   </StrictMode>
 )

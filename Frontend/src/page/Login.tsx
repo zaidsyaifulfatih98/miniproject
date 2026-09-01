@@ -4,11 +4,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { loginSchema } from "../schemas/user.schema";
 import { getUserFromCookie, setUserCookie } from "../utils/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function Login() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get("returnTo");
   
@@ -83,7 +85,7 @@ export default function Login() {
       }
     } catch (err: any) {
       const errorMessage =
-        err.response?.data?.message || "Login gagal. Coba lagi.";
+        err.response?.data?.message || t("login.loginFailedDefault");
       setError(errorMessage);
       console.error("Login error:", err);
     } finally {
@@ -100,10 +102,10 @@ export default function Login() {
             className="text-3xl font-bold tracking-widest uppercase"
             style={{ color: "#FF5C2E" }}
           >
-            Masuk ke LOKAHAJAT
+            {t("login.title")}
           </h1>
           <p className="text-sm text-gray-600 mt-2">
-            Masukkan email dan password Anda untuk melanjutkan
+            {t("login.subtitle")}
           </p>
         </div>
 
@@ -111,7 +113,7 @@ export default function Login() {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-none mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-800">Login Gagal</p>
+              <p className="text-sm font-medium text-red-800">{t("login.loginFailedTitle")}</p>
               <p className="text-sm text-red-700 mt-0.5">{error}</p>
             </div>
           </div>
@@ -120,7 +122,7 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Email Address
+              {t("login.emailLabel")}
             </label>
             <input
               type="email"
@@ -128,7 +130,7 @@ export default function Login() {
               value={form.email}
               onChange={handleChange}
               required
-              placeholder="nama@example.com"
+              placeholder={t("login.emailPlaceholder")}
               className={`w-full px-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.email ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
@@ -137,7 +139,7 @@ export default function Login() {
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Password
+              {t("login.passwordLabel")}
             </label>
             <input
               type="password"
@@ -164,28 +166,28 @@ export default function Login() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Memproses...
+                {t("login.processing")}
               </span>
             ) : (
-              "Masuk"
+              t("login.submitButton")
             )}
           </button>
         </form>
 
         <div className="my-5 flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-200"></div>
-          <span className="text-xs text-gray-500">atau</span>
+          <span className="text-xs text-gray-500">{t("login.or")}</span>
           <div className="flex-1 h-px bg-gray-200"></div>
         </div>
 
         <p className="text-center text-sm text-gray-600">
-          Belum punya akun?{" "}
+          {t("login.noAccount")}{" "}
           <a
             href="/register"
             className="font-semibold transition-colors hover:underline"
             style={{ color: "#FF5C2E" }}
           >
-            Daftar sekarang
+            {t("login.registerNow")}
           </a>
         </p>
       </div>

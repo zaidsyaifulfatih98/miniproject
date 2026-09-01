@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import { registerSchema } from "../schemas/user.schema";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -19,6 +20,7 @@ interface RegisterForm {
 
 export default function Register() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [form, setForm] = useState<RegisterForm>({
     full_name: "",
     email: "",
@@ -69,7 +71,7 @@ export default function Register() {
       await axios.post(`${API_BASE}/users`, payload);
       navigate("/login");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Register gagal, coba lagi.");
+      setError(err.response?.data?.message || t("register.registerFailedDefault"));
     } finally {
       setLoading(false);
     }
@@ -87,7 +89,7 @@ export default function Register() {
             LOKAHAJAT
           </h1>
           <p className="text-xs text-gray-600 mt-1">
-            Daftar akun baru untuk memulai petualangan Anda
+            {t("register.subtitle")}
           </p>
         </div>
 
@@ -96,7 +98,7 @@ export default function Register() {
           <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-red-600 flex-none mt-0.5" />
             <div>
-              <p className="text-xs font-medium text-red-800">Pendaftaran Gagal</p>
+              <p className="text-xs font-medium text-red-800">{t("register.registrationFailedTitle")}</p>
               <p className="text-xs text-red-700 mt-0.5">{error}</p>
             </div>
           </div>
@@ -105,14 +107,14 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.fullNameLabel")}</label>
             <input
               type="text"
               name="full_name"
               value={form.full_name}
               onChange={handleChange}
               required
-              placeholder="John Doe"
+              placeholder={t("register.fullNamePlaceholder")}
               className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.full_name ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
@@ -121,14 +123,14 @@ export default function Register() {
 
           {/* Email */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Email</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.emailLabel")}</label>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
               required
-              placeholder="john@example.com"
+              placeholder={t("register.emailPlaceholder")}
               className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.email ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
@@ -137,14 +139,14 @@ export default function Register() {
 
           {/* Password */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Password</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.passwordLabel")}</label>
             <input
               type="password"
               name="password"
               value={form.password}
               onChange={handleChange}
               required
-              placeholder="Minimal 6 karakter"
+              placeholder={t("register.passwordPlaceholder")}
               className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.password ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
@@ -154,7 +156,7 @@ export default function Register() {
           {/* Birth Date & Gender (2 Columns) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Tgl Lahir</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.birthDateLabel")}</label>
               <input
                 type="date"
                 name="birth_date"
@@ -168,7 +170,7 @@ export default function Register() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">Jenis Kelamin</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.genderLabel")}</label>
               <select
                 name="gender"
                 value={form.gender}
@@ -177,9 +179,9 @@ export default function Register() {
                 className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition ${fieldErrors.gender ? "border-red-400" : "border-gray-300"}`}
                 style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
               >
-                <option value="">Pilih</option>
-                <option value="Male">Laki-laki</option>
-                <option value="Female">Perempuan</option>
+                <option value="">{t("register.genderSelect")}</option>
+                <option value="Male">{t("register.genderMale")}</option>
+                <option value="Female">{t("register.genderFemale")}</option>
               </select>
               {fieldErrors.gender && <p className="text-xs text-red-500 mt-1">{fieldErrors.gender}</p>}
             </div>
@@ -187,14 +189,14 @@ export default function Register() {
 
           {/* Address */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Alamat</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.addressLabel")}</label>
             <textarea
               name="address"
               value={form.address}
               onChange={handleChange}
               required
               rows={2}
-              placeholder="Jl. Contoh No. 1, Jakarta"
+              placeholder={t("register.addressPlaceholder")}
               className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition resize-none ${fieldErrors.address ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
@@ -204,26 +206,26 @@ export default function Register() {
           {/* Referral Code */}
           <div>
             <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-              Kode Referral <span className="text-gray-400 font-normal">(opsional)</span>
+              {t("register.referralCodeLabel")} <span className="text-gray-400 font-normal">{t("register.referralCodeOptional")}</span>
             </label>
             <input
               type="text"
               name="referral_code_used"
               value={form.referral_code_used}
               onChange={handleChange}
-              placeholder="Masukkan kode referral teman"
+              placeholder={t("register.referralCodePlaceholder")}
               className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition uppercase ${fieldErrors.referral_code_used ? "border-red-400" : "border-gray-300"}`}
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             />
             {fieldErrors.referral_code_used
               ? <p className="text-xs text-red-500 mt-1">{fieldErrors.referral_code_used}</p>
-              : <p className="text-xs text-gray-400 mt-1">Dapatkan diskon 10% untuk transaksi pertama Anda</p>
+              : <p className="text-xs text-gray-400 mt-1">{t("register.referralCodeHint")}</p>
             }
           </div>
 
           {/* Role */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1.5">Daftar Sebagai</label>
+            <label className="block text-xs font-semibold text-gray-700 mb-1.5">{t("register.registerAsLabel")}</label>
             <select
               name="role"
               value={form.role[0]}
@@ -231,8 +233,8 @@ export default function Register() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent transition"
               style={{ "--tw-ring-color": "#FF5C2E" } as React.CSSProperties}
             >
-              <option value="CUSTOMERS">Customer</option>
-              <option value="ORGANIZER">Organizer</option>
+              <option value="CUSTOMERS">{t("register.roleCustomer")}</option>
+              <option value="ORGANIZER">{t("register.roleOrganizer")}</option>
             </select>
           </div>
 
@@ -248,10 +250,10 @@ export default function Register() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Mendaftar...
+                {t("register.registering")}
               </span>
             ) : (
-              "Daftar"
+              t("register.submitButton")
             )}
           </button>
         </form>
@@ -259,19 +261,19 @@ export default function Register() {
         {/* Divider */}
         <div className="my-3 flex items-center gap-3">
           <div className="flex-1 h-px bg-gray-200"></div>
-          <span className="text-xs text-gray-500">atau</span>
+          <span className="text-xs text-gray-500">{t("register.or")}</span>
           <div className="flex-1 h-px bg-gray-200"></div>
         </div>
 
         {/* Login Link */}
         <p className="text-center text-xs text-gray-600">
-          Sudah punya akun?{" "}
+          {t("register.haveAccount")}{" "}
           <a
             href="/login"
             className="font-semibold transition-colors hover:underline"
             style={{ color: "#FF5C2E" }}
           >
-            Masuk di sini
+            {t("register.loginHere")}
           </a>
         </p>
       </div>

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Upload, AlertCircle, CheckCircle, XCircle, RotateCw } from 'lucide-react';
 import { formatCurrency, calculateCountdown, formatCountdown, type CountdownTime } from '../utils/dateFormatter';
 import { trackFinalized } from '../utils/tracker';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -47,6 +48,7 @@ interface Toast {
 export default function PaymentPortal() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   // State Management
   const [booking, setBooking] = useState<BookingDetail | null>(null);
@@ -73,7 +75,7 @@ export default function PaymentPortal() {
           credentials: 'include',
         });
 
-        if (!response.ok) throw new Error('Booking tidak ditemukan');
+        if (!response.ok) throw new Error(t('paymentPortal.errorBookingNotFound'));
         
         const data = await response.json();
         if (data.success) {
@@ -138,14 +140,14 @@ export default function PaymentPortal() {
             trackFinalized(data.data.event_id);
           }
           setBooking(data.data);
-          showToast('Status berhasil diperbarui', 'success');
+          showToast(t('paymentPortal.toastStatusUpdated'), 'success');
         }
       } else {
-        showToast('Gagal memperbarui status', 'error');
+        showToast(t('paymentPortal.toastStatusUpdateFailed'), 'error');
       }
     } catch (err) {
       console.error('Failed to refresh status:', err);
-      showToast('Terjadi kesalahan saat memperbarui status', 'error');
+      showToast(t('paymentPortal.toastUpdateError'), 'error');
     } finally {
       setRefreshing(false);
     }
@@ -157,12 +159,12 @@ export default function PaymentPortal() {
 
     const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
     if (!validTypes.includes(file.type)) {
-      showToast('Format file tidak valid. Gunakan JPG, PNG, atau PDF', 'error');
+      showToast(t('paymentPortal.toastInvalidFileFormat'), 'error');
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      showToast('Ukuran file terlalu besar (max 2MB)', 'error');
+      showToast(t('paymentPortal.toastFileTooLarge'), 'error');
       return;
     }
 
@@ -182,7 +184,7 @@ export default function PaymentPortal() {
   const handleUploadProof = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadFile) {
-      showToast('Pilih file terlebih dahulu', 'error');
+      showToast(t('paymentPortal.toastSelectFileFirst'), 'error');
       return;
     }
 
@@ -197,20 +199,20 @@ export default function PaymentPortal() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Gagal upload bukti pembayaran');
+      if (!response.ok) throw new Error(t('paymentPortal.toastUploadFailed'));
 
       const data = await response.json();
       if (data.success) {
         setBooking(data.data);
         setUploadFile(null);
         setUploadPreview(null);
-        showToast('Pembayaran berhasil dikonfirmasi. Transaksi selesai!', 'success');
+        showToast(t('paymentPortal.toastPaymentConfirmed'), 'success');
       } else {
         throw new Error(data.message || 'Failed to upload proof');
       }
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : 'Gagal upload bukti pembayaran',
+        err instanceof Error ? err.message : t('paymentPortal.toastUploadFailed'),
         'error'
       );
     } finally {
@@ -228,7 +230,7 @@ export default function PaymentPortal() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-          <p className="text-gray-600">Memuat transaksi...</p>
+          <p className="text-gray-600">{t('paymentPortal.loadingTransaction')}</p>
         </div>
       </div>
     );
@@ -239,13 +241,13 @@ export default function PaymentPortal() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Transaksi Tidak Ditemukan</h2>
-          <p className="text-gray-600 mb-6">{error || 'Booking tidak dapat ditemukan'}</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('paymentPortal.bookingNotFoundTitle')}</h2>
+          <p className="text-gray-600 mb-6">{error || t('paymentPortal.bookingNotFoundFallback')}</p>
           <button
             onClick={() => navigate('/')}
             className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
           >
-            Kembali ke Beranda
+            {t('paymentPortal.backToHome')}
           </button>
         </div>
       </div>
@@ -271,10 +273,10 @@ export default function PaymentPortal() {
             className="flex items-center gap-2 mb-4 hover:opacity-80 transition-opacity"
           >
             <ArrowLeft size={20} />
-            <span>Kembali</span>
+            <span>{t('paymentPortal.back')}</span>
           </button>
-          <h1 className="text-3xl md:text-4xl font-bold">Portal Pembayaran</h1>
-          <p className="text-orange-100 mt-2">Invoice: {booking.display_id}</p>
+          <h1 className="text-3xl md:text-4xl font-bold">{t('paymentPortal.pageTitle')}</h1>
+          <p className="text-orange-100 mt-2">{t('paymentPortal.invoiceLabel', { id: booking.display_id })}</p>
         </div>
       </div>
 
@@ -288,7 +290,7 @@ export default function PaymentPortal() {
                     {booking.display_id}
                   </h2>
                   <p className="text-sm text-gray-500">
-                    Dibuat: {new Date(booking.createdAt).toLocaleDateString('id-ID')}
+                    {t('paymentPortal.createdLabel', { date: new Date(booking.createdAt).toLocaleDateString('id-ID') })}
                   </p>
                 </div>
                 <div
@@ -302,11 +304,11 @@ export default function PaymentPortal() {
                       : 'bg-orange-100 text-orange-800'
                   }`}
                 >
-                  {booking.status === 'WAITING_FOR_PAYMENTS' && 'Menunggu Pembayaran'}
-                  {booking.status === 'WAITING_FOR_CONFIRMATION' && 'Menunggu Konfirmasi'}
-                  {booking.status === 'DONE' && 'Terbayar'}
-                  {booking.status === 'CANCELLED' && 'Dibatalkan'}
-                  {booking.status === 'EXPIRED' && 'Kadaluarsa'}
+                  {booking.status === 'WAITING_FOR_PAYMENTS' && t('paymentPortal.statusWaitingPayment')}
+                  {booking.status === 'WAITING_FOR_CONFIRMATION' && t('paymentPortal.statusWaitingConfirmation')}
+                  {booking.status === 'DONE' && t('paymentPortal.statusDone')}
+                  {booking.status === 'CANCELLED' && t('paymentPortal.statusCancelled')}
+                  {booking.status === 'EXPIRED' && t('paymentPortal.statusExpired')}
                 </div>
               </div>
 
@@ -314,13 +316,13 @@ export default function PaymentPortal() {
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mt-4">
                   <div className="flex items-center gap-2 text-orange-800 font-semibold mb-2">
                     <Clock size={20} />
-                    <span>Sisa waktu pembayaran</span>
+                    <span>{t('paymentPortal.remainingPaymentTime')}</span>
                   </div>
                   <div className="text-3xl font-bold text-orange-600 font-mono">
                     {formatCountdown(countdown)}
                   </div>
                   <p className="text-sm text-orange-700 mt-2">
-                    Transaksi akan dibatalkan jika waktu habis
+                    {t('paymentPortal.cancelledIfTimeUp')}
                   </p>
                 </div>
               )}
@@ -329,22 +331,22 @@ export default function PaymentPortal() {
                 <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4 mt-4">
                   <div className="flex items-center gap-2 text-red-800 font-semibold">
                     <XCircle size={20} />
-                    <span>Waktu pembayaran telah habis</span>
+                    <span>{t('paymentPortal.paymentTimeUp')}</span>
                   </div>
                   <p className="text-sm text-red-700 mt-2">
-                    Transaksi ini telah dibatalkan secara otomatis
+                    {t('paymentPortal.autoCancelledNotice')}
                   </p>
                 </div>
               )}
             </div>
 
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Detail Transaksi</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">{t('paymentPortal.transactionDetail')}</h3>
 
               <div className="border-b border-gray-200 pb-4 mb-4">
-                <p className="text-sm text-gray-600 mb-2">Event</p>
+                <p className="text-sm text-gray-600 mb-2">{t('paymentPortal.eventLabel')}</p>
                 <p className="font-semibold text-gray-900">{booking.event?.title}</p>
-                <p className="text-sm text-gray-600 mt-2">Tiket</p>
+                <p className="text-sm text-gray-600 mt-2">{t('paymentPortal.ticketLabel')}</p>
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-gray-900">
                     {booking.ticket?.type} x {booking.quantity}
@@ -357,20 +359,20 @@ export default function PaymentPortal() {
 
               <div className="space-y-3 mb-4">
                 <div className="flex items-center justify-between text-gray-700">
-                  <span>Subtotal</span>
+                  <span>{t('paymentPortal.subtotal')}</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
 
                 {discount > 0 && (
                   <div className="flex items-center justify-between text-green-600">
-                    <span>Diskon Voucher</span>
+                    <span>{t('paymentPortal.voucherDiscount')}</span>
                     <span>-{formatCurrency(discount)}</span>
                   </div>
                 )}
 
                 {pointsUsed > 0 && (
                   <div className="flex items-center justify-between text-green-600">
-                    <span>Potongan Poin ({pointsUsed} poin)</span>
+                    <span>{t('paymentPortal.pointsDiscount', { points: pointsUsed })}</span>
                     <span>-{formatCurrency(pointsUsed)}</span>
                   </div>
                 )}
@@ -378,7 +380,7 @@ export default function PaymentPortal() {
 
               <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 border-2 border-orange-200">
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-900">Total Bayar</span>
+                  <span className="font-semibold text-gray-900">{t('paymentPortal.totalPayment')}</span>
                   <span className="text-3xl font-bold text-orange-600">
                     {formatCurrency(final)}
                   </span>
@@ -388,11 +390,11 @@ export default function PaymentPortal() {
 
             {isPaymentAllowed && (
               <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Instruksi Pembayaran</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{t('paymentPortal.paymentInstructions')}</h3>
 
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-4">
                   <p className="text-sm font-semibold text-blue-900 mb-2">
-                    Pilih salah satu metode pembayaran di bawah ini:
+                    {t('paymentPortal.choosePaymentMethod')}
                   </p>
                 </div>
 
@@ -405,15 +407,15 @@ export default function PaymentPortal() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 mb-2">Transfer Bank</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">{t('paymentPortal.bankTransfer')}</h4>
                         <p className="text-sm text-gray-600 mb-3">
-                          BCA - PT LokaHajat
+                          {t('paymentPortal.bankAccountInfo')}
                         </p>
                         <div className="bg-gray-100 p-3 rounded font-mono text-sm font-semibold text-gray-900">
                           1234567890
                         </div>
                         <p className="text-xs text-gray-500 mt-2">
-                          Gunakan nomor invoice sebagai keterangan transfer
+                          {t('paymentPortal.useInvoiceAsNote')}
                         </p>
                       </div>
                     </div>
@@ -427,15 +429,15 @@ export default function PaymentPortal() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 mb-2">Virtual Account</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">{t('paymentPortal.virtualAccount')}</h4>
                         <p className="text-sm text-gray-600 mb-3">
-                          Mandiri Virtual Account
+                          {t('paymentPortal.mandiriVa')}
                         </p>
                         <div className="bg-gray-100 p-3 rounded font-mono text-sm font-semibold text-gray-900">
                           888{booking.id.slice(0, 10).toUpperCase().replace(/-/g, '')}
                         </div>
                         <p className="text-xs text-gray-500 mt-2">
-                          VA otomatis tersedia di aplikasi mobile banking
+                          {t('paymentPortal.vaAutoAvailable')}
                         </p>
                       </div>
                     </div>
@@ -449,12 +451,12 @@ export default function PaymentPortal() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 mb-2">E-Wallet</h4>
+                        <h4 className="font-semibold text-gray-900 mb-2">{t('paymentPortal.eWallet')}</h4>
                         <p className="text-sm text-gray-600 mb-3">
-                          GCash, Dana, OVO
+                          {t('paymentPortal.eWalletOptions')}
                         </p>
                         <p className="text-xs text-gray-500">
-                          Hubungi customer support untuk mendapat nomor e-wallet tujuan
+                          {t('paymentPortal.contactSupportForEwallet')}
                         </p>
                       </div>
                     </div>
@@ -465,11 +467,11 @@ export default function PaymentPortal() {
 
             {isPaymentAllowed && (
               <form onSubmit={handleUploadProof} className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Unggah Bukti Pembayaran</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">{t('paymentPortal.uploadPaymentProof')}</h3>
 
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Pilih File (JPG, PNG, atau PDF - Max 2MB)
+                    {t('paymentPortal.chooseFileLabel')}
                   </label>
                   <div className="relative">
                     <input
@@ -487,7 +489,7 @@ export default function PaymentPortal() {
                       <Upload size={24} className="text-orange-500" />
                       <div className="text-center">
                         <p className="font-semibold text-gray-900">
-                          {uploadFile ? uploadFile.name : 'Klik untuk upload atau drag & drop'}
+                          {uploadFile ? uploadFile.name : t('paymentPortal.clickToUpload')}
                         </p>
                         <p className="text-xs text-gray-500 mt-1">
                           {uploadFile && `${(uploadFile.size / 1024).toFixed(2)} KB`}
@@ -499,7 +501,7 @@ export default function PaymentPortal() {
 
                 {uploadPreview && (
                   <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Preview</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">{t('paymentPortal.previewLabel')}</p>
                     <div className="border border-gray-200 rounded-lg p-4">
                       <img
                         src={uploadPreview}
@@ -518,18 +520,18 @@ export default function PaymentPortal() {
                   {uploading ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Mengupload...</span>
+                      <span>{t('paymentPortal.uploading')}</span>
                     </>
                   ) : (
                     <>
                       <Upload size={20} />
-                      <span>Upload Bukti Pembayaran</span>
+                      <span>{t('paymentPortal.uploadProofButton')}</span>
                     </>
                   )}
                 </button>
 
                 <p className="text-xs text-gray-500 mt-3 text-center">
-                  Setelah upload, tim kami akan memverifikasi bukti pembayaran dalam 1-2 jam
+                  {t('paymentPortal.verificationNotice')}
                 </p>
               </form>
             )}
@@ -538,7 +540,7 @@ export default function PaymentPortal() {
           <div>
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-24 space-y-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Status Transaksi</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('paymentPortal.transactionStatus')}</h3>
 
                 <div className="space-y-4">
                   <div
@@ -562,17 +564,17 @@ export default function PaymentPortal() {
                       {['WAITING_FOR_CONFIRMATION', 'DONE'].includes(booking.status) ? '✓' : booking.status === 'EXPIRED' || booking.status === 'CANCELLED' ? '✗' : '1'}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Upload Bukti Pembayaran</p>
+                      <p className="font-semibold text-gray-900">{t('paymentPortal.step1Title')}</p>
                       <p className="text-xs text-gray-500">
                         {isPaymentAllowed
-                          ? 'Menunggu Anda'
+                          ? t('paymentPortal.step1WaitingYou')
                           : booking.status === 'WAITING_FOR_CONFIRMATION'
-                          ? 'Sudah dikirim'
+                          ? t('paymentPortal.step1Sent')
                           : booking.status === 'DONE'
-                          ? 'Terverifikasi'
+                          ? t('paymentPortal.step1Verified')
                           : booking.status === 'EXPIRED'
-                          ? 'Waktu habis'
-                          : 'Dibatalkan'}
+                          ? t('paymentPortal.step1TimeUp')
+                          : t('paymentPortal.step1Cancelled')}
                       </p>
                     </div>
                   </div>
@@ -592,17 +594,17 @@ export default function PaymentPortal() {
                       {booking.status === 'DONE' ? '✓' : '2'}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Verifikasi Admin</p>
+                      <p className="font-semibold text-gray-900">{t('paymentPortal.step2Title')}</p>
                       <p className="text-xs text-gray-500">
                         {booking.status === 'DONE'
-                          ? 'Terverifikasi'
+                          ? t('paymentPortal.step2Verified')
                           : booking.status === 'WAITING_FOR_CONFIRMATION'
-                          ? 'Dalam proses'
+                          ? t('paymentPortal.step2InProgress')
                           : booking.status === 'EXPIRED'
-                          ? 'Dibatalkan (Waktu habis)'
+                          ? t('paymentPortal.step2CancelledTimeUp')
                           : booking.status === 'CANCELLED'
-                          ? 'Dibatalkan'
-                          : 'Menunggu'}
+                          ? t('paymentPortal.step2Cancelled')
+                          : t('paymentPortal.step2Waiting')}
                       </p>
                     </div>
                   </div>
@@ -620,9 +622,9 @@ export default function PaymentPortal() {
                       {booking.status === 'DONE' ? '✓' : '3'}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Selesai</p>
+                      <p className="font-semibold text-gray-900">{t('paymentPortal.step3Title')}</p>
                       <p className="text-xs text-gray-500">
-                        {booking.status === 'DONE' ? 'Tiket siap diunduh' : booking.status === 'EXPIRED' ? 'Transaksi dibatalkan (Waktu habis)' : booking.status === 'CANCELLED' ? 'Transaksi dibatalkan' : 'Menunggu'}
+                        {booking.status === 'DONE' ? t('paymentPortal.step3TicketReady') : booking.status === 'EXPIRED' ? t('paymentPortal.step3CancelledTimeUp') : booking.status === 'CANCELLED' ? t('paymentPortal.step3Cancelled') : t('paymentPortal.step3Waiting')}
                       </p>
                     </div>
                   </div>
@@ -637,10 +639,10 @@ export default function PaymentPortal() {
                       className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                     >
                       <CheckCircle size={20} />
-                      <span>Lihat Tiket Saya</span>
+                      <span>{t('paymentPortal.viewMyTickets')}</span>
                     </button>
                     <p className="text-xs text-gray-500 text-center">
-                      Tiket Anda siap untuk diunduh
+                      {t('paymentPortal.ticketReadyNotice')}
                     </p>
                   </>
                 )}
@@ -651,10 +653,10 @@ export default function PaymentPortal() {
                       onClick={() => navigate('/')}
                       className="w-full px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors"
                     >
-                      Kembali ke Beranda
+                      {t('paymentPortal.backToHome')}
                     </button>
                     <p className="text-xs text-red-600 text-center font-medium">
-                      Pemesanan Anda telah dibatalkan
+                      {t('paymentPortal.bookingCancelledNotice')}
                     </p>
                   </>
                 ) : (
@@ -664,7 +666,7 @@ export default function PaymentPortal() {
                     className="w-full px-4 py-2 bg-gray-500 hover:bg-orange-500 disabled:bg-blue-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                   >
                     <RotateCw size={18} className={refreshing ? 'animate-spin' : ''} />
-                    <span>{refreshing ? 'Memperbarui...' : 'Perbarui Status'}</span>
+                    <span>{refreshing ? t('paymentPortal.updating') : t('paymentPortal.refreshStatus')}</span>
                   </button>
                 )}
               </div>

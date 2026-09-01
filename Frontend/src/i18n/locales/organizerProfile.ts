@@ -1,0 +1,33 @@
+export const id = {
+  loadingProfile: "Memuat profil organizer...",
+  failedToLoadProfile: "Gagal memuat profil organizer",
+  organizerNotFound: "Organizer tidak ditemukan",
+  back: "Kembali",
+  reviewsCount: "({{count}} ulasan)",
+  joined: "Bergabung {{date}}",
+  totalEvents: "Total Event",
+  totalReviews: "Total Ulasan",
+  averageRating: "Rating Rata-rata",
+  reviewsFromAttendees: "Ulasan dari Peserta",
+  noReviewsYet: "Belum ada ulasan",
+  shareExperience: "Bagikan pengalaman Anda setelah menghadiri event ini",
+  forEvent: "untuk event: {{title}}",
+  organizedEvents: "Event yang Diselenggarakan",
+};
+
+export const en = {
+  loadingProfile: "Loading organizer profile...",
+  failedToLoadProfile: "Failed to load organizer profile",
+  organizerNotFound: "Organizer not found",
+  back: "Back",
+  reviewsCount: "({{count}} reviews)",
+  joined: "Joined {{date}}",
+  totalEvents: "Total Events",
+  totalReviews: "Total Reviews",
+  averageRating: "Average Rating",
+  reviewsFromAttendees: "Reviews from Attendees",
+  noReviewsYet: "No reviews yet",
+  shareExperience: "Share your experience after attending this event",
+  forEvent: "for event: {{title}}",
+  organizedEvents: "Events Organized",
+};

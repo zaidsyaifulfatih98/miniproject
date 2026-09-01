@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function ResetPassword() {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token") || "";
@@ -17,15 +19,15 @@ export default function ResetPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
-      setError("Token tidak valid. Gunakan link dari email Anda.");
+      setError(t("resetPassword.invalidToken"));
       return;
     }
     if (form.newPassword.length < 6) {
-      setError("Password minimal 6 karakter");
+      setError(t("resetPassword.passwordTooShort"));
       return;
     }
     if (form.newPassword !== form.confirm) {
-      setError("Konfirmasi password tidak cocok");
+      setError(t("resetPassword.passwordMismatch"));
       return;
     }
     setLoading(true);
@@ -38,7 +40,7 @@ export default function ResetPassword() {
       setSuccess(true);
       setTimeout(() => navigate("/login"), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Token tidak valid atau sudah kadaluarsa.");
+      setError(err.response?.data?.message || t("resetPassword.genericError"));
     } finally {
       setLoading(false);
     }
@@ -53,13 +55,13 @@ export default function ResetPassword() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-900 mb-2">Link Tidak Valid</h2>
-          <p className="text-sm text-gray-500 mb-6">Token reset tidak ditemukan. Gunakan link dari email Anda.</p>
+          <h2 className="text-lg font-bold text-gray-900 mb-2">{t("resetPassword.invalidLinkTitle")}</h2>
+          <p className="text-sm text-gray-500 mb-6">{t("resetPassword.invalidLinkMessage")}</p>
           <Link
             to="/forgot-password"
             className="block w-full text-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition"
           >
-            Minta Link Baru
+            {t("resetPassword.requestNewLink")}
           </Link>
         </div>
       </div>
@@ -75,8 +77,8 @@ export default function ResetPassword() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Reset Password</h1>
-          <p className="text-gray-500 text-sm mt-2">Buat password baru untuk akun Anda.</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("resetPassword.title")}</h1>
+          <p className="text-gray-500 text-sm mt-2">{t("resetPassword.subtitle")}</p>
         </div>
 
         {success ? (
@@ -86,14 +88,14 @@ export default function ResetPassword() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Password Berhasil Direset!</h2>
-            <p className="text-sm text-gray-600 mb-2">Password Anda telah diperbarui.</p>
-            <p className="text-xs text-gray-400 mb-6">Mengalihkan ke halaman login...</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">{t("resetPassword.successTitle")}</h2>
+            <p className="text-sm text-gray-600 mb-2">{t("resetPassword.successMessage")}</p>
+            <p className="text-xs text-gray-400 mb-6">{t("resetPassword.redirecting")}</p>
             <Link
               to="/login"
               className="block w-full text-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition"
             >
-              Login Sekarang
+              {t("resetPassword.loginNow")}
             </Link>
           </div>
         ) : (
@@ -103,26 +105,26 @@ export default function ResetPassword() {
             )}
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
-                Password Baru
+                {t("resetPassword.newPasswordLabel")}
               </label>
               <input
                 type="password"
                 value={form.newPassword}
                 onChange={(e) => setForm((p) => ({ ...p, newPassword: e.target.value }))}
-                placeholder="Minimal 6 karakter"
+                placeholder={t("resetPassword.newPasswordPlaceholder")}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm"
                 autoFocus
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">
-                Konfirmasi Password Baru
+                {t("resetPassword.confirmPasswordLabel")}
               </label>
               <input
                 type="password"
                 value={form.confirm}
                 onChange={(e) => setForm((p) => ({ ...p, confirm: e.target.value }))}
-                placeholder="Ulangi password baru"
+                placeholder={t("resetPassword.confirmPasswordPlaceholder")}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm"
               />
             </div>
@@ -131,11 +133,11 @@ export default function ResetPassword() {
               disabled={loading}
               className="w-full px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition disabled:opacity-60"
             >
-              {loading ? "Menyimpan..." : "Reset Password"}
+              {loading ? t("resetPassword.saving") : t("resetPassword.submitButton")}
             </button>
             <div className="text-center">
               <Link to="/login" className="text-sm text-orange-500 hover:underline">
-                Kembali ke Login
+                {t("resetPassword.backToLogin")}
               </Link>
             </div>
           </form>

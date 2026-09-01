@@ -1,6 +1,9 @@
 import { Star, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import { useState } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
+import type { Language } from '../i18n/LanguageContext';
+import { translations } from '../i18n';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -48,18 +51,19 @@ function getAvatarColor(name: string): string {
   return colors[index];
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, language: Language): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const ns = translations[language].reviewsList;
 
-  if (diffDays === 0) return 'Hari ini';
-  if (diffDays === 1) return 'Kemarin';
-  if (diffDays < 7) return `${diffDays} hari lalu`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} minggu lalu`;
+  if (diffDays === 0) return ns.today;
+  if (diffDays === 1) return ns.yesterday;
+  if (diffDays < 7) return ns.daysAgo.replace('{{count}}', String(diffDays));
+  if (diffDays < 30) return ns.weeksAgo.replace('{{count}}', String(Math.floor(diffDays / 7)));
 
-  return date.toLocaleDateString('id-ID', {
+  return date.toLocaleDateString(language === 'id' ? 'id-ID' : 'en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -74,11 +78,12 @@ export default function ReviewsList({
   showDeleteButton = false,
   currentUserId,
 }: ReviewsListProps) {
+  const { t, language } = useLanguage();
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const handleDelete = async (reviewId: string) => {
-    if (!confirm('Yakin ingin menghapus review ini?')) return;
+    if (!confirm(t('reviewsList.confirmDelete'))) return;
 
     setIsDeleting(reviewId);
     setError('');
@@ -92,7 +97,7 @@ export default function ReviewsList({
         onReviewDeleted?.();
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Gagal menghapus review');
+      setError(err.response?.data?.message || t('reviewsList.deleteFailedDefault'));
     } finally {
       setIsDeleting(null);
     }
@@ -122,8 +127,8 @@ export default function ReviewsList({
             </div>
             <div>
               <p className="text-sm text-gray-600">
-                Berdasarkan <span className="font-semibold text-gray-900">{totalReviews}</span>{' '}
-                ulasan
+                {t('reviewsList.basedOn')} <span className="font-semibold text-gray-900">{totalReviews}</span>{' '}
+                {t('reviewsList.reviewsWord')}
               </p>
             </div>
           </div>
@@ -139,7 +144,7 @@ export default function ReviewsList({
       {/* Reviews List */}
       {reviews.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <p>Belum ada ulasan untuk event ini</p>
+          <p>{t('reviewsList.noReviews')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -160,7 +165,7 @@ export default function ReviewsList({
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">{review.user.full_name}</p>
-                    <p className="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
+                    <p className="text-xs text-gray-500">{formatDate(review.createdAt, language)}</p>
                   </div>
                 </div>
 
@@ -169,7 +174,7 @@ export default function ReviewsList({
                     onClick={() => handleDelete(review.id)}
                     disabled={isDeleting === review.id}
                     className="text-gray-400 hover:text-red-500 transition disabled:opacity-50"
-                    title="Hapus review"
+                    title={t('reviewsList.deleteReviewTitle')}
                   >
                     <Trash2 size={18} />
                   </button>

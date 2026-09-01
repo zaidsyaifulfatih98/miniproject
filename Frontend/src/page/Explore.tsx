@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import EventCard from "../components/EventCard";
 import EventGridSkeleton from "../components/EventGridSkeleton";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const PAGE_SIZE = 12;
@@ -61,13 +62,13 @@ interface ApiResponse {
 
 // ─── Constants ────
 const CATEGORIES = [
-  { id: "semua", label: "Semua Event", value: "", icon: null },
-  { id: "KONSER", label: "Konser", value: "KONSER", icon: Music },
-  { id: "WORKSHOP", label: "Workshop", value: "WORKSHOP", icon: Code },
-  { id: "SEMINAR", label: "Seminar", value: "SEMINAR", icon: Users },
-  { id: "FESTIVAL", label: "Festival", value: "FESTIVAL", icon: Zap },
-  { id: "OLAHRAGA", label: "Olahraga", value: "OLAHRAGA", icon: Dumbbell },
-  { id: "LAINNYA", label: "Lainnya", value: "LAINNYA", icon: Wine },
+  { id: "semua", labelKey: "categoryAll", value: "", icon: null },
+  { id: "KONSER", labelKey: "categoryConcert", value: "KONSER", icon: Music },
+  { id: "WORKSHOP", labelKey: "categoryWorkshop", value: "WORKSHOP", icon: Code },
+  { id: "SEMINAR", labelKey: "categorySeminar", value: "SEMINAR", icon: Users },
+  { id: "FESTIVAL", labelKey: "categoryFestival", value: "FESTIVAL", icon: Zap },
+  { id: "OLAHRAGA", labelKey: "categorySport", value: "OLAHRAGA", icon: Dumbbell },
+  { id: "LAINNYA", labelKey: "categoryOther", value: "LAINNYA", icon: Wine },
 ];
 
 const LOCATION_OPTIONS = [
@@ -78,16 +79,16 @@ const LOCATION_OPTIONS = [
 ];
 
 const FILTER_OPTIONS = [
-  { id: "today", label: "Hari Ini", value: "today" },
-  { id: "week", label: "Minggu Ini", value: "week" },
-  { id: "free", label: "Gratis", value: "free" },
+  { id: "today", labelKey: "filterToday", value: "today" },
+  { id: "week", labelKey: "filterThisWeek", value: "week" },
+  { id: "free", labelKey: "filterFree", value: "free" },
 ];
 
 const SORT_OPTIONS = [
-  { label: "Terbaru", value: "latest" },
-  { label: "Terlama", value: "oldest" },
-  { label: "Harga Terendah", value: "price_asc" },
-  { label: "Harga Tertinggi", value: "price_desc" },
+  { labelKey: "sortLatest", value: "latest" },
+  { labelKey: "sortOldest", value: "oldest" },
+  { labelKey: "sortPriceAsc", value: "price_asc" },
+  { labelKey: "sortPriceDesc", value: "price_desc" },
 ];
 
 // ─── Sidebar Filter Section ────
@@ -184,6 +185,7 @@ function Pagination({
 
 // ─── Main Component ────
 export default function Explore() {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
 
   // Filter States
@@ -271,12 +273,12 @@ export default function Explore() {
             res.data.meta?.total,
           );
         } else {
-          setError(res.data.message || "Gagal memuat event");
+          setError(res.data.message || t("explore.failedToLoadEvents"));
         }
       })
       .catch((err) => {
         console.error("API Error:", err);
-        setError("Gagal memuat event. Pastikan server berjalan.");
+        setError(t("explore.failedToLoadEventsServer"));
       })
       .finally(() => setLoading(false));
   }, [buildParams]);
@@ -341,7 +343,7 @@ export default function Explore() {
         <div className="flex items-center justify-between px-4 py-3 border-b-2 border-gray-200 flex-none">
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-orange-500" />
-            <span className="font-bold text-gray-900 text-sm">Filter</span>
+            <span className="font-bold text-gray-900 text-sm">{t("explore.filterHeading")}</span>
             {activeFilterCount > 0 && (
               <span className="ml-auto w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">
                 {activeFilterCount}
@@ -362,7 +364,7 @@ export default function Explore() {
           <div>
             <input
               type="text"
-              placeholder="Cari event..."
+              placeholder={t("explore.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full px-3 py-2 rounded-xl border-2 border-gray-300 focus:border-orange-500 outline-none text-sm"
@@ -370,7 +372,7 @@ export default function Explore() {
           </div>
 
           {/* Filter Sections */}
-          <FilterSection title="Lokasi">
+          <FilterSection title={t("explore.sectionLocation")}>
             {LOCATION_OPTIONS.map((loc) => (
               <label
                 key={loc.value}
@@ -387,7 +389,7 @@ export default function Explore() {
             ))}
           </FilterSection>
 
-          <FilterSection title="Kategori">
+          <FilterSection title={t("explore.sectionCategory")}>
             {CATEGORIES.map((cat) => (
               <label
                 key={cat.id}
@@ -399,12 +401,12 @@ export default function Explore() {
                   onChange={() => toggleCategory(cat.value)}
                   className="w-4 h-4 rounded border-2 border-gray-300 text-orange-500 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{cat.label}</span>
+                <span className="text-sm text-gray-700">{t(`explore.${cat.labelKey}`)}</span>
               </label>
             ))}
           </FilterSection>
 
-          <FilterSection title="Tipe Event">
+          <FilterSection title={t("explore.sectionEventType")}>
             {FILTER_OPTIONS.map((opt) => (
               <label
                 key={opt.id}
@@ -416,7 +418,7 @@ export default function Explore() {
                   onChange={() => toggleFilter(opt.value)}
                   className="w-4 h-4 rounded border-2 border-gray-300 text-orange-500 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{opt.label}</span>
+                <span className="text-sm text-gray-700">{t(`explore.${opt.labelKey}`)}</span>
               </label>
             ))}
           </FilterSection>
@@ -429,7 +431,7 @@ export default function Explore() {
               className="w-4 h-4 rounded border-2 border-gray-300 text-orange-500 cursor-pointer"
             />
             <Wifi className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-gray-700">Event Online</span>
+            <span className="text-sm text-gray-700">{t("explore.onlineEvent")}</span>
           </label>
 
           {/* Reset Button */}
@@ -439,7 +441,7 @@ export default function Explore() {
               className="w-full py-2 rounded-xl border-2 border-gray-300 text-sm font-bold text-orange-500 hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
             >
               <X className="w-3 h-3" />
-              Reset Filter
+              {t("explore.resetFilter")}
             </button>
           )}
         </div>
@@ -450,10 +452,10 @@ export default function Explore() {
         {/* Page Header */}
         <div className="mb-6 sm:mb-8">
           <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-orange-500 border-b-2 border-orange-500 pb-1">
-            🔍 Jelajahi Event
+            {t("explore.pageEyebrow")}
           </span>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mt-2">
-            Temukan Event Terbaik
+            {t("explore.pageTitle")}
           </h1>
         </div>
 
@@ -464,7 +466,7 @@ export default function Explore() {
               {/* Sidebar Header */}
               <div className="px-4 py-4 border-b-2 border-gray-200 flex items-center gap-2">
                 <Tag className="w-4 h-4 text-orange-500" />
-                <span className="font-bold text-gray-900">Filter Event</span>
+                <span className="font-bold text-gray-900">{t("explore.filterEventHeading")}</span>
                 {activeFilterCount > 0 && (
                   <span className="ml-auto w-5 h-5 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">
                     {activeFilterCount}
@@ -478,7 +480,7 @@ export default function Explore() {
                 <div>
                   <input
                     type="text"
-                    placeholder="Cari event..."
+                    placeholder={t("explore.searchPlaceholder")}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border-2 border-gray-300 focus:border-orange-500 outline-none text-sm"
@@ -486,7 +488,7 @@ export default function Explore() {
                 </div>
 
                 {/* Filter Sections */}
-                <FilterSection title="Lokasi">
+                <FilterSection title={t("explore.sectionLocation")}>
                   {LOCATION_OPTIONS.map((loc) => (
                     <label
                       key={loc.value}
@@ -503,7 +505,7 @@ export default function Explore() {
                   ))}
                 </FilterSection>
 
-                <FilterSection title="Kategori">
+                <FilterSection title={t("explore.sectionCategory")}>
                   {CATEGORIES.map((cat) => (
                     <label
                       key={cat.id}
@@ -515,12 +517,12 @@ export default function Explore() {
                         onChange={() => toggleCategory(cat.value)}
                         className="w-4 h-4 rounded border-2 border-gray-300 text-orange-500 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-700">{cat.label}</span>
+                      <span className="text-sm text-gray-700">{t(`explore.${cat.labelKey}`)}</span>
                     </label>
                   ))}
                 </FilterSection>
 
-                <FilterSection title="Tipe Event">
+                <FilterSection title={t("explore.sectionEventType")}>
                   {FILTER_OPTIONS.map((opt) => (
                     <label
                       key={opt.id}
@@ -532,7 +534,7 @@ export default function Explore() {
                         onChange={() => toggleFilter(opt.value)}
                         className="w-4 h-4 rounded border-2 border-gray-300 text-orange-500 cursor-pointer"
                       />
-                      <span className="text-sm text-gray-700">{opt.label}</span>
+                      <span className="text-sm text-gray-700">{t(`explore.${opt.labelKey}`)}</span>
                     </label>
                   ))}
                 </FilterSection>
@@ -545,7 +547,7 @@ export default function Explore() {
                     className="w-4 h-4 rounded border-2 border-gray-300 text-orange-500 cursor-pointer"
                   />
                   <Wifi className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-700">Event Online</span>
+                  <span className="text-sm text-gray-700">{t("explore.onlineEvent")}</span>
                 </label>
 
                 {/* Reset Button */}
@@ -555,7 +557,7 @@ export default function Explore() {
                     className="w-full py-2 rounded-xl border-2 border-gray-300 text-sm font-bold text-orange-500 hover:bg-orange-50 transition-all flex items-center justify-center gap-1.5"
                   >
                     <X className="w-3 h-3" />
-                    Reset Filter
+                    {t("explore.resetFilter")}
                   </button>
                 )}
               </div>
@@ -572,7 +574,7 @@ export default function Explore() {
                 className="md:hidden flex items-center gap-1.5 px-4 py-2.5 rounded-xl border-2 border-gray-300 text-xs font-bold text-gray-700 hover:border-orange-500 hover:text-orange-500 transition-all flex-none"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                Filter
+                {t("explore.filterButton")}
                 {activeFilterCount > 0 && (
                   <span className="w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] font-bold flex items-center justify-center">
                     {activeFilterCount}
@@ -585,16 +587,16 @@ export default function Explore() {
                 {loading ? (
                   <span className="inline-block h-4 w-48 bg-gray-200 rounded animate-pulse" />
                 ) : error ? null : total === 0 ? (
-                  "Event tidak ditemukan"
+                  t("explore.eventsNotFound")
                 ) : (
                   <>
-                    Menampilkan{" "}
+                    {t("explore.showingResultsPrefix")}{" "}
                     <span className="font-bold text-gray-900">
                       {startItem}–{endItem}
                     </span>{" "}
-                    dari{" "}
+                    {t("explore.showingResultsMiddle")}{" "}
                     <span className="font-bold text-gray-900">{total}</span>{" "}
-                    event
+                    {t("explore.showingResultsSuffix")}
                   </>
                 )}
               </p>
@@ -608,7 +610,7 @@ export default function Explore() {
                 >
                   {SORT_OPTIONS.map((s) => (
                     <option key={s.value} value={s.value}>
-                      {s.label}
+                      {t(`explore.${s.labelKey}`)}
                     </option>
                   ))}
                 </select>
@@ -654,7 +656,10 @@ export default function Explore() {
                     key={filter}
                     className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold"
                   >
-                    {FILTER_OPTIONS.find((f) => f.value === filter)?.label}
+                    {(() => {
+                      const opt = FILTER_OPTIONS.find((f) => f.value === filter);
+                      return opt ? t(`explore.${opt.labelKey}`) : filter;
+                    })()}
                     <button onClick={() => toggleFilter(filter)}>
                       <X className="w-3 h-3" />
                     </button>
@@ -662,7 +667,7 @@ export default function Explore() {
                 ))}
                 {isOnline && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold">
-                    Online
+                    {t("explore.onlineTag")}
                     <button onClick={() => setIsOnline(false)}>
                       <X className="w-3 h-3" />
                     </button>
@@ -691,16 +696,16 @@ export default function Explore() {
             {!loading && !error && events.length === 0 && (
               <div className="text-center py-16">
                 <p className="text-2xl font-bold text-gray-400 mb-2">
-                  📭 Event Tidak Ditemukan
+                  {t("explore.emptyStateTitle")}
                 </p>
                 <p className="text-gray-500 mb-6">
-                  Coba ubah filter atau kata kunci pencarian
+                  {t("explore.emptyStateSubtitle")}
                 </p>
                 <button
                   onClick={resetFilters}
                   className="px-6 py-2 rounded-xl border-2 border-orange-500 text-orange-500 font-bold hover:bg-orange-50 transition-all"
                 >
-                  Reset Semua Filter
+                  {t("explore.resetAllFilters")}
                 </button>
               </div>
             )}

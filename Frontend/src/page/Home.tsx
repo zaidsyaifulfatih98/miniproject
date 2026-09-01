@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useDebounce } from '../hooks/useDebounce';
 import EventCard from '../components/EventCard';
 import EventGridSkeleton from '../components/EventGridSkeleton';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -41,13 +42,13 @@ interface ApiResponse {
 
 // Category constants
 const CATEGORIES = [
-  { id: 'semua', label: 'Semua Event', value: '', icon: null },
-  { id: 'KONSER', label: 'Konser', value: 'KONSER', icon: Music },
-  { id: 'WORKSHOP', label: 'Workshop', value: 'WORKSHOP', icon: Code },
-  { id: 'SEMINAR', label: 'Seminar', value: 'SEMINAR', icon: Users },
-  { id: 'FESTIVAL', label: 'Festival', value: 'FESTIVAL', icon: Zap },
-  { id: 'OLAHRAGA', label: 'Olahraga', value: 'OLAHRAGA', icon: Dumbbell },
-  { id: 'LAINNYA', label: 'Lainnya', value: 'LAINNYA', icon: Wine },
+  { id: 'semua', labelKey: 'categoryAll', value: '', icon: null },
+  { id: 'KONSER', labelKey: 'categoryConcert', value: 'KONSER', icon: Music },
+  { id: 'WORKSHOP', labelKey: 'categoryWorkshop', value: 'WORKSHOP', icon: Code },
+  { id: 'SEMINAR', labelKey: 'categorySeminar', value: 'SEMINAR', icon: Users },
+  { id: 'FESTIVAL', labelKey: 'categoryFestival', value: 'FESTIVAL', icon: Zap },
+  { id: 'OLAHRAGA', labelKey: 'categorySport', value: 'OLAHRAGA', icon: Dumbbell },
+  { id: 'LAINNYA', labelKey: 'categoryOther', value: 'LAINNYA', icon: Wine },
 ];
 
 // Location picker options
@@ -59,34 +60,35 @@ const LOCATION_OPTIONS = [
 ];
 
 const FILTER_OPTIONS = [
-  { id: 'today', label: 'Hari Ini', icon: Clock, value: 'today' },
-  { id: 'week', label: 'Minggu Ini', icon: Clock, value: 'week' },
-  { id: 'free', label: 'Gratis', icon: Tag, value: 'free' },
+  { id: 'today', labelKey: 'filterToday', icon: Clock, value: 'today' },
+  { id: 'week', labelKey: 'filterThisWeek', icon: Clock, value: 'week' },
+  { id: 'free', labelKey: 'filterFree', icon: Tag, value: 'free' },
 ];
 
 // Hero Carousel data
 const HERO_SLIDES = [
   {
     id: 1,
-    headline: 'Mudah & Terpercaya',
-    subheadline: 'Booking tiket dalam hitungan menit',
+    headlineKey: 'slide1Headline',
+    subheadlineKey: 'slide1Subheadline',
     bgGradient: 'from-orange-500 to-orange-600',
   },
   {
     id: 2,
-    headline: 'Ribuan Event Menanti',
-    subheadline: 'Temukan event seru di kota Anda',
+    headlineKey: 'slide2Headline',
+    subheadlineKey: 'slide2Subheadline',
     bgGradient: 'from-orange-600 to-red-600',
   },
   {
     id: 3,
-    headline: 'Kenangan Tak Terlupakan',
-    subheadline: 'Buat momen spesial bersama orang terkasih',
+    headlineKey: 'slide3Headline',
+    subheadlineKey: 'slide3Subheadline',
     bgGradient: 'from-orange-400 to-orange-500',
   },
 ];
 
 export default function Home() {
+  const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Hero Carousel State
@@ -212,7 +214,7 @@ export default function Home() {
         }
       } catch (err) {
         console.error('Error fetching events:', err);
-        setError('Gagal memuat event. Silakan coba lagi.');
+        setError(t('home.failedToLoadEventsMessage'));
         setEvents([]);
       } finally {
         setLoading(false);
@@ -308,13 +310,13 @@ export default function Home() {
             {/* Content */}
             <div className="relative z-10 text-center px-4">
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-2 sm:mb-4">
-                {slide.headline}
+                {t(`home.${slide.headlineKey}`)}
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-orange-100 mb-6 sm:mb-8">
-                {slide.subheadline}
+                {t(`home.${slide.subheadlineKey}`)}
               </p>
               <button className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors text-sm sm:text-base cursor-pointer">
-                Mulai Sekarang
+                {t('home.startNow')}
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
@@ -323,14 +325,14 @@ export default function Home() {
             <button
               onClick={() => setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
               className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition-colors cursor-pointer"
-              aria-label="Previous slide"
+              aria-label={t('home.previousSlide')}
             >
               <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <button
               onClick={() => setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length)}
               className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 rounded-full transition-colors cursor-pointer"
-              aria-label="Next slide"
+              aria-label={t('home.nextSlide')}
             >
               <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
@@ -344,7 +346,7 @@ export default function Home() {
                   className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all cursor-pointer ${
                     idx === currentSlide ? 'bg-white w-8 sm:w-10' : 'bg-white/50'
                   }`}
-                  aria-label={`Go to slide ${idx + 1}`}
+                  aria-label={t('home.goToSlide', { number: idx + 1 })}
                 />
               ))}
             </div>
@@ -360,12 +362,12 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <Award className="w-6 h-6 text-orange-500" />
               <div>
-                <p className="text-xs sm:text-sm text-gray-600 font-medium">Paling Populer</p>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Event Pilihan</h2>
+                <p className="text-xs sm:text-sm text-gray-600 font-medium">{t('home.mostPopular')}</p>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900">{t('home.chosenEvents')}</h2>
               </div>
             </div>
             <Link to="/explore" className="text-orange-600 hover:text-orange-700 font-semibold text-sm flex items-center gap-1 transition-colors cursor-pointer">
-              Lihat Semua
+              {t('home.seeAll')}
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -396,7 +398,7 @@ export default function Home() {
                   className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center text-center min-h-[300px]"
                 >
                   <div className="text-4xl mb-3">📸</div>
-                  <p className="text-gray-600 font-medium">Event Segera Hadir</p>
+                  <p className="text-gray-600 font-medium">{t('home.eventsComingSoon')}</p>
                 </div>
               ))
             )}
@@ -413,13 +415,13 @@ export default function Home() {
                 {/* Left content */}
                 <div className="flex-1 text-white">
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-3 leading-tight">
-                    Diskon 50% untuk Event Pertamamu!
+                    {t('home.promoTitle')}
                   </h2>
                   <p className="text-sm sm:text-base md:text-lg text-orange-100 mb-4 sm:mb-6">
-                    Kode promo: <span className="font-bold text-white">FIRSTEVENT</span>
+                    {t('home.promoCodeLabel')} <span className="font-bold text-white">{t('home.promoCode')}</span>
                   </p>
                   <button className="px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 bg-white text-orange-600 font-semibold rounded-full hover:bg-orange-50 transition-colors text-xs sm:text-sm md:text-base cursor-pointer">
-                    Dapatkan Diskon
+                    {t('home.getDiscount')}
                   </button>
                 </div>
 
@@ -454,7 +456,7 @@ export default function Home() {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {cat.label}
+                    {t(`home.${cat.labelKey}`)}
                   </button>
                 ) : (
                   <button
@@ -468,7 +470,7 @@ export default function Home() {
                         : 'bg-gray-100 text-gray-700 group-hover:bg-gray-200'
                     }`}>
                       {Icon && <Icon className="w-6 h-6 sm:w-7 sm:h-7 mb-0.5" />}
-                      <span className="text-xs font-semibold text-center leading-tight text-[10px] sm:text-xs">{cat.label}</span>
+                      <span className="text-xs font-semibold text-center leading-tight text-[10px] sm:text-xs">{t(`home.${cat.labelKey}`)}</span>
                     </div>
                   </button>
                 );
@@ -482,7 +484,7 @@ export default function Home() {
               onClick={() => setShowLocationPicker(!showLocationPicker)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-full font-medium text-sm hover:bg-gray-200 transition-all cursor-pointer"
             >
-              <span>Cari event di kota</span>
+              <span>{t('home.searchByCity')}</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${showLocationPicker ? 'rotate-180' : ''}`} />
             </button>
 
@@ -514,7 +516,7 @@ export default function Home() {
                       }}
                       className="w-full text-left px-4 py-2 rounded-lg transition-all font-medium text-sm text-orange-600 hover:bg-orange-50 border-t border-gray-200 mt-2 pt-2 cursor-pointer"
                     >
-                      Hapus Filter Lokasi
+                      {t('home.clearLocationFilter')}
                     </button>
                   )}
                 </div>
@@ -537,7 +539,7 @@ export default function Home() {
                   }`}
                 >
                   <Icon className="w-4 h-4" />
-                  {filter.label}
+                  {t(`home.${filter.labelKey}`)}
                 </button>
               );
             })}
@@ -549,7 +551,7 @@ export default function Home() {
               onClick={clearFilters}
               className="text-orange-600 hover:text-orange-700 text-sm font-semibold flex items-center gap-1 mb-8 cursor-pointer"
             >
-              ✕ Hapus semua filter
+              {t('home.clearAllFilters')}
             </button>
           )}
 
@@ -557,7 +559,11 @@ export default function Home() {
           {!loading && events.length > 0 && (
             <div className="mb-6">
               <p className="text-gray-600 text-sm">
-                Menampilkan <span className="font-semibold text-gray-900">1–{Math.min(currentPage * ITEMS_PER_PAGE, events.length)}</span> dari <span className="font-semibold text-gray-900">{events.length}</span> event
+                {t('home.showingResults', {
+                  from: 1,
+                  to: Math.min(currentPage * ITEMS_PER_PAGE, events.length),
+                  total: events.length,
+                })}
               </p>
             </div>
           )}
@@ -568,13 +574,13 @@ export default function Home() {
           {/* Error State */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-              <p className="text-red-800 font-semibold mb-2">⚠️ Gagal memuat event</p>
+              <p className="text-red-800 font-semibold mb-2">{t('home.failedToLoadEvents')}</p>
               <p className="text-red-600 text-sm mb-4">{error}</p>
               <button
                 onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition cursor-pointer"
               >
-                Coba lagi
+                {t('home.tryAgain')}
               </button>
             </div>
           )}
@@ -583,15 +589,15 @@ export default function Home() {
           {!loading && !error && events.length === 0 && hasActiveFilters && (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Event tidak ditemukan</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('home.eventsNotFound')}</h3>
               <p className="text-gray-600 mb-6">
-                Mohon sesuaikan filter atau gunakan kata kunci pencarian yang berbeda
+                {t('home.adjustFilterMessage')}
               </p>
               <button
                 onClick={clearFilters}
                 className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition cursor-pointer"
               >
-                Lihat semua event
+                {t('home.seeAllEvents')}
               </button>
             </div>
           )}
@@ -629,11 +635,11 @@ export default function Home() {
                     {loadingMore ? (
                       <>
                         <span className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Memuat...</span>
+                        <span>{t('home.loading')}</span>
                       </>
                     ) : (
                       <>
-                        <span>Jelajah Lebih Banyak Event</span>
+                        <span>{t('home.exploreMoreEvents')}</span>
                         <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                       </>
                     )}
