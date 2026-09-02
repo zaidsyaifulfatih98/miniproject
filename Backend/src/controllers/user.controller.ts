@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { userService } from "../services/user.service";
 import { emailService } from "../services/email.service";
 import { AuthRequest } from "../middlewares/auth.middleware";
+import { PrismaClientKnownRequestError } from "../../generated/prisma/internal/prismaNamespace";
 
 const isUUID = (value: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
@@ -55,6 +56,10 @@ export const userController = {
         data: user,
       });
     } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError && error.code === "P2002") {
+        res.status(409).json({ success: false, message: "Email sudah terdaftar" });
+        return;
+      }
       next(error);
     }
   },
